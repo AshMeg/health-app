@@ -14,27 +14,114 @@ export type Database = {
   }
   public: {
     Tables: {
-      profiles: {
+      body_measurements: {
         Row: {
-          avatar_url: string | null
+          chest_cm: number | null
           created_at: string
-          full_name: string | null
+          date: string
+          hips_cm: number | null
           id: string
+          left_arm_cm: number | null
+          left_calf_cm: number | null
+          left_thigh_cm: number | null
+          neck_cm: number | null
+          notes: string | null
+          right_arm_cm: number | null
+          right_calf_cm: number | null
+          right_thigh_cm: number | null
+          source: Database["public"]["Enums"]["data_source"]
           updated_at: string
+          user_id: string
+          waist_cm: number | null
         }
         Insert: {
-          avatar_url?: string | null
+          chest_cm?: number | null
           created_at?: string
-          full_name?: string | null
-          id: string
+          date?: string
+          hips_cm?: number | null
+          id?: string
+          left_arm_cm?: number | null
+          left_calf_cm?: number | null
+          left_thigh_cm?: number | null
+          neck_cm?: number | null
+          notes?: string | null
+          right_arm_cm?: number | null
+          right_calf_cm?: number | null
+          right_thigh_cm?: number | null
+          source?: Database["public"]["Enums"]["data_source"]
           updated_at?: string
+          user_id: string
+          waist_cm?: number | null
         }
         Update: {
-          avatar_url?: string | null
+          chest_cm?: number | null
           created_at?: string
-          full_name?: string | null
+          date?: string
+          hips_cm?: number | null
           id?: string
+          left_arm_cm?: number | null
+          left_calf_cm?: number | null
+          left_thigh_cm?: number | null
+          neck_cm?: number | null
+          notes?: string | null
+          right_arm_cm?: number | null
+          right_calf_cm?: number | null
+          right_thigh_cm?: number | null
+          source?: Database["public"]["Enums"]["data_source"]
           updated_at?: string
+          user_id?: string
+          waist_cm?: number | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          activity_level: Database["public"]["Enums"]["activity_level"] | null
+          avatar_url: string | null
+          biological_sex: Database["public"]["Enums"]["biological_sex"] | null
+          calorie_target: number | null
+          carb_target: number | null
+          created_at: string
+          date_of_birth: string | null
+          fat_target: number | null
+          full_name: string | null
+          height_cm: number | null
+          id: string
+          protein_target: number | null
+          updated_at: string
+          weight_goal: Database["public"]["Enums"]["weight_goal"] | null
+        }
+        Insert: {
+          activity_level?: Database["public"]["Enums"]["activity_level"] | null
+          avatar_url?: string | null
+          biological_sex?: Database["public"]["Enums"]["biological_sex"] | null
+          calorie_target?: number | null
+          carb_target?: number | null
+          created_at?: string
+          date_of_birth?: string | null
+          fat_target?: number | null
+          full_name?: string | null
+          height_cm?: number | null
+          id: string
+          protein_target?: number | null
+          updated_at?: string
+          weight_goal?: Database["public"]["Enums"]["weight_goal"] | null
+        }
+        Update: {
+          activity_level?: Database["public"]["Enums"]["activity_level"] | null
+          avatar_url?: string | null
+          biological_sex?: Database["public"]["Enums"]["biological_sex"] | null
+          calorie_target?: number | null
+          carb_target?: number | null
+          created_at?: string
+          date_of_birth?: string | null
+          fat_target?: number | null
+          full_name?: string | null
+          height_cm?: number | null
+          id?: string
+          protein_target?: number | null
+          updated_at?: string
+          weight_goal?: Database["public"]["Enums"]["weight_goal"] | null
         }
         Relationships: []
       }
@@ -59,6 +146,42 @@ export type Database = {
         }
         Relationships: []
       }
+      weight_logs: {
+        Row: {
+          body_fat_percent: number | null
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+          source: Database["public"]["Enums"]["data_source"]
+          updated_at: string
+          user_id: string
+          weight_kg: number
+        }
+        Insert: {
+          body_fat_percent?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          source?: Database["public"]["Enums"]["data_source"]
+          updated_at?: string
+          user_id: string
+          weight_kg: number
+        }
+        Update: {
+          body_fat_percent?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          source?: Database["public"]["Enums"]["data_source"]
+          updated_at?: string
+          user_id?: string
+          weight_kg?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -73,7 +196,24 @@ export type Database = {
       }
     }
     Enums: {
+      activity_level:
+        | "sedentary"
+        | "light"
+        | "moderate"
+        | "active"
+        | "very_active"
       app_role: "admin" | "user"
+      biological_sex: "male" | "female" | "other" | "prefer_not_to_say"
+      data_source:
+        | "manual"
+        | "apple_health"
+        | "health_connect"
+        | "garmin"
+        | "strava"
+        | "oura"
+        | "whoop"
+        | "myfitnesspal"
+      weight_goal: "lose" | "maintain" | "gain"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -201,7 +341,26 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_level: [
+        "sedentary",
+        "light",
+        "moderate",
+        "active",
+        "very_active",
+      ],
       app_role: ["admin", "user"],
+      biological_sex: ["male", "female", "other", "prefer_not_to_say"],
+      data_source: [
+        "manual",
+        "apple_health",
+        "health_connect",
+        "garmin",
+        "strava",
+        "oura",
+        "whoop",
+        "myfitnesspal",
+      ],
+      weight_goal: ["lose", "maintain", "gain"],
     },
   },
 } as const
