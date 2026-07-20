@@ -18,8 +18,8 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Sign in — Vitals" },
-      { name: "description", content: "Sign in or create a Vitals account." },
+      { title: "Sign in — Bloom" },
+      { name: "description", content: "Sign in or create a Bloom account." },
     ],
   }),
   component: AuthPage,
@@ -133,7 +133,7 @@ function AuthPage() {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
             <Activity className="h-5 w-5 text-primary" />
           </div>
-          <span className="text-lg font-semibold tracking-tight">Vitals</span>
+          <span className="text-lg font-semibold tracking-tight">Bloom</span>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-2xl shadow-black/40 sm:p-8">

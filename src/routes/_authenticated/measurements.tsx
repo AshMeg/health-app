@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PagePlaceholder } from "@/components/page-placeholder";
+import { PagePlaceholder } from "@/components/shared/page-placeholder";
 
 export const Route = createFileRoute("/_authenticated/measurements")({
-  head: () => ({ meta: [{ title: "Measurements — Vitals" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Measurements — Bloom" }, { name: "robots", content: "noindex" }] }),
   component: () => (
     <PagePlaceholder title="Measurements" description="Body measurements and composition." />
   ),

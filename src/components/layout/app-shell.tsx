@@ -5,7 +5,7 @@ import type { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";

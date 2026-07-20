@@ -6,13 +6,13 @@ import { useAuth } from "@/hooks/use-auth";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Vitals — Health analytics for you" },
+      { title: "Bloom — Health analytics for you" },
       {
         name: "description",
         content:
-          "Vitals is a modern health analytics platform. Track, understand, and act on your health data.",
+          "Bloom is a modern health analytics platform. Track, understand, and act on your health data.",
       },
-      { property: "og:title", content: "Vitals — Health analytics for you" },
+      { property: "og:title", content: "Bloom — Health analytics for you" },
       {
         property: "og:description",
         content: "Modern health analytics. Sign in to your dashboard.",
@@ -32,7 +32,7 @@ function Landing() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/20">
             <Activity className="h-4 w-4 text-primary" />
           </div>
-          <span className="text-sm font-semibold tracking-tight">Vitals</span>
+          <span className="text-sm font-semibold tracking-tight">Bloom</span>
         </div>
         <nav className="flex items-center gap-2">
           {loading ? null : user ? (
