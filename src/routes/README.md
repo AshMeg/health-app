@@ -19,3 +19,18 @@ is `src/routes/__root.tsx`.
 | `__root.tsx` | app shell — wraps every page; preserve `<Outlet />` |
 
 `routeTree.gen.ts` is auto-generated. Don't edit it by hand.
+
+## Organisation for Bloom
+
+Route files stay thin — they wire URL, metadata, and layout. Page logic and
+UI live in the matching feature module under `src/features/<module>/`.
+
+- Public routes: `auth.tsx`, `forgot-password.tsx`, `reset-password.tsx`, `index.tsx`
+- Authenticated shell: `_authenticated/route.tsx` (auth gate + `AppShell`)
+- Authenticated pages: `_authenticated/<page>.tsx` — currently placeholders
+  for dashboard, weight, nutrition, sleep, training, recovery, measurements,
+  journal, analytics, integrations, profile, settings.
+
+Future Bloom modules (`today`, `journey`, `timeline`, `insights`, `explore`,
+`health-records`) will land as new files under `_authenticated/` importing
+from `src/features/<module>/`.
