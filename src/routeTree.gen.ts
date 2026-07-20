@@ -14,7 +14,18 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedWeightRouteImport } from './routes/_authenticated/weight'
+import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
+import { Route as AuthenticatedSleepRouteImport } from './routes/_authenticated/sleep'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedRecoveryRouteImport } from './routes/_authenticated/recovery'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedNutritionRouteImport } from './routes/_authenticated/nutrition'
+import { Route as AuthenticatedMeasurementsRouteImport } from './routes/_authenticated/measurements'
+import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
+import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -40,9 +51,66 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedWeightRoute = AuthenticatedWeightRouteImport.update({
+  id: '/weight',
+  path: '/weight',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTrainingRoute = AuthenticatedTrainingRouteImport.update({
+  id: '/training',
+  path: '/training',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSleepRoute = AuthenticatedSleepRouteImport.update({
+  id: '/sleep',
+  path: '/sleep',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRecoveryRoute = AuthenticatedRecoveryRouteImport.update({
+  id: '/recovery',
+  path: '/recovery',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNutritionRoute = AuthenticatedNutritionRouteImport.update({
+  id: '/nutrition',
+  path: '/nutrition',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMeasurementsRoute =
+  AuthenticatedMeasurementsRouteImport.update({
+    id: '/measurements',
+    path: '/measurements',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedJournalRoute = AuthenticatedJournalRouteImport.update({
+  id: '/journal',
+  path: '/journal',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedIntegrationsRoute =
+  AuthenticatedIntegrationsRouteImport.update({
+    id: '/integrations',
+    path: '/integrations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
@@ -51,14 +119,36 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/integrations': typeof AuthenticatedIntegrationsRoute
+  '/journal': typeof AuthenticatedJournalRoute
+  '/measurements': typeof AuthenticatedMeasurementsRoute
+  '/nutrition': typeof AuthenticatedNutritionRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/recovery': typeof AuthenticatedRecoveryRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/sleep': typeof AuthenticatedSleepRoute
+  '/training': typeof AuthenticatedTrainingRoute
+  '/weight': typeof AuthenticatedWeightRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/integrations': typeof AuthenticatedIntegrationsRoute
+  '/journal': typeof AuthenticatedJournalRoute
+  '/measurements': typeof AuthenticatedMeasurementsRoute
+  '/nutrition': typeof AuthenticatedNutritionRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/recovery': typeof AuthenticatedRecoveryRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/sleep': typeof AuthenticatedSleepRoute
+  '/training': typeof AuthenticatedTrainingRoute
+  '/weight': typeof AuthenticatedWeightRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -67,7 +157,18 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
+  '/_authenticated/journal': typeof AuthenticatedJournalRoute
+  '/_authenticated/measurements': typeof AuthenticatedMeasurementsRoute
+  '/_authenticated/nutrition': typeof AuthenticatedNutritionRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/recovery': typeof AuthenticatedRecoveryRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/sleep': typeof AuthenticatedSleepRoute
+  '/_authenticated/training': typeof AuthenticatedTrainingRoute
+  '/_authenticated/weight': typeof AuthenticatedWeightRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -76,9 +177,36 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
+    | '/analytics'
     | '/dashboard'
+    | '/integrations'
+    | '/journal'
+    | '/measurements'
+    | '/nutrition'
+    | '/profile'
+    | '/recovery'
+    | '/settings'
+    | '/sleep'
+    | '/training'
+    | '/weight'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/forgot-password' | '/reset-password' | '/dashboard'
+  to:
+    | '/'
+    | '/auth'
+    | '/forgot-password'
+    | '/reset-password'
+    | '/analytics'
+    | '/dashboard'
+    | '/integrations'
+    | '/journal'
+    | '/measurements'
+    | '/nutrition'
+    | '/profile'
+    | '/recovery'
+    | '/settings'
+    | '/sleep'
+    | '/training'
+    | '/weight'
   id:
     | '__root__'
     | '/'
@@ -86,7 +214,18 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
+    | '/_authenticated/analytics'
     | '/_authenticated/dashboard'
+    | '/_authenticated/integrations'
+    | '/_authenticated/journal'
+    | '/_authenticated/measurements'
+    | '/_authenticated/nutrition'
+    | '/_authenticated/profile'
+    | '/_authenticated/recovery'
+    | '/_authenticated/settings'
+    | '/_authenticated/sleep'
+    | '/_authenticated/training'
+    | '/_authenticated/weight'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -134,6 +273,76 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/weight': {
+      id: '/_authenticated/weight'
+      path: '/weight'
+      fullPath: '/weight'
+      preLoaderRoute: typeof AuthenticatedWeightRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/training': {
+      id: '/_authenticated/training'
+      path: '/training'
+      fullPath: '/training'
+      preLoaderRoute: typeof AuthenticatedTrainingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sleep': {
+      id: '/_authenticated/sleep'
+      path: '/sleep'
+      fullPath: '/sleep'
+      preLoaderRoute: typeof AuthenticatedSleepRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/recovery': {
+      id: '/_authenticated/recovery'
+      path: '/recovery'
+      fullPath: '/recovery'
+      preLoaderRoute: typeof AuthenticatedRecoveryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/nutrition': {
+      id: '/_authenticated/nutrition'
+      path: '/nutrition'
+      fullPath: '/nutrition'
+      preLoaderRoute: typeof AuthenticatedNutritionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/measurements': {
+      id: '/_authenticated/measurements'
+      path: '/measurements'
+      fullPath: '/measurements'
+      preLoaderRoute: typeof AuthenticatedMeasurementsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/journal': {
+      id: '/_authenticated/journal'
+      path: '/journal'
+      fullPath: '/journal'
+      preLoaderRoute: typeof AuthenticatedJournalRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/integrations': {
+      id: '/_authenticated/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof AuthenticatedIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -141,15 +350,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
+  AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
+  AuthenticatedMeasurementsRoute: typeof AuthenticatedMeasurementsRoute
+  AuthenticatedNutritionRoute: typeof AuthenticatedNutritionRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedRecoveryRoute: typeof AuthenticatedRecoveryRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSleepRoute: typeof AuthenticatedSleepRoute
+  AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
+  AuthenticatedWeightRoute: typeof AuthenticatedWeightRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
+  AuthenticatedJournalRoute: AuthenticatedJournalRoute,
+  AuthenticatedMeasurementsRoute: AuthenticatedMeasurementsRoute,
+  AuthenticatedNutritionRoute: AuthenticatedNutritionRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedRecoveryRoute: AuthenticatedRecoveryRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSleepRoute: AuthenticatedSleepRoute,
+  AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
+  AuthenticatedWeightRoute: AuthenticatedWeightRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -165,3 +403,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
