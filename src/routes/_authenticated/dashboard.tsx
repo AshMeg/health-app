@@ -4,7 +4,7 @@ import { PagePlaceholder } from "@/components/page-placeholder";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Vitals" },
+      { title: "Dashboard — Bloom" },
       { name: "description", content: "Your health analytics dashboard." },
       { name: "robots", content: "noindex" },
     ],

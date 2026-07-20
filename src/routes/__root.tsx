@@ -79,13 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Vitals — Health analytics" },
+      { title: "Bloom — Health analytics" },
       {
         name: "description",
         content: "A modern health analytics platform. Track, understand, and act on your health data.",
       },
-      { name: "author", content: "Vitals" },
-      { property: "og:title", content: "Vitals — Health analytics" },
+      { name: "author", content: "Bloom" },
+      { property: "og:title", content: "Bloom — Health analytics" },
       {
         property: "og:description",
         content: "Track, understand, and act on your health data.",

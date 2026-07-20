@@ -61,7 +61,7 @@ export function AppSidebar() {
             <Activity className="h-4 w-4 text-primary" />
           </div>
           <span className="text-sm font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
-            Vitals
+            Bloom
           </span>
         </div>
       </SidebarHeader>
