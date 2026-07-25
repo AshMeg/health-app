@@ -98,52 +98,43 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
           <Panel
             tracking={goal.tracking}
             accent={goal.accent}
-            onChange={(tracking) => updateGoal(goal.id, { tracking })}
+            onChange={(tracking) => updateTracking(goal.id, tracking)}
           />
 
           <dl className="grid grid-cols-2 gap-5 border-t border-border/50 pt-5 sm:grid-cols-3">
             <Stat label="Progress" value={`${progress}%`} />
-            <Stat label="Started" value={formatDate(goal.startDate)} />
+            <Stat label="Started" value={formatGoalDateLong(goal.startDate)} />
             <Stat
               label="Target date"
-              value={goal.targetDate ? formatDate(goal.targetDate) : "Open-ended"}
+              value={goal.targetDate ? formatGoalDateLong(goal.targetDate) : "Open-ended"}
             />
           </dl>
         </CardContent>
       </Card>
 
       <Card className="rounded-3xl border-transparent bg-card shadow-soft">
-        <CardContent className="space-y-3 p-7 sm:p-8">
+        <CardContent className="space-y-5 p-7 sm:p-8">
           <h2 className="text-base font-medium">Notes</h2>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {goal.notes ??
-              "No notes yet. Anything you'd like to remember about this goal will live here."}
-          </p>
+          <GoalNotes
+            notes={goal.notes}
+            onAdd={(body) => addNote(goal.id, body)}
+            onEdit={(noteId, body) => editNote(goal.id, noteId, body)}
+            onDelete={(noteId) => deleteNote(goal.id, noteId)}
+          />
         </CardContent>
       </Card>
 
       <Card className="rounded-3xl border-transparent bg-card shadow-soft">
         <CardContent className="space-y-5 p-7 sm:p-8">
           <h2 className="text-base font-medium">Timeline of updates</h2>
-          <ol className="space-y-5">
-            {goal.updates.map((update) => (
-              <li key={update.id} className="flex gap-4">
-                <div className="flex flex-col items-center pt-1.5">
-                  <GoalAccentDot accent={goal.accent} />
-                  <span className="mt-1 w-px flex-1 bg-border/60" />
-                </div>
-                <div className="min-w-0 space-y-1 pb-1">
-                  <p className="text-sm font-medium">{update.title}</p>
-                  {update.detail ? (
-                    <p className="text-sm leading-relaxed text-muted-foreground">{update.detail}</p>
-                  ) : null}
-                  <p className="text-xs text-muted-foreground">{update.date}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          <GoalTimeline
+            updates={goal.updates}
+            accent={goal.accent}
+            onAdd={(title) => addManualUpdate(goal.id, title)}
+          />
         </CardContent>
       </Card>
+
 
       <Card className="rounded-3xl border-transparent bg-lavender-soft shadow-none">
         <CardContent className="flex items-start gap-4 p-7 sm:p-8">
