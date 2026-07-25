@@ -99,14 +99,7 @@ const rules: Rule[] = [
     build: () => ({
       method: "milestone",
       reason: "A bigger goal like this is easier in steps you can tick off.",
-      draft: () => ({
-        method: "milestone",
-        milestones: [
-          { id: "m1", label: "First step", done: false },
-          { id: "m2", label: "Halfway point", done: false },
-          { id: "m3", label: "The big day", done: false },
-        ],
-      }),
+      draft: () => ({ method: "milestone" }),
     }),
   },
   {
@@ -185,14 +178,7 @@ export const defaultTracking: Record<TrackingMethod, (title: string) => GoalTrac
     longest: 0,
     history: [],
   }),
-  milestone: () => ({
-    method: "milestone",
-    milestones: [
-      { id: "m1", label: "First step", done: false },
-      { id: "m2", label: "Halfway point", done: false },
-      { id: "m3", label: "The big day", done: false },
-    ],
-  }),
+  milestone: () => ({ method: "milestone" }),
   reflection: () => ({ method: "reflection", cadence: "weekly", reflections: [] }),
 };
 
