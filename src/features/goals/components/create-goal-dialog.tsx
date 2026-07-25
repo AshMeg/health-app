@@ -34,31 +34,30 @@ import {
   type TrackingMethod,
 } from "../types";
 
-const steps = [
-  "Your goal",
-  "Type",
-  "Why",
-  "Tracking",
-  "Set it up",
-  "Milestones",
-  "Deadline",
-  "Review",
-] as const;
+/** The flow is dynamic: the steps card only appears for step-based goals. */
+type StepKey = "title" | "type" | "why" | "tracking" | "setup" | "steps" | "deadline" | "review";
 
-/** Conversational headings, so each step feels like a question, not a field. */
-const stepHeadings = [
-  "What would you like to achieve?",
-  "What kind of goal is this?",
-  "Why does this matter to you?",
-  "How would you like to track your progress?",
-  "Let's set it up",
-  "Would you like to break this goal into milestones?",
-  "Any date in mind?",
-  "Does this look right?",
-] as const;
+const stepMeta: Record<StepKey, { label: string; heading: string }> = {
+  title: { label: "Your goal", heading: "What would you like to achieve?" },
+  type: { label: "Type", heading: "What kind of goal is this?" },
+  why: { label: "Why", heading: "Why does this matter to you?" },
+  tracking: { label: "Tracking", heading: "How would you like to track your progress?" },
+  setup: { label: "Set it up", heading: "Let's set it up" },
+  steps: { label: "Your steps", heading: "How would you like to build your steps?" },
+  deadline: { label: "Deadline", heading: "Any date in mind?" },
+  review: { label: "Review", heading: "Does this look right?" },
+};
 
-/** How the user chose to handle milestones — always optional. */
-type MilestoneChoice = "none" | "suggest" | "own";
+/** Step-based goals build their steps instead of a numeric setup screen. */
+function stepFlow(method: TrackingMethod): StepKey[] {
+  return method === "milestone"
+    ? ["title", "type", "why", "tracking", "steps", "deadline", "review"]
+    : ["title", "type", "why", "tracking", "setup", "deadline", "review"];
+}
+
+/** How the user chose to build their steps. */
+type MilestoneChoice = "suggest" | "own";
+
 
 type Draft = {
   title: string;
