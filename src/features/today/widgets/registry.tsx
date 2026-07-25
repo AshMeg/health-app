@@ -49,7 +49,7 @@ export const todayWidgets: WidgetDefinition[] = [
     summary: "Active goals with progress towards each target.",
     span: "full",
     locked: true,
-    render: () => <GoalsWidget goals={goals} />,
+    render: () => <GoalsWidget />,
   },
   {
     id: "summary",
