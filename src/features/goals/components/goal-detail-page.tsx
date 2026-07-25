@@ -55,7 +55,9 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
     <div className="mx-auto w-full max-w-3xl space-y-8 pb-8">
       <BackLink />
 
-      {isComplete ? <GoalCompletionCard title={goal.title} /> : null}
+      {isComplete ? (
+        <GoalCompletionCard title={goal.title} onAddToGarden={() => addToGarden(goal.id)} />
+      ) : null}
 
       <header className="space-y-3">
         <div className="flex items-center gap-2.5">
