@@ -10,6 +10,7 @@ import {
   Plug,
   Ruler,
   Scale,
+  Target,
   Settings,
   Sprout,
   UtensilsCrossed,
@@ -31,6 +32,7 @@ type NavItem = { title: string; url: string; icon: LucideIcon };
 
 const trackingItems: NavItem[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Goals", url: "/goals", icon: Target },
   { title: "Weight", url: "/weight", icon: Scale },
   { title: "Nutrition", url: "/nutrition", icon: UtensilsCrossed },
   { title: "Sleep", url: "/sleep", icon: Moon },
