@@ -238,6 +238,7 @@ export function useGoals() {
     hydrated,
     addGoal,
     updateGoal,
+    editGoal,
     updateTracking,
     setMilestones,
     addNote,
