@@ -38,7 +38,7 @@ export function GoalCard({ goal }: { goal: BloomGoal }) {
   const progress = goalProgress(goal);
 
   return (
-    <Card className="group rounded-3xl border-transparent bg-card shadow-soft transition-shadow hover:shadow-md">
+    <Card className="group relative rounded-3xl border-transparent bg-card shadow-soft transition-shadow hover:shadow-md">
       <CardContent className="space-y-6 p-7 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 space-y-2">
@@ -75,14 +75,10 @@ export function GoalCard({ goal }: { goal: BloomGoal }) {
           </div>
         </div>
 
-        <Link
-          to="/goals/$goalId"
-          params={{ goalId: goal.id }}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors group-hover:text-foreground"
-        >
+        <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
           Open goal
           <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
+        </span>
       </CardContent>
     </Card>
   );
