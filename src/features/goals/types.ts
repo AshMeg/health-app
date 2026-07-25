@@ -40,6 +40,8 @@ export type GoalEventKind =
   | "reflection"
   | "completed"
   | "note"
+  | "paused"
+  | "resumed"
   | "manual";
 
 
@@ -179,7 +181,17 @@ export type BloomGoal = {
   nextStep?: string;
   updates: GoalUpdate[];
   completedAt?: string;
+  /**
+   * Set when the goal is resting in "Not Right Now" — a different season, not a
+   * failure. Progress, notes and history are all kept exactly as they were.
+   */
+  pausedAt?: string;
 };
+
+/** Goals resting in "Not Right Now" — kept whole, just out of the way. */
+export function isResting(goal: BloomGoal): boolean {
+  return Boolean(goal.pausedAt) && !goal.completedAt;
+}
 
 
 export const goalTypeMeta: Record<

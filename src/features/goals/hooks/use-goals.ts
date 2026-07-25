@@ -21,41 +21,68 @@ function migrate(goals: BloomGoal[]): BloomGoal[] {
 }
 
 /**
- * Placeholder goal store. Goals live in localStorage so created goals survive
- * a refresh; swap this for server functions once goals are persisted.
+ * Placeholder goal store. Goals live in localStorage so created goals survive a
+ * refresh, and in a small module-level store so every screen showing goals —
+ * cards, Today widgets, detail pages — stays in step. Swap this for server
+ * functions once goals are persisted.
  */
+let store: BloomGoal[] = seedGoals;
+let hydratedOnce = false;
+const listeners = new Set<() => void>();
+
+function emit() {
+  for (const listener of listeners) listener();
+}
+
+function writeStore(next: BloomGoal[]) {
+  store = next;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    /* storage unavailable — goals stay for this session */
+  }
+  emit();
+}
+
+function hydrateStore() {
+  if (hydratedOnce) return;
+  hydratedOnce = true;
+  try {
+    // Fall back to the previous key so goals made before milestones survive.
+    const raw =
+      window.localStorage.getItem(STORAGE_KEY) ?? window.localStorage.getItem("bloom.goals.v4");
+    if (raw) {
+      const parsed = JSON.parse(raw) as BloomGoal[];
+      if (Array.isArray(parsed)) {
+        const migrated = migrate(parsed);
+        store = migrated;
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+      }
+    }
+  } catch {
+    /* ignore malformed storage */
+  }
+  emit();
+}
+
 export function useGoals() {
-  const [goals, setGoals] = useState<BloomGoal[]>(seedGoals);
-  const [hydrated, setHydrated] = useState(false);
+  const [goals, setGoals] = useState<BloomGoal[]>(store);
+  const [hydrated, setHydrated] = useState(hydratedOnce);
 
   useEffect(() => {
-    try {
-      // Fall back to the previous key so goals made before milestones survive.
-      const raw =
-        window.localStorage.getItem(STORAGE_KEY) ?? window.localStorage.getItem("bloom.goals.v4");
-      if (raw) {
-        const parsed = JSON.parse(raw) as BloomGoal[];
-        if (Array.isArray(parsed)) {
-          const migrated = migrate(parsed);
-          setGoals(migrated);
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-        }
-      }
-    } catch {
-      /* ignore malformed storage */
-    }
-    setHydrated(true);
+    const listener = () => {
+      setGoals(store);
+      setHydrated(hydratedOnce);
+    };
+    listeners.add(listener);
+    hydrateStore();
+    listener();
+    return () => {
+      listeners.delete(listener);
+    };
   }, []);
 
-
-  const persist = useCallback((next: BloomGoal[]) => {
-    setGoals(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      /* storage unavailable — goals stay for this session */
-    }
-  }, []);
+  const persist = useCallback((next: BloomGoal[]) => writeStore(next), []);
 
   /** Applies a change to one goal and keeps the timeline honest. */
   const mutate = useCallback(
@@ -83,6 +110,19 @@ export function useGoals() {
 
   const updateGoal = useCallback(
     (id: string, patch: Partial<BloomGoal>) => mutate(id, (goal) => ({ ...goal, ...patch })),
+    [mutate],
+  );
+
+  /** A deliberate edit from the Edit Goal screen — recorded as one entry. */
+  const editGoal = useCallback(
+    (id: string, patch: Partial<BloomGoal>, changed: string[]) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        ...patch,
+        updates: changed.length
+          ? [makeUpdate("edited", "Goal edited", `Updated ${changed.join(", ")}.`), ...goal.updates]
+          : goal.updates,
+      })),
     [mutate],
   );
 
@@ -174,6 +214,31 @@ export function useGoals() {
     [goals, mutate],
   );
 
+  /** "Not Right Now" — the goal rests, keeping every bit of its history. */
+  const pauseGoal = useCallback(
+    (id: string) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        pausedAt: new Date().toISOString(),
+        updates: [
+          makeUpdate("paused", "Moved to Not Right Now", "Resting for now — nothing is lost."),
+          ...goal.updates,
+        ],
+      })),
+    [mutate],
+  );
+
+  /** Back into Active Goals, exactly where it left off. */
+  const resumeGoal = useCallback(
+    (id: string) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        pausedAt: undefined,
+        updates: [makeUpdate("resumed", "Back in your active goals"), ...goal.updates],
+      })),
+    [mutate],
+  );
+
   const removeGoal = useCallback(
     (id: string) => persist(goals.filter((g) => g.id !== id)),
     [goals, persist],
@@ -183,10 +248,11 @@ export function useGoals() {
 
   const getGoal = useCallback((id: string) => goals.find((g) => g.id === id), [goals]);
 
-  const { active, complete } = useMemo(
+  const { active, complete, resting } = useMemo(
     () => ({
-      active: goals.filter((g) => !g.completedAt),
+      active: goals.filter((g) => !g.completedAt && !g.pausedAt),
       complete: goals.filter((g) => g.completedAt),
+      resting: goals.filter((g) => g.pausedAt && !g.completedAt),
     }),
     [goals],
   );
@@ -195,9 +261,11 @@ export function useGoals() {
     goals,
     active,
     complete,
+    resting,
     hydrated,
     addGoal,
     updateGoal,
+    editGoal,
     updateTracking,
     setMilestones,
     addNote,
@@ -205,6 +273,8 @@ export function useGoals() {
     deleteNote,
     addManualUpdate,
     addToGarden,
+    pauseGoal,
+    resumeGoal,
     removeGoal,
     clearAll,
     getGoal,
