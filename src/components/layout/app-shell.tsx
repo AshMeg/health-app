@@ -62,16 +62,16 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b border-border bg-background/80 px-3 backdrop-blur sm:px-4">
+        <header className="sticky top-0 z-10 flex h-16 items-center gap-2 border-b border-border/50 bg-background/70 px-4 backdrop-blur-md sm:px-6">
           <SidebarTrigger />
           <Separator orientation="vertical" className="mx-1 h-5" />
           <div className="ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2 px-2">
-                  <Avatar className="h-7 w-7">
+                <Button variant="ghost" size="sm" className="gap-2 rounded-full px-2">
+                  <Avatar className="h-8 w-8">
                     <AvatarImage src={profile?.avatar_url ?? undefined} alt={displayName} />
-                    <AvatarFallback className="text-xs">{initials || "?"}</AvatarFallback>
+                    <AvatarFallback className="bg-sage-soft text-xs text-sage">{initials || "?"}</AvatarFallback>
                   </Avatar>
                   <span className="hidden max-w-[160px] truncate text-sm sm:inline">
                     {displayName}
@@ -102,7 +102,7 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
             </DropdownMenu>
           </div>
         </header>
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 px-4 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
