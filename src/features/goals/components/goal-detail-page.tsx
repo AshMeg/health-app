@@ -7,16 +7,18 @@ import { GoalCompletionCard } from "./goal-completion-card";
 import { GoalNextStep, GoalStatusPill, GoalTypePill } from "./goal-card";
 import { GoalNotes } from "./goal-notes";
 import { GoalTimeline } from "./goal-timeline";
+import { MilestoneList } from "./milestones/milestone-list";
 import { GoalAccentDot, GoalProgressBar } from "./goal-progress-bar";
 import { trackingRegistry } from "./tracking/registry";
 import { formatGoalDateLong } from "../format";
 import { useGoals } from "../hooks/use-goals";
-import { goalProgress } from "../types";
+import { goalProgress, hasMilestones, milestoneSummary } from "../types";
 
 export function GoalDetailPage({ goalId }: { goalId: string }) {
   const {
     getGoal,
     updateTracking,
+    setMilestones,
     addNote,
     editNote,
     deleteNote,
@@ -50,6 +52,10 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
   const isComplete = progress >= 100 || Boolean(goal.completedAt);
   const definition = trackingRegistry[goal.tracking.method];
   const { Panel } = definition;
+  const milestones = goal.milestones ?? [];
+  // Milestone-tracked goals always show the section; others only once they have steps.
+  const showMilestones = goal.tracking.method === "milestone" || hasMilestones(goal);
+
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-8 pb-8">
