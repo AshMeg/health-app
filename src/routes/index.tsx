@@ -15,7 +15,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Bloom — Health analytics for you" },
       {
         property: "og:description",
-        content: "Modern health analytics. Sign in to your dashboard.",
+        content: "Bloom is a modern health analytics platform. Track, understand, and act on your health data.",
       },
     ],
   }),

@@ -79,19 +79,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Bloom — Health analytics" },
+      { title: "Bloom — Health analytics for you" },
       {
         name: "description",
-        content: "A modern health analytics platform. Track, understand, and act on your health data.",
+        content: "Bloom is a modern health analytics platform. Track, understand, and act on your health data.",
       },
       { name: "author", content: "Bloom" },
-      { property: "og:title", content: "Bloom — Health analytics" },
+      { property: "og:title", content: "Bloom — Health analytics for you" },
       {
         property: "og:description",
-        content: "Track, understand, and act on your health data.",
+        content: "Bloom is a modern health analytics platform. Track, understand, and act on your health data.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Bloom — Health analytics for you" },
+      { name: "twitter:description", content: "Bloom is a modern health analytics platform. Track, understand, and act on your health data." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/69323071-4108-475e-8896-0ba93424ce70/id-preview-e85ecfb0--b2e5d58d-08ff-49a8-bbbe-e06027c989cb.lovable.app-1785004453384.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/69323071-4108-475e-8896-0ba93424ce70/id-preview-e85ecfb0--b2e5d58d-08ff-49a8-bbbe-e06027c989cb.lovable.app-1785004453384.png" },
     ],
     links: [
       {
