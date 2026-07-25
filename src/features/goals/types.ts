@@ -147,9 +147,10 @@ export type BloomGoal = {
   startDate: string;
   /** Optional deadline — goals are allowed to be open-ended. */
   targetDate?: string;
-  status: GoalStatus;
   accent: BloomAccent;
-  notes?: string;
+  /** The goal's story, newest first. */
+  notes: GoalNote[];
+
   /** Placeholder nudge; AI-generated suggestions will replace this. */
   nextStep?: string;
   updates: GoalUpdate[];
