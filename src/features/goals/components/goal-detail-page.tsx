@@ -5,19 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { GoalCompletionCard } from "./goal-completion-card";
 import { GoalNextStep, GoalStatusPill, GoalTypePill } from "./goal-card";
+import { GoalNotes } from "./goal-notes";
+import { GoalTimeline } from "./goal-timeline";
 import { GoalAccentDot, GoalProgressBar } from "./goal-progress-bar";
 import { trackingRegistry } from "./tracking/registry";
+import { formatGoalDateLong } from "../format";
 import { useGoals } from "../hooks/use-goals";
 import { goalProgress } from "../types";
 
-function formatDate(value: string) {
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value;
-  return parsed.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
-}
-
 export function GoalDetailPage({ goalId }: { goalId: string }) {
-  const { getGoal, updateGoal, hydrated } = useGoals();
+  const {
+    getGoal,
+    updateTracking,
+    addNote,
+    editNote,
+    deleteNote,
+    addManualUpdate,
+    addToGarden,
+    hydrated,
+  } = useGoals();
   const goal = getGoal(goalId);
 
   if (!goal) {
