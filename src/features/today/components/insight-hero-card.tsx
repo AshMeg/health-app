@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils";
 import type { Confidence } from "../types";
 
 const confidenceStyles: Record<Confidence, string> = {
-  High: "bg-success-soft text-success ring-success/25",
-  Medium: "bg-caution-soft text-caution ring-caution/25",
-  Low: "bg-muted text-muted-foreground ring-border",
+  High: "bg-sage-soft text-sage",
+  Medium: "bg-caution-soft text-caution",
+  Low: "bg-stone-soft text-stone",
 };
 
 export function InsightHeroCard({
@@ -21,16 +21,16 @@ export function InsightHeroCard({
   confidence: Confidence;
 }) {
   return (
-    <Card className="overflow-hidden rounded-3xl border-border/60 bg-gradient-to-br from-accent/40 via-card to-card shadow-sm">
-      <CardContent className="space-y-5 p-6 sm:p-8">
+    <Card className="overflow-hidden rounded-[2rem] border-transparent bg-linear-to-br from-sage-soft via-card to-lavender-soft/60 shadow-soft">
+      <CardContent className="space-y-6 p-8 sm:p-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="inline-flex items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            Today&apos;s Insight
+          <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <Sparkles className="h-4 w-4 text-sage" />
+            A note for today
           </span>
           <span
             className={cn(
-              "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset",
+              "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium",
               confidenceStyles[confidence],
             )}
           >
@@ -38,19 +38,21 @@ export function InsightHeroCard({
           </span>
         </div>
 
-        <div className="space-y-3">
-          <p className="text-xl leading-snug font-medium tracking-tight sm:text-2xl">{headline}</p>
-          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">{body}</p>
+        <div className="space-y-4">
+          <p className="font-display text-2xl leading-snug font-medium sm:text-[1.75rem]">
+            {headline}
+          </p>
+          <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">{body}</p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" className="rounded-full">
+        <div className="flex flex-wrap gap-2.5">
+          <Button variant="secondary" className="rounded-full px-5 shadow-none">
             <HelpCircle className="h-4 w-4" />
-            Why?
+            Why this?
           </Button>
-          <Button variant="outline" className="rounded-full">
+          <Button variant="ghost" className="rounded-full px-5">
             <MessageSquarePlus className="h-4 w-4" />
-            Add Context
+            Add context
           </Button>
         </div>
       </CardContent>
