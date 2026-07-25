@@ -29,6 +29,8 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as AuthenticatedGoalsIndexRouteImport } from './routes/_authenticated/goals/index'
+import { Route as AuthenticatedGoalsGoalIdRouteImport } from './routes/_authenticated/goals/$goalId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
@@ -135,6 +137,17 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedGoalsIndexRoute = AuthenticatedGoalsIndexRouteImport.update({
+  id: '/goals/',
+  path: '/goals/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGoalsGoalIdRoute =
+  AuthenticatedGoalsGoalIdRouteImport.update({
+    id: '/goals/$goalId',
+    path: '/goals/$goalId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -169,6 +182,8 @@ export interface FileRoutesByFullPath {
   '/weight': typeof AuthenticatedWeightRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/goals/$goalId': typeof AuthenticatedGoalsGoalIdRoute
+  '/goals/': typeof AuthenticatedGoalsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -192,6 +207,8 @@ export interface FileRoutesByTo {
   '/weight': typeof AuthenticatedWeightRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/goals/$goalId': typeof AuthenticatedGoalsGoalIdRoute
+  '/goals': typeof AuthenticatedGoalsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -217,6 +234,8 @@ export interface FileRoutesById {
   '/_authenticated/weight': typeof AuthenticatedWeightRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/_authenticated/goals/$goalId': typeof AuthenticatedGoalsGoalIdRoute
+  '/_authenticated/goals/': typeof AuthenticatedGoalsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -242,6 +261,8 @@ export interface FileRouteTypes {
     | '/weight'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/goals/$goalId'
+    | '/goals/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -265,6 +286,8 @@ export interface FileRouteTypes {
     | '/weight'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/goals/$goalId'
+    | '/goals'
   id:
     | '__root__'
     | '/'
@@ -289,6 +312,8 @@ export interface FileRouteTypes {
     | '/_authenticated/weight'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/_authenticated/goals/$goalId'
+    | '/_authenticated/goals/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -446,6 +471,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/goals/': {
+      id: '/_authenticated/goals/'
+      path: '/goals'
+      fullPath: '/goals/'
+      preLoaderRoute: typeof AuthenticatedGoalsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/goals/$goalId': {
+      id: '/_authenticated/goals/$goalId'
+      path: '/goals/$goalId'
+      fullPath: '/goals/$goalId'
+      preLoaderRoute: typeof AuthenticatedGoalsGoalIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -476,6 +515,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSleepRoute: typeof AuthenticatedSleepRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWeightRoute: typeof AuthenticatedWeightRoute
+  AuthenticatedGoalsGoalIdRoute: typeof AuthenticatedGoalsGoalIdRoute
+  AuthenticatedGoalsIndexRoute: typeof AuthenticatedGoalsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -491,6 +532,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSleepRoute: AuthenticatedSleepRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWeightRoute: AuthenticatedWeightRoute,
+  AuthenticatedGoalsGoalIdRoute: AuthenticatedGoalsGoalIdRoute,
+  AuthenticatedGoalsIndexRoute: AuthenticatedGoalsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
