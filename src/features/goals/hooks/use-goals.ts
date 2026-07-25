@@ -2,10 +2,23 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { saveGardenMemory } from "../garden";
 import { seedGoals } from "../mock-data";
-import { describeTrackingChange, makeUpdate } from "../timeline";
-import { goalProgress, type BloomGoal, type GoalTracking } from "../types";
+import { describeMilestoneChange, describeTrackingChange, makeUpdate } from "../timeline";
+import { goalProgress, type BloomGoal, type GoalMilestone, type GoalTracking } from "../types";
 
-const STORAGE_KEY = "bloom.goals.v4";
+const STORAGE_KEY = "bloom.goals.v5";
+
+/** Earlier versions kept milestones inside tracking; they now live on the goal. */
+function migrate(goals: BloomGoal[]): BloomGoal[] {
+  return goals.map((goal) => {
+    const tracking = goal.tracking as GoalTracking & { milestones?: GoalMilestone[] };
+    if (tracking.method !== "milestone" || !tracking.milestones) return goal;
+    return {
+      ...goal,
+      milestones: goal.milestones ?? tracking.milestones,
+      tracking: { method: "milestone" },
+    };
+  });
+}
 
 /**
  * Placeholder goal store. Goals live in localStorage so created goals survive
@@ -17,16 +30,23 @@ export function useGoals() {
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
+      // Fall back to the previous key so goals made before milestones survive.
+      const raw =
+        window.localStorage.getItem(STORAGE_KEY) ?? window.localStorage.getItem("bloom.goals.v4");
       if (raw) {
         const parsed = JSON.parse(raw) as BloomGoal[];
-        if (Array.isArray(parsed)) setGoals(parsed);
+        if (Array.isArray(parsed)) {
+          const migrated = migrate(parsed);
+          setGoals(migrated);
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+        }
       }
     } catch {
       /* ignore malformed storage */
     }
     setHydrated(true);
   }, []);
+
 
   const persist = useCallback((next: BloomGoal[]) => {
     setGoals(next);
@@ -73,6 +93,20 @@ export function useGoals() {
         ...goal,
         tracking,
         updates: [...describeTrackingChange(goal.tracking, tracking).reverse(), ...goal.updates],
+      })),
+    [mutate],
+  );
+
+  /** Milestone edits describe themselves in the timeline. */
+  const setMilestones = useCallback(
+    (id: string, milestones: GoalMilestone[]) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        milestones,
+        updates: [
+          ...describeMilestoneChange(goal.milestones ?? [], milestones).reverse(),
+          ...goal.updates,
+        ],
       })),
     [mutate],
   );
@@ -165,6 +199,7 @@ export function useGoals() {
     addGoal,
     updateGoal,
     updateTracking,
+    setMilestones,
     addNote,
     editNote,
     deleteNote,

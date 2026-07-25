@@ -36,10 +36,12 @@ export type GoalEventKind =
   | "edited"
   | "progress"
   | "checklist"
+  | "milestone"
   | "reflection"
   | "completed"
   | "note"
   | "manual";
+
 
 export type GoalUpdate = {
   id: string;
@@ -67,6 +69,23 @@ export type CheckItem = {
   done: boolean;
   doneOn?: string;
 };
+
+/**
+ * A step on the way to a bigger goal. Milestones are optional and live on the
+ * goal itself, so any goal — however it's tracked — can be broken into steps.
+ */
+export type GoalMilestone = {
+  id: string;
+  label: string;
+  done: boolean;
+  /** Short display date the milestone was ticked off. */
+  doneOn?: string;
+  /** Optional context the user adds to a single step. */
+  note?: string;
+  /** Optional ISO date the user is aiming for. */
+  targetDate?: string;
+};
+
 
 export type ReflectionRating = "much-better" | "better" | "same" | "worse";
 
@@ -118,9 +137,12 @@ export type StreakTracking = {
   history: string[];
 };
 
+/**
+ * Milestone tracking keeps no data of its own — the steps live on the goal, so
+ * any goal can gain or lose milestones without changing how it's tracked.
+ */
 export type MilestoneTracking = {
   method: "milestone";
-  milestones: CheckItem[];
 };
 
 export type ReflectionTracking = {
@@ -144,6 +166,8 @@ export type BloomGoal = {
   /** Why this goal matters — the user's own words. */
   why?: string;
   tracking: GoalTracking;
+  /** Optional steps. Goals without them behave exactly as they always have. */
+  milestones?: GoalMilestone[];
   startDate: string;
   /** Optional deadline — goals are allowed to be open-ended. */
   targetDate?: string;
@@ -156,6 +180,7 @@ export type BloomGoal = {
   updates: GoalUpdate[];
   completedAt?: string;
 };
+
 
 export const goalTypeMeta: Record<
   GoalType,
@@ -273,7 +298,8 @@ export function trackingProgress(tracking: GoalTracking): number {
     case "checklist":
       return checkedProgress(tracking.items);
     case "milestone":
-      return checkedProgress(tracking.milestones);
+      // Milestone progress comes from the goal's own steps, not from tracking.
+      return 0;
     case "repetition":
       return tracking.target === 0 ? 0 : clampPct((tracking.completed / tracking.target) * 100);
     case "streak":
@@ -288,10 +314,32 @@ export function trackingProgress(tracking: GoalTracking): number {
   }
 }
 
+export function hasMilestones(goal: BloomGoal): boolean {
+  return Boolean(goal.milestones && goal.milestones.length > 0);
+}
+
+/** Percentage of milestones ticked off. */
+export function milestoneProgress(milestones: GoalMilestone[]): number {
+  if (milestones.length === 0) return 0;
+  return clampPct((milestones.filter((m) => m.done).length / milestones.length) * 100);
+}
+
+/** "3 of 8 milestones complete" — the wording used on cards and detail pages. */
+export function milestoneSummary(milestones: GoalMilestone[]): string {
+  const done = milestones.filter((m) => m.done).length;
+  return `${done} of ${milestones.length} milestone${milestones.length === 1 ? "" : "s"} complete`;
+}
+
+/**
+ * Milestones lead when a goal has them — otherwise the tracking method decides.
+ * Goals without milestones behave exactly as they did before.
+ */
 export function goalProgress(goal: BloomGoal): number {
   if (goal.completedAt) return 100;
+  if (goal.milestones && goal.milestones.length) return milestoneProgress(goal.milestones);
   return trackingProgress(goal.tracking);
 }
+
 
 export function formatGoalValue(value: number | undefined, unit?: string): string {
   if (typeof value !== "number") return "—";

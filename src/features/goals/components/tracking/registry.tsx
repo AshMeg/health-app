@@ -101,23 +101,13 @@ export const trackingRegistry: Record<TrackingMethod, TrackingDefinition> = {
     label: "Milestones",
     description: "Break a bigger achievement into steps you can tick off.",
     examples: "Run a half marathon · Learn to swim · Move house",
-    panelTitle: "Milestones",
-    showsProgressBar: false,
-    summary: (t) =>
-      t.method === "milestone"
-        ? `${t.milestones.filter((m) => m.done).length} of ${t.milestones.length} milestones`
-        : "Milestones",
-    Panel: ({ tracking, accent, onChange }) =>
-      tracking.method === "milestone" ? (
-        <CheckablePanel
-          tracking={tracking}
-          accent={accent}
-          onChange={onChange}
-          addLabel="Add a milestone"
-          emptyLabel="No milestones yet — add the first step below."
-        />
-      ) : null,
+    panelTitle: "Progress",
+    showsProgressBar: true,
+    // The steps themselves live on the goal, so the Milestones card renders them.
+    summary: () => "Tracked by milestones",
+    Panel: () => null,
   },
+
   reflection: {
     label: "Reflection",
     description: "No numbers — Bloom asks how it's going and you answer in your own words.",

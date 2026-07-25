@@ -138,16 +138,21 @@ export const seedGoals: BloomGoal[] = [
     title: "Run a half marathon",
     type: "outcome",
     why: "I said I'd do one before I turned forty.",
-    tracking: {
-      method: "milestone",
-      milestones: [
-        { id: "m1", label: "Buy trainers", done: true, doneOn: "02 May" },
-        { id: "m2", label: "Start training plan", done: true, doneOn: "11 May" },
-        { id: "m3", label: "Complete 10 km", done: true, doneOn: "28 Jun" },
-        { id: "m4", label: "Complete 15 km", done: false },
-        { id: "m5", label: "Race day", done: false },
-      ],
-    },
+    tracking: { method: "milestone" },
+    milestones: [
+      { id: "m1", label: "Buy trainers", done: true, doneOn: "02 May" },
+      { id: "m2", label: "Start training plan", done: true, doneOn: "11 May" },
+      {
+        id: "m3",
+        label: "Complete 10 km",
+        done: true,
+        doneOn: "28 Jun",
+        note: "Slower than I hoped, but I finished it.",
+      },
+      { id: "m4", label: "Complete 15 km", done: false, targetDate: "2026-09-20" },
+      { id: "m5", label: "Race day", done: false, targetDate: "2026-11-08" },
+    ],
+
     startDate: "2026-05-01",
     targetDate: "2026-11-08",
     accent: "sage",
