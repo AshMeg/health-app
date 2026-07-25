@@ -11,22 +11,22 @@ export function PagePlaceholder({
   children?: ReactNode;
 }) {
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
+    <div className="mx-auto w-full max-w-5xl space-y-8">
+      <div className="space-y-2">
+        <h1 className="font-display text-[1.75rem] leading-tight font-medium sm:text-4xl">
+          {title}
+        </h1>
         {description ? (
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">{description}</p>
         ) : null}
       </div>
-      <Card>
-        <CardContent className="flex min-h-[240px] items-center justify-center p-8 text-center">
-          <div className="max-w-sm text-sm text-muted-foreground">
+      <Card className="rounded-[2rem] border-transparent bg-card shadow-soft">
+        <CardContent className="flex min-h-[280px] items-center justify-center p-10 text-center">
+          <div className="max-w-sm space-y-2 text-sm leading-relaxed text-muted-foreground">
             {children ?? (
               <>
-                <p className="font-medium text-foreground">Coming soon</p>
-                <p className="mt-1">
-                  This section is a placeholder. Content and interactions will land here.
-                </p>
+                <p className="text-base font-medium text-foreground">Coming soon</p>
+                <p>This part of Bloom is on its way. It will grow here.</p>
               </>
             )}
           </div>
