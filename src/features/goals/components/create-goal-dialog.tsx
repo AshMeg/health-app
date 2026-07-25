@@ -32,6 +32,17 @@ import {
 
 const steps = ["Your goal", "Type", "Why", "Tracking", "Set it up", "Deadline", "Review"] as const;
 
+/** Conversational headings, so each step feels like a question, not a field. */
+const stepHeadings = [
+  "What would you like to achieve?",
+  "What kind of goal is this?",
+  "Why does this matter to you?",
+  "How should Bloom follow along?",
+  "Let's set it up",
+  "Any date in mind?",
+  "Does this look right?",
+] as const;
+
 type Draft = {
   title: string;
   type: GoalType | null;
