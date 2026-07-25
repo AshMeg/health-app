@@ -98,15 +98,16 @@ export const trackingRegistry: Record<TrackingMethod, TrackingDefinition> = {
       ) : null,
   },
   milestone: {
-    label: "Milestones",
-    description: "Break a bigger achievement into steps you can tick off.",
+    label: "Break this goal into smaller steps",
+    description: "Progress comes from the steps you tick off.",
     examples: "Run a half marathon · Learn to swim · Move house",
     panelTitle: "Progress",
     showsProgressBar: true,
     // The steps themselves live on the goal, so the Milestones card renders them.
-    summary: () => "Tracked by milestones",
+    summary: () => "Tracked by smaller steps",
     Panel: () => null,
   },
+
 
   reflection: {
     label: "Reflection",

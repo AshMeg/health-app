@@ -34,31 +34,30 @@ import {
   type TrackingMethod,
 } from "../types";
 
-const steps = [
-  "Your goal",
-  "Type",
-  "Why",
-  "Tracking",
-  "Set it up",
-  "Milestones",
-  "Deadline",
-  "Review",
-] as const;
+/** The flow is dynamic: the steps card only appears for step-based goals. */
+type StepKey = "title" | "type" | "why" | "tracking" | "setup" | "steps" | "deadline" | "review";
 
-/** Conversational headings, so each step feels like a question, not a field. */
-const stepHeadings = [
-  "What would you like to achieve?",
-  "What kind of goal is this?",
-  "Why does this matter to you?",
-  "How would you like to track your progress?",
-  "Let's set it up",
-  "Would you like to break this goal into milestones?",
-  "Any date in mind?",
-  "Does this look right?",
-] as const;
+const stepMeta: Record<StepKey, { label: string; heading: string }> = {
+  title: { label: "Your goal", heading: "What would you like to achieve?" },
+  type: { label: "Type", heading: "What kind of goal is this?" },
+  why: { label: "Why", heading: "Why does this matter to you?" },
+  tracking: { label: "Tracking", heading: "How would you like to track your progress?" },
+  setup: { label: "Set it up", heading: "Let's set it up" },
+  steps: { label: "Your steps", heading: "How would you like to build your steps?" },
+  deadline: { label: "Deadline", heading: "Any date in mind?" },
+  review: { label: "Review", heading: "Does this look right?" },
+};
 
-/** How the user chose to handle milestones — always optional. */
-type MilestoneChoice = "none" | "suggest" | "own";
+/** Step-based goals build their steps instead of a numeric setup screen. */
+function stepFlow(method: TrackingMethod): StepKey[] {
+  return method === "milestone"
+    ? ["title", "type", "why", "tracking", "steps", "deadline", "review"]
+    : ["title", "type", "why", "tracking", "setup", "deadline", "review"];
+}
+
+/** How the user chose to build their steps. */
+type MilestoneChoice = "suggest" | "own";
+
 
 type Draft = {
   title: string;
@@ -208,40 +207,36 @@ export function CreateGoalDialog({
     }
   };
 
-  /** Milestones are optional for every goal — only "own"/"suggest" keep them. */
+  /** Suggestions are only ever generated when the user asks for them. */
   const chooseMilestones = (choice: MilestoneChoice) => {
     setDraft((d) => ({
       ...d,
       milestoneChoice: choice,
-      milestones:
-        choice === "none"
-          ? []
-          : choice === "suggest"
-            ? suggestMilestones(d.title, d.type)
-            : d.milestones,
+      milestones: choice === "suggest" ? suggestMilestones(d.title, d.type) : [],
     }));
   };
 
-  // Milestone-tracked goals arrive at the step already leaning on suggestions.
+  const flow = useMemo(() => stepFlow(method), [method]);
+  const current = flow[Math.min(step, flow.length - 1)];
+
+  // Keep the step index valid if the tracking method (and so the flow) changes.
   useEffect(() => {
-    if (step === 5 && draft.milestoneChoice === null && method === "milestone") {
-      chooseMilestones("suggest");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, method, draft.milestoneChoice]);
+    setStep((s) => Math.min(s, flow.length - 1));
+  }, [flow.length]);
 
   const canContinue = useMemo(() => {
-    switch (step) {
-      case 0:
+    switch (current) {
+      case "title":
         return draft.title.trim().length > 1;
-      case 1:
+      case "type":
         return Boolean(draft.type);
-      case 5:
+      case "steps":
         return draft.milestoneChoice !== null;
       default:
         return true;
     }
-  }, [draft, step]);
+  }, [draft, current]);
+
 
 
   const reset = () => {
@@ -305,13 +300,19 @@ export function CreateGoalDialog({
     ["Type", draft.type ? goalTypeMeta[draft.type].label : "—"],
     ["Why", draft.why || "Not set"],
     ["Tracked by", trackingRegistry[method].label],
-    ["Set up as", setupSummary()],
-    [
-      "Milestones",
-      draft.milestones.length ? `${draft.milestones.length} steps` : "None — keeping it simple",
-    ],
+    ...(method === "milestone"
+      ? ([
+          [
+            "Your steps",
+            draft.milestones.length
+              ? `${draft.milestones.length} step${draft.milestones.length === 1 ? "" : "s"}`
+              : "None yet",
+          ],
+        ] as [string, string][])
+      : ([["Set up as", setupSummary()]] as [string, string][])),
     ["Deadline", draft.targetDate || "Open-ended"],
   ];
+
 
 
   if (picking) {
@@ -344,15 +345,16 @@ export function CreateGoalDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-3xl sm:max-w-lg">
         <DialogHeader className="space-y-2 text-left">
           <DialogTitle className="font-display text-xl font-medium">
-            {stepHeadings[step]}
+            {stepMeta[current].heading}
           </DialogTitle>
           <DialogDescription>
-            Step {step + 1} of {steps.length} · {steps[step]}
+            Step {step + 1} of {flow.length} · {stepMeta[current].label}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex gap-1.5" aria-hidden>
-          {steps.map((s, i) => (
+          {flow.map((s, i) => (
+
             <span
               key={s}
               className={cn(
@@ -365,7 +367,7 @@ export function CreateGoalDialog({
 
 
         <div className="space-y-4 py-2">
-          {step === 0 ? (
+          {current === "title" ? (
             <div className="space-y-2">
               <Label htmlFor="goal-title">What would you like to achieve?</Label>
               <Textarea
@@ -382,7 +384,7 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 1 ? (
+          {current === "type" ? (
             <div className="space-y-3">
               {(Object.keys(goalTypeMeta) as GoalType[]).map((t) => (
                 <OptionTile
@@ -396,7 +398,7 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 2 ? (
+          {current === "why" ? (
             <div className="space-y-2">
               <Label htmlFor="goal-why">Why does this matter to you?</Label>
               <Textarea
@@ -409,7 +411,7 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 3 ? (
+          {current === "tracking" ? (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
                 Bloom suggests <span className="text-foreground">{trackingRegistry[recommendation.method].label}</span> — {recommendation.reason} You can pick anything else.
@@ -421,19 +423,33 @@ export function CreateGoalDialog({
                 <OptionTile
                   key={m}
                   selected={method === m}
-                  title={trackingRegistry[m].label}
+                  title={
+                    m === "milestone"
+                      ? "🌱 Break this goal into smaller steps"
+                      : trackingRegistry[m].label
+                  }
                   description={`${trackingRegistry[m].description} ${trackingRegistry[m].examples}`}
                   badge={m === recommendation.method ? "Suggested" : undefined}
                   onClick={() => {
                     setTouchedMethod(true);
-                    setDraft((d) => ({ ...d, method: m, target: "", unit: "", start: "", items: "" }));
+                    setDraft((d) => ({
+                      ...d,
+                      method: m,
+                      target: "",
+                      unit: "",
+                      start: "",
+                      items: "",
+                      // Leave the steps decision to the steps screen.
+                      ...(m === "milestone" ? {} : { milestoneChoice: null, milestones: [] }),
+                    }));
                   }}
                 />
+
               ))}
             </div>
           ) : null}
 
-          {step === 4 ? (
+          {current === "setup" ? (
             <div className="space-y-4">
               {baseTracking.method === "automatic" ? (
                 <div className="grid gap-4 sm:grid-cols-3">
@@ -506,13 +522,6 @@ export function CreateGoalDialog({
                 </div>
               ) : null}
 
-              {baseTracking.method === "milestone" ? (
-                <p className="rounded-2xl bg-muted/60 px-5 py-4 text-sm leading-relaxed text-muted-foreground">
-                  Nothing to set up here — you'll build your steps on the next screen, and progress
-                  is worked out from the milestones you complete.
-                </p>
-              ) : null}
-
               {baseTracking.method === "reflection" ? (
                 <p className="rounded-2xl bg-muted/60 px-5 py-4 text-sm leading-relaxed text-muted-foreground">
                   Nothing to set up. Bloom will ask how you feel you're progressing each week, and
@@ -522,40 +531,35 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 5 ? (
+          {current === "steps" ? (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Some goals are one action. Others are a handful of smaller steps — entirely up to
-                you, and you can add steps later.
+                Your progress comes from the steps you complete. Start from Bloom's suggestions or
+                build your own — either way you can change everything later.
               </p>
               <div className="space-y-3">
                 <OptionTile
-                  selected={draft.milestoneChoice === "none"}
-                  title="No thanks"
-                  description="Keep this goal simple — no steps to tick off."
-                  onClick={() => chooseMilestones("none")}
-                />
-                <OptionTile
                   selected={draft.milestoneChoice === "suggest"}
-                  title="Let Bloom suggest milestones"
-                  description="A sensible starting set, based on your goal. Edit anything you like."
+                  title="✨ Let Bloom suggest some steps"
+                  description="A sensible starting set, based on your goal. Edit, delete, reorder or add your own."
                   badge="Suggested"
                   onClick={() => chooseMilestones("suggest")}
                 />
                 <OptionTile
                   selected={draft.milestoneChoice === "own"}
-                  title="I'll create my own"
-                  description="Add as many steps as you want, in any order."
+                  title="🛠 I'll create my own"
+                  description="Start from a blank list and add as many steps as you like."
                   onClick={() => chooseMilestones("own")}
                 />
               </div>
 
-              {draft.milestoneChoice && draft.milestoneChoice !== "none" ? (
+              {draft.milestoneChoice ? (
                 <div className="space-y-3 rounded-2xl bg-muted/40 p-4 sm:p-5">
                   <MilestoneList
                     milestones={draft.milestones}
                     onChange={(milestones) => setDraft((d) => ({ ...d, milestones }))}
                     accent={draft.type ? goalTypeMeta[draft.type].accent : "sage"}
+                    addLabel="Add a step"
                     emptyLabel="Add your first step below — you can reorder them any time."
                   />
                 </div>
@@ -563,7 +567,8 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 6 ? (
+
+          {current === "deadline" ? (
             <div className="space-y-2">
               <Label htmlFor="goal-deadline">Is there a date you'd like to reach it by?</Label>
               <Input
@@ -578,7 +583,7 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 7 ? (
+          {current === "review" ? (
             <dl className="divide-y divide-border/50 rounded-2xl bg-muted/50 px-5">
               {reviewRows.map(([label, value]) => (
                 <div key={label} className="flex gap-4 py-3.5 text-sm">
@@ -600,7 +605,7 @@ export function CreateGoalDialog({
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
-          {step === steps.length - 1 ? (
+          {current === "review" ? (
             <Button onClick={save}>Save goal</Button>
           ) : (
             <Button
