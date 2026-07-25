@@ -86,17 +86,40 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
 
       <GoalNextStep goal={goal} />
 
+      {/* Milestones lead when a goal has them — progress follows the steps. */}
+      {showMilestones ? (
+        <Card className="rounded-3xl border-transparent bg-card shadow-soft">
+          <CardContent className="space-y-6 p-7 sm:p-8">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="text-base font-medium">Milestones</h2>
+              <span className="text-xs text-muted-foreground">
+                {milestones.length
+                  ? milestoneSummary(milestones)
+                  : "Break this goal into steps below"}
+              </span>
+            </div>
+            <MilestoneList
+              milestones={milestones}
+              accent={goal.accent}
+              onChange={(next) => setMilestones(goal.id, next)}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
+
       {/* The tracking method decides what this section looks like. */}
       <Card className="rounded-3xl border-transparent bg-card shadow-soft">
         <CardContent className="space-y-6 p-7 sm:p-8">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="text-base font-medium">{definition.panelTitle}</h2>
             <span className="text-xs text-muted-foreground">
-              {definition.summary(goal.tracking)}
+              {hasMilestones(goal)
+                ? milestoneSummary(milestones)
+                : definition.summary(goal.tracking)}
             </span>
           </div>
 
-          {definition.showsProgressBar ? (
+          {definition.showsProgressBar || hasMilestones(goal) ? (
             <div className="space-y-2">
               <GoalProgressBar value={progress} accent={goal.accent} label={goal.title} tall />
               <p className="text-xs text-muted-foreground">{progress}% of the way there</p>
@@ -119,6 +142,7 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
           </dl>
         </CardContent>
       </Card>
+
 
       <Card className="rounded-3xl border-transparent bg-card shadow-soft">
         <CardContent className="space-y-5 p-7 sm:p-8">
