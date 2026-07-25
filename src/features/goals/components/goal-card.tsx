@@ -3,6 +3,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { GoalActionsMenu } from "./goal-actions-menu";
 import { GoalAccentDot, GoalProgressBar } from "./goal-progress-bar";
 import { trackingRegistry } from "./tracking/registry";
 import {
@@ -80,7 +81,10 @@ export function GoalCard({ goal }: { goal: BloomGoal }) {
             </div>
             <GoalTypePill goal={goal} />
           </div>
-          <GoalStatusPill goal={goal} />
+          <div className="flex items-center gap-1.5">
+            <GoalStatusPill goal={goal} />
+            <GoalActionsMenu goal={goal} />
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -126,7 +130,10 @@ export function GoalCardCompact({ goal }: { goal: BloomGoal }) {
               </Link>
             </h3>
           </div>
-          <GoalStatusPill goal={goal} />
+          <div className="flex items-center gap-1">
+            <GoalStatusPill goal={goal} />
+            <GoalActionsMenu goal={goal} />
+          </div>
         </div>
 
         <GoalProgressBar value={progress} accent={goal.accent} label={goal.title} />
