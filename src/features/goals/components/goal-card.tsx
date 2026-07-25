@@ -5,17 +5,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { GoalAccentDot, GoalProgressBar } from "./goal-progress-bar";
 import { trackingRegistry } from "./tracking/registry";
-import { goalProgress, goalStatusMeta, goalTypeMeta, type BloomGoal } from "../types";
+import { goalProgress, goalStatus, goalStatusMeta, goalTypeMeta, type BloomGoal } from "../types";
 
 export function GoalStatusPill({ goal }: { goal: BloomGoal }) {
-  const meta = goalStatusMeta[goal.status];
+  const meta = goalStatusMeta[goalStatus(goal)];
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium",
+        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
         meta.className,
       )}
     >
+      <span className={cn("h-1.5 w-1.5 rounded-full", meta.dotClassName)} />
       {meta.label}
     </span>
   );
@@ -90,4 +91,40 @@ export function GoalCard({ goal }: { goal: BloomGoal }) {
     </Card>
   );
 }
+
+/** Denser card for when someone is juggling several goals at once. */
+export function GoalCardCompact({ goal }: { goal: BloomGoal }) {
+  const progress = goalProgress(goal);
+  const definition = trackingRegistry[goal.tracking.method];
+
+  return (
+    <Card className="group relative rounded-3xl border-transparent bg-card shadow-soft transition-shadow hover:shadow-md">
+      <CardContent className="space-y-4 p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <GoalAccentDot accent={goal.accent} />
+            <h3 className="truncate text-sm font-medium">
+              <Link
+                to="/goals/$goalId"
+                params={{ goalId: goal.id }}
+                className="outline-none after:absolute after:inset-0 focus-visible:underline"
+              >
+                {goal.title}
+              </Link>
+            </h3>
+          </div>
+          <GoalStatusPill goal={goal} />
+        </div>
+
+        <GoalProgressBar value={progress} accent={goal.accent} label={goal.title} />
+
+        <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+          <span className="truncate">{definition.summary(goal.tracking)}</span>
+          <span className="shrink-0">{progress}%</span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 

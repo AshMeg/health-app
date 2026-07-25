@@ -18,6 +18,9 @@ import {
   recommendTracking,
   suggestNextStep,
 } from "../recommend-tracking";
+import { GoalTemplatePicker } from "./goal-template-picker";
+import { makeUpdate } from "../timeline";
+import type { GoalTemplate } from "../templates";
 import { trackingMethods, trackingRegistry } from "./tracking/registry";
 import {
   goalTypeMeta,
@@ -28,6 +31,17 @@ import {
 } from "../types";
 
 const steps = ["Your goal", "Type", "Why", "Tracking", "Set it up", "Deadline", "Review"] as const;
+
+/** Conversational headings, so each step feels like a question, not a field. */
+const stepHeadings = [
+  "What would you like to achieve?",
+  "What kind of goal is this?",
+  "Why does this matter to you?",
+  "How should Bloom follow along?",
+  "Let's set it up",
+  "Any date in mind?",
+  "Does this look right?",
+] as const;
 
 type Draft = {
   title: string;
@@ -107,6 +121,7 @@ export function CreateGoalDialog({
   onOpenChange: (open: boolean) => void;
   onCreate: (goal: BloomGoal) => void;
 }) {
+  const [picking, setPicking] = useState(true);
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [touchedMethod, setTouchedMethod] = useState(false);
@@ -185,6 +200,7 @@ export function CreateGoalDialog({
   }, [draft, step]);
 
   const reset = () => {
+    setPicking(true);
     setStep(0);
     setDraft(emptyDraft);
     setTouchedMethod(false);
@@ -193,6 +209,17 @@ export function CreateGoalDialog({
   const close = (next: boolean) => {
     onOpenChange(next);
     if (!next) setTimeout(reset, 200);
+  };
+
+  /** A template fills in what it knows and drops you straight into the flow. */
+  const startFromTemplate = (template: GoalTemplate) => {
+    setDraft({ ...emptyDraft, title: template.title, type: template.type });
+    if (template.method) {
+      setTouchedMethod(true);
+      setDraft((d) => ({ ...d, method: template.method ?? null }));
+    }
+    setPicking(false);
+    setStep(0);
   };
 
   const save = () => {
@@ -206,14 +233,15 @@ export function CreateGoalDialog({
       tracking,
       startDate: new Date().toISOString().slice(0, 10),
       targetDate: draft.targetDate || undefined,
-      status: "on-track",
       accent: goalTypeMeta[draft.type].accent,
       nextStep: suggestNextStep(draft.title, tracking.method),
-      updates: [{ id: "created", date: "Today", title: "Goal created" }],
+      notes: [],
+      updates: [makeUpdate("created", "Goal created", draft.why.trim() || undefined)],
     };
     onCreate(goal);
     close(false);
   };
+
 
   const setupSummary = () => {
     const t = buildTracking();
@@ -229,11 +257,38 @@ export function CreateGoalDialog({
     ["Deadline", draft.targetDate || "Open-ended"],
   ];
 
+  if (picking) {
+    return (
+      <Dialog open={open} onOpenChange={close}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto rounded-3xl sm:max-w-lg">
+          <DialogHeader className="space-y-2 text-left">
+            <DialogTitle className="font-display text-xl font-medium">
+              What would you like to grow?
+            </DialogTitle>
+            <DialogDescription>
+              A few ideas to begin with — you can change every part of them later.
+            </DialogDescription>
+          </DialogHeader>
+
+          <GoalTemplatePicker
+            onPick={startFromTemplate}
+            onBlank={() => {
+              setPicking(false);
+              setStep(0);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={close}>
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-3xl sm:max-w-lg">
         <DialogHeader className="space-y-2 text-left">
-          <DialogTitle className="font-display text-xl font-medium">Create a goal</DialogTitle>
+          <DialogTitle className="font-display text-xl font-medium">
+            {stepHeadings[step]}
+          </DialogTitle>
           <DialogDescription>
             Step {step + 1} of {steps.length} · {steps[step]}
           </DialogDescription>
@@ -250,6 +305,7 @@ export function CreateGoalDialog({
             />
           ))}
         </div>
+
 
         <div className="space-y-4 py-2">
           {step === 0 ? (
@@ -434,11 +490,11 @@ export function CreateGoalDialog({
         <div className="flex items-center justify-between gap-3 pt-2">
           <Button
             variant="ghost"
-            onClick={() => (step === 0 ? close(false) : setStep((s) => s - 1))}
+            onClick={() => (step === 0 ? setPicking(true) : setStep((s) => s - 1))}
             className="gap-1.5"
           >
             <ArrowLeft className="h-4 w-4" />
-            {step === 0 ? "Cancel" : "Back"}
+            Back
           </Button>
           {step === steps.length - 1 ? (
             <Button onClick={save}>Save goal</Button>

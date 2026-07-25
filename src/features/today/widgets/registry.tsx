@@ -4,7 +4,6 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 import {
-  goals,
   logStatus,
   quickAddItems,
   timelinePreview,
@@ -49,7 +48,7 @@ export const todayWidgets: WidgetDefinition[] = [
     summary: "Active goals with progress towards each target.",
     span: "full",
     locked: true,
-    render: () => <GoalsWidget goals={goals} />,
+    render: () => <GoalsWidget />,
   },
   {
     id: "summary",

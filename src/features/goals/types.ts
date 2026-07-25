@@ -27,14 +27,39 @@ export type GoalMetric =
   | "journal"
   | "none";
 
-export type GoalStatus = "on-track" | "behind" | "ahead";
+/** Calculated from progress and pace — never set by hand. */
+export type GoalStatus = "not-started" | "on-track" | "needs-attention" | "completed";
+
+/** What kind of thing happened, so the timeline can speak plainly about it. */
+export type GoalEventKind =
+  | "created"
+  | "edited"
+  | "progress"
+  | "checklist"
+  | "reflection"
+  | "completed"
+  | "note"
+  | "manual";
 
 export type GoalUpdate = {
   id: string;
+  /** ISO date — formatted for display, so entries stay sortable. */
   date: string;
   title: string;
   detail?: string;
+  kind: GoalEventKind;
 };
+
+/** A dated line in the goal's story. */
+export type GoalNote = {
+  id: string;
+  /** ISO date the note was written. */
+  date: string;
+  body: string;
+  /** Set when the note has been edited since. */
+  editedAt?: string;
+};
+
 
 export type CheckItem = {
   id: string;
@@ -122,9 +147,10 @@ export type BloomGoal = {
   startDate: string;
   /** Optional deadline — goals are allowed to be open-ended. */
   targetDate?: string;
-  status: GoalStatus;
   accent: BloomAccent;
-  notes?: string;
+  /** The goal's story, newest first. */
+  notes: GoalNote[];
+
   /** Placeholder nudge; AI-generated suggestions will replace this. */
   nextStep?: string;
   updates: GoalUpdate[];
@@ -157,11 +183,65 @@ export const goalTypeMeta: Record<
   },
 };
 
-export const goalStatusMeta: Record<GoalStatus, { label: string; className: string }> = {
-  "on-track": { label: "On Track", className: "bg-success-soft text-success" },
-  behind: { label: "Behind", className: "bg-caution-soft text-caution" },
-  ahead: { label: "Ahead", className: "bg-sky-soft text-sky" },
+export const goalStatusMeta: Record<
+  GoalStatus,
+  { label: string; className: string; dotClassName: string }
+> = {
+  "on-track": {
+    label: "On Track",
+    className: "bg-success-soft text-success",
+    dotClassName: "bg-success",
+  },
+  "needs-attention": {
+    label: "Needs Attention",
+    className: "bg-caution-soft text-caution",
+    dotClassName: "bg-caution",
+  },
+  completed: {
+    label: "Completed",
+    className: "bg-sky-soft text-sky",
+    dotClassName: "bg-sky",
+  },
+  "not-started": {
+    label: "Not Started",
+    className: "bg-muted text-muted-foreground",
+    dotClassName: "bg-muted-foreground/40",
+  },
 };
+
+const DAY = 86_400_000;
+
+/**
+ * Status is always calculated, never stored: complete beats everything, then
+ * untouched goals, then pace against the deadline where there is one.
+ */
+export function goalStatus(goal: BloomGoal): GoalStatus {
+  const progress = goalProgress(goal);
+  if (goal.completedAt || progress >= 100) return "completed";
+  if (progress === 0) return "not-started";
+
+  if (goal.targetDate) {
+    const start = new Date(goal.startDate).getTime();
+    const end = new Date(goal.targetDate).getTime();
+    const now = Date.now();
+    if (!Number.isNaN(start) && !Number.isNaN(end) && end > start) {
+      if (now > end) return "needs-attention";
+      const expected = ((now - start) / (end - start)) * 100;
+      // A little slack, so a good week isn't undone by a slow one.
+      if (progress < expected - 15) return "needs-attention";
+    }
+  }
+
+  // Without a deadline, a goal only slips if nothing has happened in a while.
+  const lastEvent = goal.updates
+    .map((u) => new Date(u.date).getTime())
+    .filter((t) => !Number.isNaN(t))
+    .sort((a, b) => b - a)[0];
+  if (lastEvent && Date.now() - lastEvent > 21 * DAY) return "needs-attention";
+
+  return "on-track";
+}
+
 
 export const reflectionRatingMeta: Record<
   ReflectionRating,
