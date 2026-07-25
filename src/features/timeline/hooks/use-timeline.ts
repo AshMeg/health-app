@@ -1,4 +1,4 @@
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 
 import {
   getEvents,
@@ -15,17 +15,17 @@ const emptyServer: BloomEvent[] = [];
 
 /** Subscribes a component to Bloom's shared event list. */
 export function useTimeline() {
-  const events = useSyncExternalStore(
-    (listener) => {
-      hydrateEvents();
-      return subscribeToEvents(listener);
-    },
-    getEvents,
-    () => emptyServer,
-  );
+  const events = useSyncExternalStore(subscribeToEvents, getEvents, () => emptyServer);
+
+  // Reading stored events after mount keeps the first render identical on the
+  // server and the client.
+  useEffect(() => {
+    hydrateEvents();
+  }, []);
 
   const record = useCallback((event: NewEvent) => logEvent(event), []);
   const remove = useCallback((id: string) => removeEvent(id), []);
 
   return { events, hydrated: isHydrated(), record, remove };
 }
+
