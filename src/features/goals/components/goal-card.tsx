@@ -5,7 +5,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { GoalAccentDot, GoalProgressBar } from "./goal-progress-bar";
 import { trackingRegistry } from "./tracking/registry";
-import { goalProgress, goalStatus, goalStatusMeta, goalTypeMeta, type BloomGoal } from "../types";
+import {
+  goalProgress,
+  goalStatus,
+  goalStatusMeta,
+  goalTypeMeta,
+  milestoneSummary,
+  type BloomGoal,
+} from "../types";
+
+/** Milestone counts win on cards — they're the clearest read of where you are. */
+function goalSummary(goal: BloomGoal): string {
+  if (goal.milestones && goal.milestones.length) return milestoneSummary(goal.milestones);
+  return trackingRegistry[goal.tracking.method].summary(goal.tracking);
+}
 
 export function GoalStatusPill({ goal }: { goal: BloomGoal }) {
   const meta = goalStatusMeta[goalStatus(goal)];
@@ -73,7 +86,7 @@ export function GoalCard({ goal }: { goal: BloomGoal }) {
         <div className="space-y-2">
           <GoalProgressBar value={progress} accent={goal.accent} label={goal.title} tall />
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span>{definition.summary(goal.tracking)}</span>
+            <span>{goalSummary(goal)}</span>
             <span>{progress}% of the way there</span>
           </div>
         </div>
@@ -119,9 +132,13 @@ export function GoalCardCompact({ goal }: { goal: BloomGoal }) {
         <GoalProgressBar value={progress} accent={goal.accent} label={goal.title} />
 
         <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-          <span className="truncate">{definition.summary(goal.tracking)}</span>
+          <span className="truncate">{goalSummary(goal)}</span>
           <span className="shrink-0">{progress}%</span>
         </div>
+
+        <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
+          {goalTypeMeta[goal.type].label}
+        </span>
       </CardContent>
     </Card>
   );
