@@ -112,11 +112,13 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
         <CardContent className="space-y-6 p-7 sm:p-8">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="text-base font-medium">{definition.panelTitle}</h2>
-            <span className="text-xs text-muted-foreground">
-              {hasMilestones(goal)
-                ? milestoneSummary(milestones)
-                : definition.summary(goal.tracking)}
-            </span>
+            {goal.tracking.method === "milestone" ? null : (
+              <span className="text-xs text-muted-foreground">
+                {hasMilestones(goal)
+                  ? milestoneSummary(milestones)
+                  : definition.summary(goal.tracking)}
+              </span>
+            )}
           </div>
 
           {definition.showsProgressBar || hasMilestones(goal) ? (
