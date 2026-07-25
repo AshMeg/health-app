@@ -222,6 +222,13 @@ export function CreateGoalDialog({
     }));
   };
 
+  // Milestone-tracked goals arrive at the step already leaning on suggestions.
+  useEffect(() => {
+    if (step === 5 && draft.milestoneChoice === null && method === "milestone") {
+      chooseMilestones("suggest");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, method, draft.milestoneChoice]);
 
   const canContinue = useMemo(() => {
     switch (step) {
@@ -229,10 +236,13 @@ export function CreateGoalDialog({
         return draft.title.trim().length > 1;
       case 1:
         return Boolean(draft.type);
+      case 5:
+        return draft.milestoneChoice !== null;
       default:
         return true;
     }
   }, [draft, step]);
+
 
   const reset = () => {
     setPicking(true);
