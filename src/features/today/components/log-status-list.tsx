@@ -5,28 +5,30 @@ import { cn } from "@/lib/utils";
 import type { LogState, LogStatusItem } from "../types";
 
 const config: Record<LogState, { label: string; className: string; icon: typeof Check }> = {
-  logged: { label: "Logged", className: "bg-success-soft text-success", icon: Check },
-  synced: { label: "Synced", className: "bg-success-soft text-success", icon: RefreshCw },
-  missing: { label: "Missing", className: "bg-muted text-muted-foreground", icon: Circle },
+  logged: { label: "Logged", className: "bg-sage-soft text-sage", icon: Check },
+  synced: { label: "Synced", className: "bg-sky-soft text-sky", icon: RefreshCw },
+  missing: { label: "Waiting", className: "bg-muted text-muted-foreground", icon: Circle },
 };
 
 export function LogStatusList({ items }: { items: LogStatusItem[] }) {
   return (
-    <Card className="rounded-2xl border-border/60 shadow-none">
-      <CardContent className="flex flex-wrap gap-2 p-5">
+    <Card className="h-full rounded-3xl border-transparent bg-card shadow-none">
+      <CardContent className="divide-y divide-border/50 px-7 py-3">
         {items.map((item) => {
           const { label, className, icon: Icon } = config[item.state];
           return (
-            <span
-              key={item.id}
-              className={cn(
-                "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium",
-                className,
-              )}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {item.label} {label}
-            </span>
+            <div key={item.id} className="flex items-center justify-between gap-3 py-5">
+              <p className="min-w-0 truncate text-sm font-medium">{item.label}</p>
+              <span
+                className={cn(
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
+                  className,
+                )}
+              >
+                <Icon className="h-3 w-3" />
+                {label}
+              </span>
+            </div>
           );
         })}
       </CardContent>
