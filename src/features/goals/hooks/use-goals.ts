@@ -65,5 +65,5 @@ export function useGoals() {
     };
   }, [goals]);
 
-  return { goals, active, complete, hydrated, addGoal, removeGoal, clearAll, getGoal };
+  return { goals, active, complete, hydrated, addGoal, updateGoal, removeGoal, clearAll, getGoal };
 }
