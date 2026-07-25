@@ -30,16 +30,23 @@ export function useGoals() {
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
+      // Fall back to the previous key so goals made before milestones survive.
+      const raw =
+        window.localStorage.getItem(STORAGE_KEY) ?? window.localStorage.getItem("bloom.goals.v4");
       if (raw) {
         const parsed = JSON.parse(raw) as BloomGoal[];
-        if (Array.isArray(parsed)) setGoals(migrate(parsed));
+        if (Array.isArray(parsed)) {
+          const migrated = migrate(parsed);
+          setGoals(migrated);
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+        }
       }
     } catch {
       /* ignore malformed storage */
     }
     setHydrated(true);
   }, []);
+
 
   const persist = useCallback((next: BloomGoal[]) => {
     setGoals(next);
