@@ -19,29 +19,46 @@ import {
   suggestNextStep,
 } from "../recommend-tracking";
 import { GoalTemplatePicker } from "./goal-template-picker";
+import { MilestoneList } from "./milestones/milestone-list";
+import { suggestMilestones } from "../milestones";
 import { makeUpdate } from "../timeline";
 import type { GoalTemplate } from "../templates";
 import { trackingMethods, trackingRegistry } from "./tracking/registry";
 import {
   goalTypeMeta,
+  milestoneSummary,
   type BloomGoal,
+  type GoalMilestone,
   type GoalTracking,
   type GoalType,
   type TrackingMethod,
 } from "../types";
 
-const steps = ["Your goal", "Type", "Why", "Tracking", "Set it up", "Deadline", "Review"] as const;
+const steps = [
+  "Your goal",
+  "Type",
+  "Why",
+  "Tracking",
+  "Set it up",
+  "Milestones",
+  "Deadline",
+  "Review",
+] as const;
 
 /** Conversational headings, so each step feels like a question, not a field. */
 const stepHeadings = [
   "What would you like to achieve?",
   "What kind of goal is this?",
   "Why does this matter to you?",
-  "How should Bloom follow along?",
+  "How would you like to track your progress?",
   "Let's set it up",
+  "Would you like to break this goal into milestones?",
   "Any date in mind?",
   "Does this look right?",
 ] as const;
+
+/** How the user chose to handle milestones — always optional. */
+type MilestoneChoice = "none" | "suggest" | "own";
 
 type Draft = {
   title: string;
@@ -53,6 +70,8 @@ type Draft = {
   unit: string;
   start: string;
   items: string;
+  milestoneChoice: MilestoneChoice | null;
+  milestones: GoalMilestone[];
   targetDate: string;
 };
 
@@ -65,8 +84,11 @@ const emptyDraft: Draft = {
   unit: "",
   start: "",
   items: "",
+  milestoneChoice: null,
+  milestones: [],
   targetDate: "",
 };
+
 
 function OptionTile({
   selected,
