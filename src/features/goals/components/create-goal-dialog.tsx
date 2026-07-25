@@ -190,25 +190,38 @@ export function CreateGoalDialog({
         };
       case "streak":
         return { ...baseTracking, targetDays: num(draft.target, baseTracking.targetDays) };
-      case "checklist":
-      case "milestone": {
+      case "checklist": {
         const labels = draft.items
           .split("\n")
           .map((l) => l.trim())
           .filter(Boolean);
-        const items = labels.length
-          ? labels.map((label, i) => ({ id: `i${i + 1}`, label, done: false }))
-          : baseTracking.method === "checklist"
-            ? baseTracking.items
-            : baseTracking.milestones;
-        return baseTracking.method === "checklist"
-          ? { ...baseTracking, items }
-          : { ...baseTracking, milestones: items };
+        return {
+          ...baseTracking,
+          items: labels.length
+            ? labels.map((label, i) => ({ id: `i${i + 1}`, label, done: false }))
+            : baseTracking.items,
+        };
       }
+      case "milestone":
       case "reflection":
         return baseTracking;
     }
   };
+
+  /** Milestones are optional for every goal — only "own"/"suggest" keep them. */
+  const chooseMilestones = (choice: MilestoneChoice) => {
+    setDraft((d) => ({
+      ...d,
+      milestoneChoice: choice,
+      milestones:
+        choice === "none"
+          ? []
+          : choice === "suggest"
+            ? suggestMilestones(d.title, d.type)
+            : d.milestones,
+    }));
+  };
+
 
   const canContinue = useMemo(() => {
     switch (step) {
