@@ -33,7 +33,7 @@ const rules: Rule[] = [
     ],
   },
   {
-    keywords: ["read", "book", "pages", "study", "learn"],
+    keywords: ["read", "pages", "chapter", "study", "learn"],
     suggestions: [
       { id: "count", label: "Count", hint: "Books, chapters or pages", kind: "count", unit: "books", target: 12 },
       { id: "reading-time", label: "Time reading", hint: "Minutes a day", kind: "duration", unit: "minutes", target: 20 },
