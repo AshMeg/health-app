@@ -207,40 +207,36 @@ export function CreateGoalDialog({
     }
   };
 
-  /** Milestones are optional for every goal — only "own"/"suggest" keep them. */
+  /** Suggestions are only ever generated when the user asks for them. */
   const chooseMilestones = (choice: MilestoneChoice) => {
     setDraft((d) => ({
       ...d,
       milestoneChoice: choice,
-      milestones:
-        choice === "none"
-          ? []
-          : choice === "suggest"
-            ? suggestMilestones(d.title, d.type)
-            : d.milestones,
+      milestones: choice === "suggest" ? suggestMilestones(d.title, d.type) : [],
     }));
   };
 
-  // Milestone-tracked goals arrive at the step already leaning on suggestions.
+  const flow = useMemo(() => stepFlow(method), [method]);
+  const current = flow[Math.min(step, flow.length - 1)];
+
+  // Keep the step index valid if the tracking method (and so the flow) changes.
   useEffect(() => {
-    if (step === 5 && draft.milestoneChoice === null && method === "milestone") {
-      chooseMilestones("suggest");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, method, draft.milestoneChoice]);
+    setStep((s) => Math.min(s, flow.length - 1));
+  }, [flow.length]);
 
   const canContinue = useMemo(() => {
-    switch (step) {
-      case 0:
+    switch (current) {
+      case "title":
         return draft.title.trim().length > 1;
-      case 1:
+      case "type":
         return Boolean(draft.type);
-      case 5:
+      case "steps":
         return draft.milestoneChoice !== null;
       default:
         return true;
     }
-  }, [draft, step]);
+  }, [draft, current]);
+
 
 
   const reset = () => {
