@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWeightRouteImport } from './routes/_authenticated/weight'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
+import { Route as AuthenticatedTimelineRouteImport } from './routes/_authenticated/timeline'
 import { Route as AuthenticatedSleepRouteImport } from './routes/_authenticated/sleep'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRecoveryRouteImport } from './routes/_authenticated/recovery'
@@ -71,6 +72,11 @@ const AuthenticatedWeightRoute = AuthenticatedWeightRouteImport.update({
 const AuthenticatedTrainingRoute = AuthenticatedTrainingRouteImport.update({
   id: '/training',
   path: '/training',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTimelineRoute = AuthenticatedTimelineRouteImport.update({
+  id: '/timeline',
+  path: '/timeline',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSleepRoute = AuthenticatedSleepRouteImport.update({
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/sleep': typeof AuthenticatedSleepRoute
+  '/timeline': typeof AuthenticatedTimelineRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/weight': typeof AuthenticatedWeightRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/sleep': typeof AuthenticatedSleepRoute
+  '/timeline': typeof AuthenticatedTimelineRoute
   '/training': typeof AuthenticatedTrainingRoute
   '/weight': typeof AuthenticatedWeightRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -230,6 +238,7 @@ export interface FileRoutesById {
   '/_authenticated/recovery': typeof AuthenticatedRecoveryRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/sleep': typeof AuthenticatedSleepRoute
+  '/_authenticated/timeline': typeof AuthenticatedTimelineRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
   '/_authenticated/weight': typeof AuthenticatedWeightRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -257,6 +266,7 @@ export interface FileRouteTypes {
     | '/recovery'
     | '/settings'
     | '/sleep'
+    | '/timeline'
     | '/training'
     | '/weight'
     | '/.lovable/oauth/consent'
@@ -282,6 +292,7 @@ export interface FileRouteTypes {
     | '/recovery'
     | '/settings'
     | '/sleep'
+    | '/timeline'
     | '/training'
     | '/weight'
     | '/.lovable/oauth/consent'
@@ -308,6 +319,7 @@ export interface FileRouteTypes {
     | '/_authenticated/recovery'
     | '/_authenticated/settings'
     | '/_authenticated/sleep'
+    | '/_authenticated/timeline'
     | '/_authenticated/training'
     | '/_authenticated/weight'
     | '/.lovable/oauth/consent'
@@ -385,6 +397,13 @@ declare module '@tanstack/react-router' {
       path: '/training'
       fullPath: '/training'
       preLoaderRoute: typeof AuthenticatedTrainingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/timeline': {
+      id: '/_authenticated/timeline'
+      path: '/timeline'
+      fullPath: '/timeline'
+      preLoaderRoute: typeof AuthenticatedTimelineRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/sleep': {
@@ -513,6 +532,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRecoveryRoute: typeof AuthenticatedRecoveryRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSleepRoute: typeof AuthenticatedSleepRoute
+  AuthenticatedTimelineRoute: typeof AuthenticatedTimelineRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
   AuthenticatedWeightRoute: typeof AuthenticatedWeightRoute
   AuthenticatedGoalsGoalIdRoute: typeof AuthenticatedGoalsGoalIdRoute
@@ -530,6 +550,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRecoveryRoute: AuthenticatedRecoveryRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSleepRoute: AuthenticatedSleepRoute,
+  AuthenticatedTimelineRoute: AuthenticatedTimelineRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
   AuthenticatedWeightRoute: AuthenticatedWeightRoute,
   AuthenticatedGoalsGoalIdRoute: AuthenticatedGoalsGoalIdRoute,

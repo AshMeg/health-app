@@ -3,22 +3,16 @@ import { Link } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
 
-import {
-  logStatus,
-  quickAddItems,
-  timelinePreview,
-  todayFocus,
-  todayInsight,
-  todaySummary,
-} from "../mock-data";
 import type { WidgetDefinition } from "../types";
-import { FocusList } from "../components/focus-list";
+import {
+  SnapshotFocus,
+  SnapshotLogStatus,
+  SnapshotSummary,
+  TodayInsight,
+  TodayTimelineWidget,
+} from "../components/connected-widgets";
 import { GoalsWidget } from "../components/goal-progress-card";
-import { InsightHeroCard } from "../components/insight-hero-card";
-import { LogStatusList } from "../components/log-status-list";
 import { QuickAddBar } from "../components/quick-add-bar";
-import { SummaryGrid } from "../components/summary-stat-card";
-import { TimelinePreview } from "../components/timeline-preview";
 import { UpcomingWidget } from "../components/upcoming-widget";
 
 /**
@@ -34,13 +28,7 @@ export const todayWidgets: WidgetDefinition[] = [
     title: "Today's insight",
     summary: "One observation drawn from your recent data.",
     span: "full",
-    render: () => (
-      <InsightHeroCard
-        headline={todayInsight.headline}
-        body={todayInsight.body}
-        confidence={todayInsight.confidence}
-      />
-    ),
+    render: () => <TodayInsight />,
   },
   {
     id: "goals",
@@ -55,36 +43,37 @@ export const todayWidgets: WidgetDefinition[] = [
     title: "Today at a glance",
     summary: "Latest numbers across your daily metrics.",
     span: "full",
-    render: () => <SummaryGrid stats={todaySummary} />,
+    render: () => <SnapshotSummary />,
   },
   {
     id: "focus",
     title: "Today's focus",
     summary: "A few small actions that support your goals.",
     span: "half",
-    render: () => <FocusList items={todayFocus} />,
+    render: () => <SnapshotFocus />,
   },
   {
     id: "missing-data",
     title: "Still to log",
     summary: "What's already in, and what's waiting for you.",
     span: "half",
-    render: () => <LogStatusList items={logStatus} />,
+    render: () => <SnapshotLogStatus />,
   },
   {
     id: "quick-add",
     title: "Quick add",
     summary: "One tap logging for the things you track most.",
     span: "full",
-    render: () => <QuickAddBar items={quickAddItems} />,
+    render: () => <QuickAddBar />,
   },
   {
     id: "timeline",
     title: "Timeline",
     summary: "Everything that happened today, in order.",
     span: "full",
-    render: () => <TimelinePreview events={timelinePreview} />,
+    render: () => <TodayTimelineWidget />,
   },
+
 
   /* ---- Reserved for upcoming Bloom modules. Hidden until they have data. ---- */
   {
@@ -210,7 +199,7 @@ export const todayWidgets: WidgetDefinition[] = [
 export const widgetActions: Partial<Record<string, React.ReactNode>> = {
   timeline: (
     <Button asChild variant="ghost" size="sm" className="rounded-full text-muted-foreground">
-      <Link to="/journal">
+      <Link to="/timeline">
         View timeline
         <ArrowRight className="h-3.5 w-3.5" />
       </Link>

@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { syncGoalsWithEvent } from "@/features/timeline/goal-sync";
+import { logEvent } from "@/features/timeline/store";
+import type { BloomEvent } from "@/features/timeline/types";
 import { saveGardenMemory } from "../garden";
 import { seedGoals } from "../mock-data";
 import { describeMilestoneChange, describeTrackingChange, makeUpdate } from "../timeline";
 import { goalProgress, type BloomGoal, type GoalMilestone, type GoalTracking } from "../types";
 
 const STORAGE_KEY = "bloom.goals.v5";
+
 
 /** Earlier versions kept milestones inside tracking; they now live on the goal. */
 function migrate(goals: BloomGoal[]): BloomGoal[] {
@@ -65,6 +69,48 @@ function hydrateStore() {
   emit();
 }
 
+/** Closes a goal the moment it reaches 100%, and tells the shared timeline. */
+function withCompletion(goal: BloomGoal): BloomGoal {
+  if (goal.completedAt || goalProgress(goal) < 100) return goal;
+  logEvent({
+    category: "goal",
+    title: "Goal completed",
+    detail: goal.title,
+    goalId: goal.id,
+    origin: "Goals",
+  });
+  return {
+    ...goal,
+    completedAt: new Date().toISOString().slice(0, 10),
+    updates: [makeUpdate("completed", "Goal completed"), ...goal.updates],
+  };
+}
+
+/**
+ * Lets goals respond to anything logged elsewhere in Bloom — a weight, a glass
+ * of water, a journal entry. Called by Bloom Context after an event is stored.
+ */
+export function recordEventForGoals(event: BloomEvent) {
+  const results = syncGoalsWithEvent(store, event);
+  if (!results.length) return results;
+
+  writeStore(
+    store.map((goal) => {
+      const result = results.find((r) => r.goalId === goal.id);
+      if (!result) return goal;
+      return withCompletion({
+        ...goal,
+        tracking: result.tracking,
+        updates: [makeUpdate("progress", result.reason, "Updated automatically."), ...goal.updates],
+      });
+    }),
+  );
+
+  return results;
+}
+
+
+
 export function useGoals() {
   const [goals, setGoals] = useState<BloomGoal[]>(store);
   const [hydrated, setHydrated] = useState(hydratedOnce);
@@ -87,26 +133,25 @@ export function useGoals() {
   /** Applies a change to one goal and keeps the timeline honest. */
   const mutate = useCallback(
     (id: string, change: (goal: BloomGoal) => BloomGoal) => {
-      persist(
-        goals.map((goal) => {
-          if (goal.id !== id) return goal;
-          const next = change(goal);
-          // Reaching 100% closes the goal and records the moment.
-          if (!next.completedAt && goalProgress(next) >= 100) {
-            return {
-              ...next,
-              completedAt: new Date().toISOString().slice(0, 10),
-              updates: [makeUpdate("completed", "Goal completed"), ...next.updates],
-            };
-          }
-          return next;
-        }),
-      );
+      persist(goals.map((goal) => (goal.id === id ? withCompletion(change(goal)) : goal)));
     },
     [goals, persist],
   );
 
-  const addGoal = useCallback((goal: BloomGoal) => persist([goal, ...goals]), [goals, persist]);
+  const addGoal = useCallback(
+    (goal: BloomGoal) => {
+      logEvent({
+        category: "goal",
+        title: "Goal created",
+        detail: goal.title,
+        goalId: goal.id,
+        origin: "Goals",
+      });
+      persist([goal, ...goals]);
+    },
+    [goals, persist],
+  );
+
 
   const updateGoal = useCallback(
     (id: string, patch: Partial<BloomGoal>) => mutate(id, (goal) => ({ ...goal, ...patch })),
@@ -137,19 +182,32 @@ export function useGoals() {
     [mutate],
   );
 
-  /** Milestone edits describe themselves in the timeline. */
+  /** Milestone edits describe themselves, here and in the shared timeline. */
   const setMilestones = useCallback(
     (id: string, milestones: GoalMilestone[]) =>
-      mutate(id, (goal) => ({
-        ...goal,
-        milestones,
-        updates: [
-          ...describeMilestoneChange(goal.milestones ?? [], milestones).reverse(),
-          ...goal.updates,
-        ],
-      })),
+      mutate(id, (goal) => {
+        const before = goal.milestones ?? [];
+        for (const step of milestones) {
+          const prev = before.find((m) => m.id === step.id);
+          if (prev && !prev.done && step.done) {
+            logEvent({
+              category: "goal",
+              title: "Goal step completed",
+              detail: `${step.label} · ${goal.title}`,
+              goalId: goal.id,
+              origin: "Goals",
+            });
+          }
+        }
+        return {
+          ...goal,
+          milestones,
+          updates: [...describeMilestoneChange(before, milestones).reverse(), ...goal.updates],
+        };
+      }),
     [mutate],
   );
+
 
   const addNote = useCallback(
     (id: string, body: string) =>
@@ -217,27 +275,46 @@ export function useGoals() {
   /** "Not Right Now" — the goal rests, keeping every bit of its history. */
   const pauseGoal = useCallback(
     (id: string) =>
-      mutate(id, (goal) => ({
-        ...goal,
-        pausedAt: new Date().toISOString(),
-        updates: [
-          makeUpdate("paused", "Moved to Not Right Now", "Resting for now — nothing is lost."),
-          ...goal.updates,
-        ],
-      })),
+      mutate(id, (goal) => {
+        logEvent({
+          category: "goal",
+          title: "Goal moved to Not Right Now",
+          detail: goal.title,
+          goalId: goal.id,
+          origin: "Goals",
+        });
+        return {
+          ...goal,
+          pausedAt: new Date().toISOString(),
+          updates: [
+            makeUpdate("paused", "Moved to Not Right Now", "Resting for now — nothing is lost."),
+            ...goal.updates,
+          ],
+        };
+      }),
     [mutate],
   );
 
   /** Back into Active Goals, exactly where it left off. */
   const resumeGoal = useCallback(
     (id: string) =>
-      mutate(id, (goal) => ({
-        ...goal,
-        pausedAt: undefined,
-        updates: [makeUpdate("resumed", "Back in your active goals"), ...goal.updates],
-      })),
+      mutate(id, (goal) => {
+        logEvent({
+          category: "goal",
+          title: "Goal resumed",
+          detail: goal.title,
+          goalId: goal.id,
+          origin: "Goals",
+        });
+        return {
+          ...goal,
+          pausedAt: undefined,
+          updates: [makeUpdate("resumed", "Back in your active goals"), ...goal.updates],
+        };
+      }),
     [mutate],
   );
+
 
   const removeGoal = useCallback(
     (id: string) => persist(goals.filter((g) => g.id !== id)),
