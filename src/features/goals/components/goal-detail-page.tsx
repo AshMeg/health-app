@@ -7,7 +7,7 @@ import { GoalCompletionCard } from "./goal-completion-card";
 import { GoalStatusPill, GoalTypePill } from "./goal-card";
 import { GoalAccentDot, GoalProgressBar } from "./goal-progress-bar";
 import { useGoals } from "../hooks/use-goals";
-import { formatGoalValue, goalMetricMeta, goalProgress } from "../types";
+import { describeMeasure, formatGoalValue, goalMeasureMeta, goalProgress } from "../types";
 
 function formatDate(value: string) {
   const parsed = new Date(value);
@@ -59,7 +59,7 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
           <GoalTypePill goal={goal} />
           <GoalStatusPill goal={goal} />
           <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-            {goalMetricMeta[goal.metric].label}
+            {goalMeasureMeta[goal.measure.kind].label}
           </span>
         </div>
         {goal.why ? (
@@ -74,10 +74,19 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
             <p className="text-xs text-muted-foreground">{progress}% of the way there</p>
           </div>
           <dl className="grid grid-cols-2 gap-5 border-t border-border/50 pt-5 sm:grid-cols-4">
-            <Stat label="Current" value={formatGoalValue(goal.current, goal.unit)} />
-            <Stat label="Target" value={formatGoalValue(goal.target, goal.unit)} />
+            <Stat
+              label="Current"
+              value={
+                typeof goal.measure.target === "number"
+                  ? formatGoalValue(goal.current, goal.measure.unit)
+                  : goal.done || goal.completedAt
+                    ? "Complete"
+                    : "In progress"
+              }
+            />
+            <Stat label="Target" value={describeMeasure(goal)} />
             <Stat label="Started" value={formatDate(goal.startDate)} />
-            <Stat label="Target date" value={formatDate(goal.targetDate)} />
+            <Stat label="Target date" value={goal.targetDate ? formatDate(goal.targetDate) : "Open-ended"} />
           </dl>
         </CardContent>
       </Card>
