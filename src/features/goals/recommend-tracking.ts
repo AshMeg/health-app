@@ -1,4 +1,4 @@
-import type { GoalTracking, GoalType, TrackingMethod } from "./types";
+import type { GoalMetric, GoalTracking, GoalType, TrackingMethod } from "./types";
 
 export type TrackingRecommendation = {
   method: TrackingMethod;
@@ -10,7 +10,7 @@ export type TrackingRecommendation = {
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-function automatic(metric: GoalTracking extends never ? never : any, unit: string, start: number, target: number): GoalTracking {
+function automatic(metric: GoalMetric, unit: string, start: number, target: number): GoalTracking {
   return { method: "automatic", metric, unit, start, current: start, target, history: [] };
 }
 
