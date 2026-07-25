@@ -4,7 +4,6 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 import {
-  goals,
   logStatus,
   quickAddItems,
   timelinePreview,
