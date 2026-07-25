@@ -47,7 +47,14 @@ export function useGoals() {
     [goals, persist],
   );
 
+  const updateGoal = useCallback(
+    (id: string, patch: Partial<BloomGoal>) =>
+      persist(goals.map((g) => (g.id === id ? { ...g, ...patch } : g))),
+    [goals, persist],
+  );
+
   const clearAll = useCallback(() => persist([]), [persist]);
+
 
   const getGoal = useCallback((id: string) => goals.find((g) => g.id === id), [goals]);
 
