@@ -490,11 +490,11 @@ export function CreateGoalDialog({
         <div className="flex items-center justify-between gap-3 pt-2">
           <Button
             variant="ghost"
-            onClick={() => (step === 0 ? close(false) : setStep((s) => s - 1))}
+            onClick={() => (step === 0 ? setPicking(true) : setStep((s) => s - 1))}
             className="gap-1.5"
           >
             <ArrowLeft className="h-4 w-4" />
-            {step === 0 ? "Cancel" : "Back"}
+            Back
           </Button>
           {step === steps.length - 1 ? (
             <Button onClick={save}>Save goal</Button>
