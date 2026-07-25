@@ -260,18 +260,25 @@ export function CreateGoalDialog({
   const save = () => {
     if (!draft.type) return;
     const tracking = buildTracking();
+    const milestones = draft.milestones.filter((m) => m.label.trim());
     const goal: BloomGoal = {
       id: `${draft.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "goal"}-${Date.now().toString(36)}`,
       title: draft.title.trim(),
       type: draft.type,
       why: draft.why.trim() || undefined,
       tracking,
+      milestones: milestones.length ? milestones : undefined,
       startDate: new Date().toISOString().slice(0, 10),
       targetDate: draft.targetDate || undefined,
       accent: goalTypeMeta[draft.type].accent,
       nextStep: suggestNextStep(draft.title, tracking.method),
       notes: [],
-      updates: [makeUpdate("created", "Goal created", draft.why.trim() || undefined)],
+      updates: [
+        ...(milestones.length
+          ? [makeUpdate("milestone", "Milestones added", milestoneSummary(milestones))]
+          : []),
+        makeUpdate("created", "Goal created", draft.why.trim() || undefined),
+      ],
     };
     onCreate(goal);
     close(false);
@@ -289,8 +296,13 @@ export function CreateGoalDialog({
     ["Why", draft.why || "Not set"],
     ["Tracked by", trackingRegistry[method].label],
     ["Set up as", setupSummary()],
+    [
+      "Milestones",
+      draft.milestones.length ? `${draft.milestones.length} steps` : "None — keeping it simple",
+    ],
     ["Deadline", draft.targetDate || "Open-ended"],
   ];
+
 
   if (picking) {
     return (
