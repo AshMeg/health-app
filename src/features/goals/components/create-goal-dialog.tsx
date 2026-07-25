@@ -300,13 +300,19 @@ export function CreateGoalDialog({
     ["Type", draft.type ? goalTypeMeta[draft.type].label : "—"],
     ["Why", draft.why || "Not set"],
     ["Tracked by", trackingRegistry[method].label],
-    ["Set up as", setupSummary()],
-    [
-      "Milestones",
-      draft.milestones.length ? `${draft.milestones.length} steps` : "None — keeping it simple",
-    ],
+    ...(method === "milestone"
+      ? ([
+          [
+            "Your steps",
+            draft.milestones.length
+              ? `${draft.milestones.length} step${draft.milestones.length === 1 ? "" : "s"}`
+              : "None yet",
+          ],
+        ] as [string, string][])
+      : ([["Set up as", setupSummary()]] as [string, string][])),
     ["Deadline", draft.targetDate || "Open-ended"],
   ];
+
 
 
   if (picking) {
