@@ -65,14 +65,27 @@ export function GoalCard({ goal }: { goal: BloomGoal }) {
         </div>
 
         <div className="grid grid-cols-2 gap-4 border-t border-border/50 pt-5">
-          <div className="min-w-0 space-y-1">
-            <p className="text-xs text-muted-foreground">Current</p>
-            <p className="text-base font-medium">{formatGoalValue(goal.current, goal.unit)}</p>
-          </div>
-          <div className="min-w-0 space-y-1">
-            <p className="text-xs text-muted-foreground">Target</p>
-            <p className="text-base font-medium">{formatGoalValue(goal.target, goal.unit)}</p>
-          </div>
+          {typeof goal.measure.target === "number" ? (
+            <>
+              <div className="min-w-0 space-y-1">
+                <p className="text-xs text-muted-foreground">Current</p>
+                <p className="text-base font-medium">
+                  {formatGoalValue(goal.current, goal.measure.unit)}
+                </p>
+              </div>
+              <div className="min-w-0 space-y-1">
+                <p className="text-xs text-muted-foreground">Target</p>
+                <p className="text-base font-medium">
+                  {formatGoalValue(goal.measure.target, goal.measure.unit)}
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="col-span-2 min-w-0 space-y-1">
+              <p className="text-xs text-muted-foreground">How it's measured</p>
+              <p className="text-base font-medium">{describeMeasure(goal)}</p>
+            </div>
+          )}
         </div>
 
         <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
