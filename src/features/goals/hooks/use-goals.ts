@@ -84,16 +84,6 @@ export function useGoals() {
 
   const persist = useCallback((next: BloomGoal[]) => writeStore(next), []);
 
-
-  const persist = useCallback((next: BloomGoal[]) => {
-    setGoals(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      /* storage unavailable — goals stay for this session */
-    }
-  }, []);
-
   /** Applies a change to one goal and keeps the timeline honest. */
   const mutate = useCallback(
     (id: string, change: (goal: BloomGoal) => BloomGoal) => {
