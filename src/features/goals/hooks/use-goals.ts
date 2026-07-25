@@ -174,6 +174,31 @@ export function useGoals() {
     [goals, mutate],
   );
 
+  /** "Not Right Now" — the goal rests, keeping every bit of its history. */
+  const pauseGoal = useCallback(
+    (id: string) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        pausedAt: new Date().toISOString(),
+        updates: [
+          makeUpdate("paused", "Moved to Not Right Now", "Resting for now — nothing is lost."),
+          ...goal.updates,
+        ],
+      })),
+    [mutate],
+  );
+
+  /** Back into Active Goals, exactly where it left off. */
+  const resumeGoal = useCallback(
+    (id: string) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        pausedAt: undefined,
+        updates: [makeUpdate("resumed", "Back in your active goals"), ...goal.updates],
+      })),
+    [mutate],
+  );
+
   const removeGoal = useCallback(
     (id: string) => persist(goals.filter((g) => g.id !== id)),
     [goals, persist],
@@ -183,10 +208,11 @@ export function useGoals() {
 
   const getGoal = useCallback((id: string) => goals.find((g) => g.id === id), [goals]);
 
-  const { active, complete } = useMemo(
+  const { active, complete, resting } = useMemo(
     () => ({
-      active: goals.filter((g) => !g.completedAt),
+      active: goals.filter((g) => !g.completedAt && !g.pausedAt),
       complete: goals.filter((g) => g.completedAt),
+      resting: goals.filter((g) => g.pausedAt && !g.completedAt),
     }),
     [goals],
   );
@@ -195,6 +221,7 @@ export function useGoals() {
     goals,
     active,
     complete,
+    resting,
     hydrated,
     addGoal,
     updateGoal,
@@ -205,6 +232,8 @@ export function useGoals() {
     deleteNote,
     addManualUpdate,
     addToGarden,
+    pauseGoal,
+    resumeGoal,
     removeGoal,
     clearAll,
     getGoal,
