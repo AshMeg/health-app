@@ -1,11 +1,21 @@
 # Timeline
 
-Chronological feed of logged events, imports, and notable changes.
+Bloom's shared data layer. Every log, sync and goal moment in the app is a single
+`BloomEvent` here — nothing keeps its own private log.
 
 ## Structure
-- `components/` — UI specific to this module
-- `hooks/` — module-scoped hooks
-- `server/` — server functions (\*.functions.ts) and server-only helpers (\*.server.ts)
-- `types.ts` — module types
+- `types.ts` — `BloomEvent`, `EventCategory`, `MetricKey`, `DailySnapshot`
+- `store.ts` — the one event store (module-level + localStorage), `logEvent`
+- `snapshot.ts` — folds events into today's snapshot and recent days
+- `goal-sync.ts` — maps an event onto any goal tracking that listens to it
+- `relationships.ts` — which metrics explain which (sleep ↔ recovery, etc.)
+- `quick-add.ts` — the loggable things and their fields
+- `hooks/use-bloom-context.ts` — the interface screens use: events, snapshot, goals, `record()`
+- `components/` — timeline page, feed and the log dialog
 
-Route entry points live under `src/routes/` and import from this module.
+## Adding something loggable
+1. Add the `EventCategory` in `types.ts` (with label + accent).
+2. Add a `quickAddSpecs` entry describing its fields.
+3. If a goal should react to it, extend `goal-sync.ts`.
+
+Route: `src/routes/_authenticated/timeline.tsx`.
