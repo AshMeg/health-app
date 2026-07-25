@@ -1,8 +1,9 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { GoalActionsMenu } from "./goal-actions-menu";
 import { GoalCompletionCard } from "./goal-completion-card";
 import { GoalNextStep, GoalStatusPill, GoalTypePill } from "./goal-card";
 import { GoalNotes } from "./goal-notes";
@@ -12,7 +13,7 @@ import { GoalAccentDot, GoalProgressBar } from "./goal-progress-bar";
 import { trackingRegistry } from "./tracking/registry";
 import { formatGoalDateLong } from "../format";
 import { useGoals } from "../hooks/use-goals";
-import { goalProgress, hasMilestones, milestoneSummary } from "../types";
+import { goalProgress, hasMilestones, isResting, milestoneSummary } from "../types";
 
 export function GoalDetailPage({ goalId }: { goalId: string }) {
   const {
@@ -24,8 +25,10 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
     deleteNote,
     addManualUpdate,
     addToGarden,
+    resumeGoal,
     hydrated,
   } = useGoals();
+  const navigate = useNavigate();
   const goal = getGoal(goalId);
 
   if (!goal) {
@@ -66,11 +69,14 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
       ) : null}
 
       <header className="space-y-3">
-        <div className="flex items-center gap-2.5">
-          <GoalAccentDot accent={goal.accent} />
-          <h1 className="font-display text-[1.75rem] leading-tight font-medium sm:text-4xl">
-            {goal.title}
-          </h1>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <GoalAccentDot accent={goal.accent} />
+            <h1 className="font-display text-[1.75rem] leading-tight font-medium sm:text-4xl">
+              {goal.title}
+            </h1>
+          </div>
+          <GoalActionsMenu goal={goal} onDeleted={() => navigate({ to: "/goals" })} />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <GoalTypePill goal={goal} />
@@ -79,6 +85,16 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
             {definition.label}
           </span>
         </div>
+        {isResting(goal) ? (
+          <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-muted/60 px-4 py-3">
+            <p className="text-sm text-muted-foreground">
+              🌱 Resting in Not Right Now — everything here is kept for when you come back.
+            </p>
+            <Button size="sm" variant="secondary" onClick={() => resumeGoal(goal.id)}>
+              Resume goal
+            </Button>
+          </div>
+        ) : null}
         {goal.why ? (
           <p className="max-w-xl text-base leading-relaxed text-muted-foreground">“{goal.why}”</p>
         ) : null}
