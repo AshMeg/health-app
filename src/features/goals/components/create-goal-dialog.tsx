@@ -508,13 +508,6 @@ export function CreateGoalDialog({
                 </div>
               ) : null}
 
-              {baseTracking.method === "milestone" ? (
-                <p className="rounded-2xl bg-muted/60 px-5 py-4 text-sm leading-relaxed text-muted-foreground">
-                  Nothing to set up here — you'll build your steps on the next screen, and progress
-                  is worked out from the milestones you complete.
-                </p>
-              ) : null}
-
               {baseTracking.method === "reflection" ? (
                 <p className="rounded-2xl bg-muted/60 px-5 py-4 text-sm leading-relaxed text-muted-foreground">
                   Nothing to set up. Bloom will ask how you feel you're progressing each week, and
@@ -527,43 +520,39 @@ export function CreateGoalDialog({
           {current === "steps" ? (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Some goals are one action. Others are a handful of smaller steps — entirely up to
-                you, and you can add steps later.
+                Your progress comes from the steps you complete. Start from Bloom's suggestions or
+                build your own — either way you can change everything later.
               </p>
               <div className="space-y-3">
                 <OptionTile
-                  selected={draft.milestoneChoice === "none"}
-                  title="No thanks"
-                  description="Keep this goal simple — no steps to tick off."
-                  onClick={() => chooseMilestones("none")}
-                />
-                <OptionTile
                   selected={draft.milestoneChoice === "suggest"}
-                  title="Let Bloom suggest milestones"
-                  description="A sensible starting set, based on your goal. Edit anything you like."
+                  title="✨ Let Bloom suggest some steps"
+                  description="A sensible starting set, based on your goal. Edit, delete, reorder or add your own."
                   badge="Suggested"
                   onClick={() => chooseMilestones("suggest")}
                 />
                 <OptionTile
                   selected={draft.milestoneChoice === "own"}
-                  title="I'll create my own"
-                  description="Add as many steps as you want, in any order."
+                  title="🛠 I'll create my own"
+                  description="Start from a blank list and add as many steps as you like."
                   onClick={() => chooseMilestones("own")}
                 />
               </div>
 
-              {draft.milestoneChoice && draft.milestoneChoice !== "none" ? (
+              {draft.milestoneChoice ? (
                 <div className="space-y-3 rounded-2xl bg-muted/40 p-4 sm:p-5">
                   <MilestoneList
                     milestones={draft.milestones}
                     onChange={(milestones) => setDraft((d) => ({ ...d, milestones }))}
                     accent={draft.type ? goalTypeMeta[draft.type].accent : "sage"}
+                    addLabel="Add a step"
                     emptyLabel="Add your first step below — you can reorder them any time."
                   />
                 </div>
               ) : null}
             </div>
           ) : null}
+
 
           {current === "deadline" ? (
             <div className="space-y-2">
