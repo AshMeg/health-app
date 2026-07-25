@@ -2,6 +2,8 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   BarChart3,
   BookOpen,
+  History as HistoryIcon,
+
   Dumbbell,
   Heart,
   LayoutDashboard,
