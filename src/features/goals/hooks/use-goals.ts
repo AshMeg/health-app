@@ -21,31 +21,68 @@ function migrate(goals: BloomGoal[]): BloomGoal[] {
 }
 
 /**
- * Placeholder goal store. Goals live in localStorage so created goals survive
- * a refresh; swap this for server functions once goals are persisted.
+ * Placeholder goal store. Goals live in localStorage so created goals survive a
+ * refresh, and in a small module-level store so every screen showing goals —
+ * cards, Today widgets, detail pages — stays in step. Swap this for server
+ * functions once goals are persisted.
  */
+let store: BloomGoal[] = seedGoals;
+let hydratedOnce = false;
+const listeners = new Set<() => void>();
+
+function emit() {
+  for (const listener of listeners) listener();
+}
+
+function writeStore(next: BloomGoal[]) {
+  store = next;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    /* storage unavailable — goals stay for this session */
+  }
+  emit();
+}
+
+function hydrateStore() {
+  if (hydratedOnce) return;
+  hydratedOnce = true;
+  try {
+    // Fall back to the previous key so goals made before milestones survive.
+    const raw =
+      window.localStorage.getItem(STORAGE_KEY) ?? window.localStorage.getItem("bloom.goals.v4");
+    if (raw) {
+      const parsed = JSON.parse(raw) as BloomGoal[];
+      if (Array.isArray(parsed)) {
+        const migrated = migrate(parsed);
+        store = migrated;
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+      }
+    }
+  } catch {
+    /* ignore malformed storage */
+  }
+  emit();
+}
+
 export function useGoals() {
-  const [goals, setGoals] = useState<BloomGoal[]>(seedGoals);
-  const [hydrated, setHydrated] = useState(false);
+  const [goals, setGoals] = useState<BloomGoal[]>(store);
+  const [hydrated, setHydrated] = useState(hydratedOnce);
 
   useEffect(() => {
-    try {
-      // Fall back to the previous key so goals made before milestones survive.
-      const raw =
-        window.localStorage.getItem(STORAGE_KEY) ?? window.localStorage.getItem("bloom.goals.v4");
-      if (raw) {
-        const parsed = JSON.parse(raw) as BloomGoal[];
-        if (Array.isArray(parsed)) {
-          const migrated = migrate(parsed);
-          setGoals(migrated);
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-        }
-      }
-    } catch {
-      /* ignore malformed storage */
-    }
-    setHydrated(true);
+    const listener = () => {
+      setGoals(store);
+      setHydrated(hydratedOnce);
+    };
+    listeners.add(listener);
+    hydrateStore();
+    listener();
+    return () => {
+      listeners.delete(listener);
+    };
   }, []);
+
+  const persist = useCallback((next: BloomGoal[]) => writeStore(next), []);
 
 
   const persist = useCallback((next: BloomGoal[]) => {
