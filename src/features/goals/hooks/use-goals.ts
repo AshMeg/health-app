@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { saveGardenMemory } from "../garden";
 import { seedGoals } from "../mock-data";
-import type { BloomGoal } from "../types";
+import { describeTrackingChange, makeUpdate } from "../timeline";
+import { goalProgress, type BloomGoal, type GoalTracking } from "../types";
 
-const STORAGE_KEY = "bloom.goals.v3";
+const STORAGE_KEY = "bloom.goals.v4";
 
 /**
  * Placeholder goal store. Goals live in localStorage so created goals survive
@@ -35,11 +37,107 @@ export function useGoals() {
     }
   }, []);
 
-  const addGoal = useCallback(
-    (goal: BloomGoal) => {
-      persist([goal, ...goals]);
+  /** Applies a change to one goal and keeps the timeline honest. */
+  const mutate = useCallback(
+    (id: string, change: (goal: BloomGoal) => BloomGoal) => {
+      persist(
+        goals.map((goal) => {
+          if (goal.id !== id) return goal;
+          const next = change(goal);
+          // Reaching 100% closes the goal and records the moment.
+          if (!next.completedAt && goalProgress(next) >= 100) {
+            return {
+              ...next,
+              completedAt: new Date().toISOString().slice(0, 10),
+              updates: [makeUpdate("completed", "Goal completed"), ...next.updates],
+            };
+          }
+          return next;
+        }),
+      );
     },
     [goals, persist],
+  );
+
+  const addGoal = useCallback((goal: BloomGoal) => persist([goal, ...goals]), [goals, persist]);
+
+  const updateGoal = useCallback(
+    (id: string, patch: Partial<BloomGoal>) => mutate(id, (goal) => ({ ...goal, ...patch })),
+    [mutate],
+  );
+
+  /** Tracking changes describe themselves in the timeline. */
+  const updateTracking = useCallback(
+    (id: string, tracking: GoalTracking) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        tracking,
+        updates: [...describeTrackingChange(goal.tracking, tracking).reverse(), ...goal.updates],
+      })),
+    [mutate],
+  );
+
+  const addNote = useCallback(
+    (id: string, body: string) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        notes: [
+          {
+            id: `n${Date.now().toString(36)}`,
+            date: new Date().toISOString(),
+            body: body.trim(),
+          },
+          ...goal.notes,
+        ],
+        updates: [makeUpdate("note", "Note added", body.trim()), ...goal.updates],
+      })),
+    [mutate],
+  );
+
+  const editNote = useCallback(
+    (id: string, noteId: string, body: string) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        notes: goal.notes.map((n) =>
+          n.id === noteId ? { ...n, body: body.trim(), editedAt: new Date().toISOString() } : n,
+        ),
+        updates: [makeUpdate("note", "Note edited", body.trim()), ...goal.updates],
+      })),
+    [mutate],
+  );
+
+  const deleteNote = useCallback(
+    (id: string, noteId: string) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        notes: goal.notes.filter((n) => n.id !== noteId),
+        updates: [makeUpdate("note", "Note deleted"), ...goal.updates],
+      })),
+    [mutate],
+  );
+
+  /** A timeline entry the user writes themselves. */
+  const addManualUpdate = useCallback(
+    (id: string, title: string, detail?: string) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        updates: [makeUpdate("manual", title.trim(), detail?.trim() || undefined), ...goal.updates],
+      })),
+    [mutate],
+  );
+
+  /** Keeps the completed goal as a Garden Memory for the future Garden. */
+  const addToGarden = useCallback(
+    (id: string) => {
+      const goal = goals.find((g) => g.id === id);
+      if (!goal) return;
+      saveGardenMemory(goal);
+      mutate(id, (g) => ({
+        ...g,
+        updates: [makeUpdate("completed", "Added to your Garden"), ...g.updates],
+      }));
+    },
+    [goals, mutate],
   );
 
   const removeGoal = useCallback(
@@ -47,23 +145,33 @@ export function useGoals() {
     [goals, persist],
   );
 
-  const updateGoal = useCallback(
-    (id: string, patch: Partial<BloomGoal>) =>
-      persist(goals.map((g) => (g.id === id ? { ...g, ...patch } : g))),
-    [goals, persist],
-  );
-
   const clearAll = useCallback(() => persist([]), [persist]);
-
 
   const getGoal = useCallback((id: string) => goals.find((g) => g.id === id), [goals]);
 
-  const { active, complete } = useMemo(() => {
-    return {
+  const { active, complete } = useMemo(
+    () => ({
       active: goals.filter((g) => !g.completedAt),
       complete: goals.filter((g) => g.completedAt),
-    };
-  }, [goals]);
+    }),
+    [goals],
+  );
 
-  return { goals, active, complete, hydrated, addGoal, updateGoal, removeGoal, clearAll, getGoal };
+  return {
+    goals,
+    active,
+    complete,
+    hydrated,
+    addGoal,
+    updateGoal,
+    updateTracking,
+    addNote,
+    editNote,
+    deleteNote,
+    addManualUpdate,
+    addToGarden,
+    removeGoal,
+    clearAll,
+    getGoal,
+  };
 }
