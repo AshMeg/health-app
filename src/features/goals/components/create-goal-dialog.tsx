@@ -18,6 +18,9 @@ import {
   recommendTracking,
   suggestNextStep,
 } from "../recommend-tracking";
+import { GoalTemplatePicker } from "./goal-template-picker";
+import { makeUpdate } from "../timeline";
+import type { GoalTemplate } from "../templates";
 import { trackingMethods, trackingRegistry } from "./tracking/registry";
 import {
   goalTypeMeta,
