@@ -68,6 +68,23 @@ export type CheckItem = {
   doneOn?: string;
 };
 
+/**
+ * A step on the way to a bigger goal. Milestones are optional and live on the
+ * goal itself, so any goal — however it's tracked — can be broken into steps.
+ */
+export type GoalMilestone = {
+  id: string;
+  label: string;
+  done: boolean;
+  /** Short display date the milestone was ticked off. */
+  doneOn?: string;
+  /** Optional context the user adds to a single step. */
+  note?: string;
+  /** Optional ISO date the user is aiming for. */
+  targetDate?: string;
+};
+
+
 export type ReflectionRating = "much-better" | "better" | "same" | "worse";
 
 export type GoalReflection = {
