@@ -246,11 +246,38 @@ export function CreateGoalDialog({
     ["Deadline", draft.targetDate || "Open-ended"],
   ];
 
+  if (picking) {
+    return (
+      <Dialog open={open} onOpenChange={close}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto rounded-3xl sm:max-w-lg">
+          <DialogHeader className="space-y-2 text-left">
+            <DialogTitle className="font-display text-xl font-medium">
+              What would you like to grow?
+            </DialogTitle>
+            <DialogDescription>
+              A few ideas to begin with — you can change every part of them later.
+            </DialogDescription>
+          </DialogHeader>
+
+          <GoalTemplatePicker
+            onPick={startFromTemplate}
+            onBlank={() => {
+              setPicking(false);
+              setStep(0);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={close}>
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-3xl sm:max-w-lg">
         <DialogHeader className="space-y-2 text-left">
-          <DialogTitle className="font-display text-xl font-medium">Create a goal</DialogTitle>
+          <DialogTitle className="font-display text-xl font-medium">
+            {stepHeadings[step]}
+          </DialogTitle>
           <DialogDescription>
             Step {step + 1} of {steps.length} · {steps[step]}
           </DialogDescription>
@@ -267,6 +294,7 @@ export function CreateGoalDialog({
             />
           ))}
         </div>
+
 
         <div className="space-y-4 py-2">
           {step === 0 ? (
