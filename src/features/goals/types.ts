@@ -27,14 +27,39 @@ export type GoalMetric =
   | "journal"
   | "none";
 
-export type GoalStatus = "on-track" | "behind" | "ahead";
+/** Calculated from progress and pace — never set by hand. */
+export type GoalStatus = "not-started" | "on-track" | "needs-attention" | "completed";
+
+/** What kind of thing happened, so the timeline can speak plainly about it. */
+export type GoalEventKind =
+  | "created"
+  | "edited"
+  | "progress"
+  | "checklist"
+  | "reflection"
+  | "completed"
+  | "note"
+  | "manual";
 
 export type GoalUpdate = {
   id: string;
+  /** ISO date — formatted for display, so entries stay sortable. */
   date: string;
   title: string;
   detail?: string;
+  kind: GoalEventKind;
 };
+
+/** A dated line in the goal's story. */
+export type GoalNote = {
+  id: string;
+  /** ISO date the note was written. */
+  date: string;
+  body: string;
+  /** Set when the note has been edited since. */
+  editedAt?: string;
+};
+
 
 export type CheckItem = {
   id: string;
