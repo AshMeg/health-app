@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { seedGoals } from "../mock-data";
 import type { BloomGoal } from "../types";
 
-const STORAGE_KEY = "bloom.goals.v2";
+const STORAGE_KEY = "bloom.goals.v3";
 
 /**
  * Placeholder goal store. Goals live in localStorage so created goals survive
@@ -47,7 +47,14 @@ export function useGoals() {
     [goals, persist],
   );
 
+  const updateGoal = useCallback(
+    (id: string, patch: Partial<BloomGoal>) =>
+      persist(goals.map((g) => (g.id === id ? { ...g, ...patch } : g))),
+    [goals, persist],
+  );
+
   const clearAll = useCallback(() => persist([]), [persist]);
+
 
   const getGoal = useCallback((id: string) => goals.find((g) => g.id === id), [goals]);
 
@@ -58,5 +65,5 @@ export function useGoals() {
     };
   }, [goals]);
 
-  return { goals, active, complete, hydrated, addGoal, removeGoal, clearAll, getGoal };
+  return { goals, active, complete, hydrated, addGoal, updateGoal, removeGoal, clearAll, getGoal };
 }

@@ -1,17 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { GoalAccentDot, GoalProgressBar } from "./goal-progress-bar";
-import {
-  describeMeasure,
-  formatGoalValue,
-  goalProgress,
-  goalStatusMeta,
-  goalTypeMeta,
-  type BloomGoal,
-} from "../types";
+import { trackingRegistry } from "./tracking/registry";
+import { goalProgress, goalStatusMeta, goalTypeMeta, type BloomGoal } from "../types";
 
 export function GoalStatusPill({ goal }: { goal: BloomGoal }) {
   const meta = goalStatusMeta[goal.status];
@@ -35,8 +29,23 @@ export function GoalTypePill({ goal }: { goal: BloomGoal }) {
   );
 }
 
+/** Placeholder nudge — AI-generated suggestions will replace these. */
+export function GoalNextStep({ goal }: { goal: BloomGoal }) {
+  if (!goal.nextStep || goal.completedAt) return null;
+  return (
+    <div className="flex items-start gap-3 rounded-2xl bg-muted/60 px-4 py-3">
+      <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-lavender" />
+      <div className="min-w-0 space-y-0.5">
+        <p className="text-xs text-muted-foreground">Today's next step</p>
+        <p className="text-sm leading-relaxed">{goal.nextStep}</p>
+      </div>
+    </div>
+  );
+}
+
 export function GoalCard({ goal }: { goal: BloomGoal }) {
   const progress = goalProgress(goal);
+  const definition = trackingRegistry[goal.tracking.method];
 
   return (
     <Card className="group relative rounded-3xl border-transparent bg-card shadow-soft transition-shadow hover:shadow-md">
@@ -62,38 +71,23 @@ export function GoalCard({ goal }: { goal: BloomGoal }) {
 
         <div className="space-y-2">
           <GoalProgressBar value={progress} accent={goal.accent} label={goal.title} tall />
-          <p className="text-xs text-muted-foreground">{progress}% of the way there</p>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span>{definition.summary(goal.tracking)}</span>
+            <span>{progress}% of the way there</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 border-t border-border/50 pt-5">
-          {typeof goal.measure.target === "number" ? (
-            <>
-              <div className="min-w-0 space-y-1">
-                <p className="text-xs text-muted-foreground">Current</p>
-                <p className="text-base font-medium">
-                  {formatGoalValue(goal.current, goal.measure.unit)}
-                </p>
-              </div>
-              <div className="min-w-0 space-y-1">
-                <p className="text-xs text-muted-foreground">Target</p>
-                <p className="text-base font-medium">
-                  {formatGoalValue(goal.measure.target, goal.measure.unit)}
-                </p>
-              </div>
-            </>
-          ) : (
-            <div className="col-span-2 min-w-0 space-y-1">
-              <p className="text-xs text-muted-foreground">How it's measured</p>
-              <p className="text-base font-medium">{describeMeasure(goal)}</p>
-            </div>
-          )}
-        </div>
+        <GoalNextStep goal={goal} />
 
-        <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
-          Open goal
-          <ArrowRight className="h-3.5 w-3.5" />
-        </span>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-5">
+          <span className="text-xs text-muted-foreground">{definition.label}</span>
+          <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
+            Open goal
+            <ArrowRight className="h-3.5 w-3.5" />
+          </span>
+        </div>
       </CardContent>
     </Card>
   );
 }
+

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,33 +13,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { suggestMeasures, type MeasureSuggestion } from "../measure-suggestions";
 import {
-  goalMeasureMeta,
+  defaultTracking,
+  recommendTracking,
+  suggestNextStep,
+} from "../recommend-tracking";
+import { trackingMethods, trackingRegistry } from "./tracking/registry";
+import {
   goalTypeMeta,
   type BloomGoal,
+  type GoalTracking,
   type GoalType,
+  type TrackingMethod,
 } from "../types";
 
-const steps = [
-  "Your goal",
-  "Type",
-  "Why",
-  "Measure",
-  "Target",
-  "Deadline",
-  "Review",
-] as const;
+const steps = ["Your goal", "Type", "Why", "Tracking", "Set it up", "Deadline", "Review"] as const;
 
 type Draft = {
   title: string;
   type: GoalType | null;
   why: string;
-  measureId: string | null;
+  method: TrackingMethod | null;
+  /** Free-text setup values, interpreted per tracking method. */
+  target: string;
   unit: string;
   start: string;
-  target: string;
-  targetOn: string;
+  items: string;
   targetDate: string;
 };
 
@@ -47,11 +46,11 @@ const emptyDraft: Draft = {
   title: "",
   type: null,
   why: "",
-  measureId: null,
+  method: null,
+  target: "",
   unit: "",
   start: "",
-  target: "",
-  targetOn: "",
+  items: "",
   targetDate: "",
 };
 
@@ -59,11 +58,13 @@ function OptionTile({
   selected,
   title,
   description,
+  badge,
   onClick,
 }: {
   selected: boolean;
   title: string;
   description?: string;
+  badge?: string;
   onClick: () => void;
 }) {
   return (
@@ -77,7 +78,15 @@ function OptionTile({
       aria-pressed={selected}
     >
       <span className="flex items-center justify-between gap-3">
-        <span className="text-sm font-medium">{title}</span>
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium">{title}</span>
+          {badge ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-lavender-soft px-2.5 py-0.5 text-xs text-lavender">
+              <Sparkles className="h-3 w-3" />
+              {badge}
+            </span>
+          ) : null}
+        </span>
         {selected ? <Check className="h-4 w-4 shrink-0 text-sage" /> : null}
       </span>
       {description ? (
@@ -100,27 +109,69 @@ export function CreateGoalDialog({
 }) {
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
+  const [touchedMethod, setTouchedMethod] = useState(false);
 
-  const suggestions = useMemo(
-    () => suggestMeasures(draft.title, draft.type),
+  const recommendation = useMemo(
+    () => recommendTracking(draft.title, draft.type),
     [draft.title, draft.type],
   );
 
-  const measure: MeasureSuggestion | undefined = useMemo(
-    () => suggestions.find((s) => s.id === draft.measureId),
-    [suggestions, draft.measureId],
-  );
-
-  // Drop a selection that no longer exists after the title or type changed.
+  // Bloom's suggestion leads, but the user can always pick another method.
   useEffect(() => {
-    if (draft.measureId && !suggestions.some((s) => s.id === draft.measureId)) {
-      setDraft((d) => ({ ...d, measureId: null }));
-    }
-  }, [suggestions, draft.measureId]);
+    if (!touchedMethod) setDraft((d) => ({ ...d, method: recommendation.method }));
+  }, [recommendation.method, touchedMethod]);
 
-  const meta = measure ? goalMeasureMeta[measure.kind] : null;
-  const needsTarget = Boolean(meta?.needsTarget) || measure?.kind === "date";
-  const unit = measure ? (measure.unit === "" || measure.kind === "custom" ? draft.unit : measure.unit ?? "") : "";
+  const method = draft.method ?? recommendation.method;
+
+  /** Starting shape for the chosen method, then refined by the setup step. */
+  const baseTracking: GoalTracking = useMemo(() => {
+    return method === recommendation.method
+      ? recommendation.draft(draft.title)
+      : defaultTracking[method](draft.title);
+  }, [method, recommendation, draft.title]);
+
+  const buildTracking = (): GoalTracking => {
+    const num = (value: string, fallback: number) =>
+      value.trim() === "" || Number.isNaN(Number(value)) ? fallback : Number(value);
+
+    switch (baseTracking.method) {
+      case "automatic": {
+        const start = num(draft.start, baseTracking.start);
+        return {
+          ...baseTracking,
+          unit: draft.unit.trim() || baseTracking.unit,
+          start,
+          current: start,
+          target: num(draft.target, baseTracking.target),
+        };
+      }
+      case "repetition":
+        return {
+          ...baseTracking,
+          unit: draft.unit.trim() || baseTracking.unit,
+          target: num(draft.target, baseTracking.target),
+        };
+      case "streak":
+        return { ...baseTracking, targetDays: num(draft.target, baseTracking.targetDays) };
+      case "checklist":
+      case "milestone": {
+        const labels = draft.items
+          .split("\n")
+          .map((l) => l.trim())
+          .filter(Boolean);
+        const items = labels.length
+          ? labels.map((label, i) => ({ id: `i${i + 1}`, label, done: false }))
+          : baseTracking.method === "checklist"
+            ? baseTracking.items
+            : baseTracking.milestones;
+        return baseTracking.method === "checklist"
+          ? { ...baseTracking, items }
+          : { ...baseTracking, milestones: items };
+      }
+      case "reflection":
+        return baseTracking;
+    }
+  };
 
   const canContinue = useMemo(() => {
     switch (step) {
@@ -128,20 +179,15 @@ export function CreateGoalDialog({
         return draft.title.trim().length > 1;
       case 1:
         return Boolean(draft.type);
-      case 3:
-        return Boolean(measure);
-      case 4:
-        if (!needsTarget) return true;
-        if (measure?.kind === "date") return draft.targetOn !== "";
-        return draft.target.trim() !== "" && !Number.isNaN(Number(draft.target));
       default:
         return true;
     }
-  }, [draft, step, measure, needsTarget]);
+  }, [draft, step]);
 
   const reset = () => {
     setStep(0);
     setDraft(emptyDraft);
+    setTouchedMethod(false);
   };
 
   const close = (next: boolean) => {
@@ -149,60 +195,37 @@ export function CreateGoalDialog({
     if (!next) setTimeout(reset, 200);
   };
 
-  /** Target step is skipped entirely for goals that don't need one. */
-  const goNext = () => {
-    setStep((s) => (s === 3 && !needsTarget ? 5 : s + 1));
-  };
-
-  const goBack = () => {
-    if (step === 0) return close(false);
-    setStep((s) => (s === 5 && !needsTarget ? 3 : s - 1));
-  };
-
   const save = () => {
-    if (!draft.type || !measure) return;
-    const today = new Date().toISOString().slice(0, 10);
-    const start = draft.start.trim() === "" ? 0 : Number(draft.start);
-    const hasNumericTarget = needsTarget && measure.kind !== "date";
-
+    if (!draft.type) return;
+    const tracking = buildTracking();
     const goal: BloomGoal = {
       id: `${draft.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "goal"}-${Date.now().toString(36)}`,
       title: draft.title.trim(),
       type: draft.type,
       why: draft.why.trim() || undefined,
-      measure: {
-        kind: measure.kind,
-        metric: measure.metric,
-        unit: unit || undefined,
-        start: hasNumericTarget ? start : undefined,
-        target: hasNumericTarget ? Number(draft.target) : undefined,
-        targetOn: measure.kind === "date" ? draft.targetOn || undefined : undefined,
-      },
-      current: hasNumericTarget ? start : undefined,
-      done: false,
-      startDate: today,
+      tracking,
+      startDate: new Date().toISOString().slice(0, 10),
       targetDate: draft.targetDate || undefined,
       status: "on-track",
       accent: goalTypeMeta[draft.type].accent,
+      nextStep: suggestNextStep(draft.title, tracking.method),
       updates: [{ id: "created", date: "Today", title: "Goal created" }],
     };
     onCreate(goal);
     close(false);
   };
 
+  const setupSummary = () => {
+    const t = buildTracking();
+    return trackingRegistry[t.method].summary(t);
+  };
+
   const reviewRows: [string, string][] = [
     ["Goal", draft.title || "—"],
     ["Type", draft.type ? goalTypeMeta[draft.type].label : "—"],
     ["Why", draft.why || "Not set"],
-    ["Measured by", measure ? measure.label : "—"],
-    [
-      "Target",
-      measure?.kind === "date"
-        ? draft.targetOn || "—"
-        : needsTarget
-          ? `${draft.target || "—"}${unit ? ` ${unit}` : measure?.kind === "percentage" ? "%" : ""}`
-          : "Not needed for this goal",
-    ],
+    ["Tracked by", trackingRegistry[method].label],
+    ["Set up as", setupSummary()],
     ["Deadline", draft.targetDate || "Open-ended"],
   ];
 
@@ -236,12 +259,12 @@ export function CreateGoalDialog({
                 id="goal-title"
                 value={draft.title}
                 rows={3}
-                placeholder="In your own words — “Feel calmer in the evenings”, “Book a trip to Lisbon”…"
+                placeholder="In your own words — “Go on two dates”, “Be kinder to myself”…"
                 onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
                 autoFocus
               />
               <p className="text-xs text-muted-foreground">
-                Say it however it makes sense to you. Bloom will work out how to follow along.
+                Say it however it makes sense to you. Bloom will suggest how to follow along.
               </p>
             </div>
           ) : null}
@@ -276,82 +299,108 @@ export function CreateGoalDialog({
           {step === 3 ? (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                How should Bloom measure success? Not every goal needs a number.
+                Bloom suggests <span className="text-foreground">{trackingRegistry[recommendation.method].label}</span> — {recommendation.reason} You can pick anything else.
               </p>
-              {suggestions.map((s) => (
+              {[
+                recommendation.method,
+                ...trackingMethods.filter((m) => m !== recommendation.method),
+              ].map((m) => (
                 <OptionTile
-                  key={s.id}
-                  selected={draft.measureId === s.id}
-                  title={s.label}
-                  description={s.hint}
-                  onClick={() =>
-                    setDraft((d) => ({
-                      ...d,
-                      measureId: s.id,
-                      unit: s.unit ?? "",
-                      target: s.target !== undefined ? String(s.target) : "",
-                    }))
-                  }
+                  key={m}
+                  selected={method === m}
+                  title={trackingRegistry[m].label}
+                  description={`${trackingRegistry[m].description} ${trackingRegistry[m].examples}`}
+                  badge={m === recommendation.method ? "Suggested" : undefined}
+                  onClick={() => {
+                    setTouchedMethod(true);
+                    setDraft((d) => ({ ...d, method: m, target: "", unit: "", start: "", items: "" }));
+                  }}
                 />
               ))}
             </div>
           ) : null}
 
-          {step === 4 && needsTarget ? (
+          {step === 4 ? (
             <div className="space-y-4">
-              {measure?.kind === "date" ? (
-                <div className="space-y-2">
-                  <Label htmlFor="goal-target-on">Which day are you aiming for?</Label>
-                  <Input
-                    id="goal-target-on"
-                    type="date"
-                    value={draft.targetOn}
-                    onChange={(e) => setDraft((d) => ({ ...d, targetOn: e.target.value }))}
+              {baseTracking.method === "automatic" ? (
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <Field
+                    id="start"
+                    label="Starting at"
+                    value={draft.start}
+                    placeholder={String(baseTracking.start)}
+                    onChange={(v) => setDraft((d) => ({ ...d, start: v }))}
+                  />
+                  <Field
+                    id="target"
+                    label="Target"
+                    value={draft.target}
+                    placeholder={String(baseTracking.target)}
+                    onChange={(v) => setDraft((d) => ({ ...d, target: v }))}
+                  />
+                  <Field
+                    id="unit"
+                    label="Unit"
+                    value={draft.unit}
+                    placeholder={baseTracking.unit || "kg"}
+                    onChange={(v) => setDraft((d) => ({ ...d, unit: v }))}
                   />
                 </div>
-              ) : (
-                <>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="goal-start">Starting from</Label>
-                      <Input
-                        id="goal-start"
-                        inputMode="decimal"
-                        value={draft.start}
-                        placeholder="0"
-                        onChange={(e) => setDraft((d) => ({ ...d, start: e.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="goal-target">Target</Label>
-                      <Input
-                        id="goal-target"
-                        inputMode="decimal"
-                        value={draft.target}
-                        placeholder={measure?.kind === "percentage" ? "100" : "10"}
-                        onChange={(e) => setDraft((d) => ({ ...d, target: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                  {meta?.needsUnit ? (
-                    <div className="space-y-2">
-                      <Label htmlFor="goal-unit">Unit</Label>
-                      <Input
-                        id="goal-unit"
-                        value={draft.unit}
-                        placeholder="kg, sessions, minutes, pages…"
-                        onChange={(e) => setDraft((d) => ({ ...d, unit: e.target.value }))}
-                      />
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      {measure?.kind === "percentage"
-                        ? "Measured as a percentage."
-                        : "Measured as a rating out of ten."}
-                    </p>
-                  )}
-                </>
-              )}
+              ) : null}
+
+              {baseTracking.method === "repetition" ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field
+                    id="target"
+                    label="How many times?"
+                    value={draft.target}
+                    placeholder={String(baseTracking.target)}
+                    onChange={(v) => setDraft((d) => ({ ...d, target: v }))}
+                  />
+                  <Field
+                    id="unit"
+                    label="Called"
+                    value={draft.unit}
+                    placeholder={baseTracking.unit}
+                    onChange={(v) => setDraft((d) => ({ ...d, unit: v }))}
+                  />
+                </div>
+              ) : null}
+
+              {baseTracking.method === "streak" ? (
+                <Field
+                  id="target"
+                  label="How many days in a row are you aiming for?"
+                  value={draft.target}
+                  placeholder={String(baseTracking.targetDays)}
+                  onChange={(v) => setDraft((d) => ({ ...d, target: v }))}
+                />
+              ) : null}
+
+              {baseTracking.method === "checklist" || baseTracking.method === "milestone" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="goal-items">
+                    {baseTracking.method === "checklist" ? "What needs ticking off?" : "What are the milestones?"}
+                  </Label>
+                  <Textarea
+                    id="goal-items"
+                    rows={5}
+                    value={draft.items}
+                    placeholder={"One per line\nDate 1\nDate 2"}
+                    onChange={(e) => setDraft((d) => ({ ...d, items: e.target.value }))}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Leave it blank and Bloom will start you off with a simple list.
+                  </p>
+                </div>
+              ) : null}
+
+              {baseTracking.method === "reflection" ? (
+                <p className="rounded-2xl bg-muted/60 px-5 py-4 text-sm leading-relaxed text-muted-foreground">
+                  Nothing to set up. Bloom will ask how you feel you're progressing each week, and
+                  you can add a note whenever you'd like.
+                </p>
+              ) : null}
             </div>
           ) : null}
 
@@ -383,14 +432,22 @@ export function CreateGoalDialog({
         </div>
 
         <div className="flex items-center justify-between gap-3 pt-2">
-          <Button variant="ghost" onClick={goBack} className="gap-1.5">
+          <Button
+            variant="ghost"
+            onClick={() => (step === 0 ? close(false) : setStep((s) => s - 1))}
+            className="gap-1.5"
+          >
             <ArrowLeft className="h-4 w-4" />
             {step === 0 ? "Cancel" : "Back"}
           </Button>
           {step === steps.length - 1 ? (
             <Button onClick={save}>Save goal</Button>
           ) : (
-            <Button onClick={goNext} disabled={!canContinue} className="gap-1.5">
+            <Button
+              onClick={() => setStep((s) => s + 1)}
+              disabled={!canContinue}
+              className="gap-1.5"
+            >
               Continue
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -398,5 +455,31 @@ export function CreateGoalDialog({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function Field({
+  id,
+  label,
+  value,
+  placeholder,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  placeholder: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={`goal-${id}`}>{label}</Label>
+      <Input
+        id={`goal-${id}`}
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
   );
 }

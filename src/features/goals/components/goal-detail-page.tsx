@@ -4,10 +4,11 @@ import { ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { GoalCompletionCard } from "./goal-completion-card";
-import { GoalStatusPill, GoalTypePill } from "./goal-card";
+import { GoalNextStep, GoalStatusPill, GoalTypePill } from "./goal-card";
 import { GoalAccentDot, GoalProgressBar } from "./goal-progress-bar";
+import { trackingRegistry } from "./tracking/registry";
 import { useGoals } from "../hooks/use-goals";
-import { describeMeasure, formatGoalValue, goalMeasureMeta, goalProgress } from "../types";
+import { goalProgress } from "../types";
 
 function formatDate(value: string) {
   const parsed = new Date(value);
@@ -16,7 +17,7 @@ function formatDate(value: string) {
 }
 
 export function GoalDetailPage({ goalId }: { goalId: string }) {
-  const { getGoal, hydrated } = useGoals();
+  const { getGoal, updateGoal, hydrated } = useGoals();
   const goal = getGoal(goalId);
 
   if (!goal) {
@@ -41,6 +42,8 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
 
   const progress = goalProgress(goal);
   const isComplete = progress >= 100 || Boolean(goal.completedAt);
+  const definition = trackingRegistry[goal.tracking.method];
+  const { Panel } = definition;
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-8 pb-8">
@@ -59,7 +62,7 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
           <GoalTypePill goal={goal} />
           <GoalStatusPill goal={goal} />
           <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-            {goalMeasureMeta[goal.measure.kind].label}
+            {definition.label}
           </span>
         </div>
         {goal.why ? (
@@ -67,26 +70,38 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
         ) : null}
       </header>
 
+      <GoalNextStep goal={goal} />
+
+      {/* The tracking method decides what this section looks like. */}
       <Card className="rounded-3xl border-transparent bg-card shadow-soft">
         <CardContent className="space-y-6 p-7 sm:p-8">
-          <div className="space-y-2">
-            <GoalProgressBar value={progress} accent={goal.accent} label={goal.title} tall />
-            <p className="text-xs text-muted-foreground">{progress}% of the way there</p>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-base font-medium">{definition.panelTitle}</h2>
+            <span className="text-xs text-muted-foreground">
+              {definition.summary(goal.tracking)}
+            </span>
           </div>
-          <dl className="grid grid-cols-2 gap-5 border-t border-border/50 pt-5 sm:grid-cols-4">
-            <Stat
-              label="Current"
-              value={
-                typeof goal.measure.target === "number"
-                  ? formatGoalValue(goal.current, goal.measure.unit)
-                  : goal.done || goal.completedAt
-                    ? "Complete"
-                    : "In progress"
-              }
-            />
-            <Stat label="Target" value={describeMeasure(goal)} />
+
+          {definition.showsProgressBar ? (
+            <div className="space-y-2">
+              <GoalProgressBar value={progress} accent={goal.accent} label={goal.title} tall />
+              <p className="text-xs text-muted-foreground">{progress}% of the way there</p>
+            </div>
+          ) : null}
+
+          <Panel
+            tracking={goal.tracking}
+            accent={goal.accent}
+            onChange={(tracking) => updateGoal(goal.id, { tracking })}
+          />
+
+          <dl className="grid grid-cols-2 gap-5 border-t border-border/50 pt-5 sm:grid-cols-3">
+            <Stat label="Progress" value={`${progress}%`} />
             <Stat label="Started" value={formatDate(goal.startDate)} />
-            <Stat label="Target date" value={goal.targetDate ? formatDate(goal.targetDate) : "Open-ended"} />
+            <Stat
+              label="Target date"
+              value={goal.targetDate ? formatDate(goal.targetDate) : "Open-ended"}
+            />
           </dl>
         </CardContent>
       </Card>
@@ -95,7 +110,8 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
         <CardContent className="space-y-3 p-7 sm:p-8">
           <h2 className="text-base font-medium">Notes</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            {goal.notes ?? "No notes yet. Anything you'd like to remember about this goal will live here."}
+            {goal.notes ??
+              "No notes yet. Anything you'd like to remember about this goal will live here."}
           </p>
         </CardContent>
       </Card>
