@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { GoalAccentDot, GoalProgressBar } from "./goal-progress-bar";
 import {
+  describeMeasure,
   formatGoalValue,
   goalProgress,
   goalStatusMeta,
