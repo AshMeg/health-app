@@ -86,6 +86,19 @@ export function useGoals() {
     [mutate],
   );
 
+  /** A deliberate edit from the Edit Goal screen — recorded as one entry. */
+  const editGoal = useCallback(
+    (id: string, patch: Partial<BloomGoal>, changed: string[]) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        ...patch,
+        updates: changed.length
+          ? [makeUpdate("edited", "Goal edited", `Updated ${changed.join(", ")}.`), ...goal.updates]
+          : goal.updates,
+      })),
+    [mutate],
+  );
+
   /** Tracking changes describe themselves in the timeline. */
   const updateTracking = useCallback(
     (id: string, tracking: GoalTracking) =>
