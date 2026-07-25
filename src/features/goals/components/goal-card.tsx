@@ -108,7 +108,7 @@ export function GoalCard({ goal }: { goal: BloomGoal }) {
 /** Denser card for when someone is juggling several goals at once. */
 export function GoalCardCompact({ goal }: { goal: BloomGoal }) {
   const progress = goalProgress(goal);
-  const definition = trackingRegistry[goal.tracking.method];
+
 
   return (
     <Card className="group relative rounded-3xl border-transparent bg-card shadow-soft transition-shadow hover:shadow-md">
