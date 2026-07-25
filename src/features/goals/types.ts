@@ -135,9 +135,12 @@ export type StreakTracking = {
   history: string[];
 };
 
+/**
+ * Milestone tracking keeps no data of its own — the steps live on the goal, so
+ * any goal can gain or lose milestones without changing how it's tracked.
+ */
 export type MilestoneTracking = {
   method: "milestone";
-  milestones: CheckItem[];
 };
 
 export type ReflectionTracking = {
@@ -161,6 +164,8 @@ export type BloomGoal = {
   /** Why this goal matters — the user's own words. */
   why?: string;
   tracking: GoalTracking;
+  /** Optional steps. Goals without them behave exactly as they always have. */
+  milestones?: GoalMilestone[];
   startDate: string;
   /** Optional deadline — goals are allowed to be open-ended. */
   targetDate?: string;
@@ -173,6 +178,7 @@ export type BloomGoal = {
   updates: GoalUpdate[];
   completedAt?: string;
 };
+
 
 export const goalTypeMeta: Record<
   GoalType,
