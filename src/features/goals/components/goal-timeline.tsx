@@ -21,11 +21,13 @@ const kindLabel: Record<GoalEventKind, string> = {
   edited: "Edited",
   progress: "Progress",
   checklist: "Completed",
+  milestone: "Milestone",
   reflection: "Reflection",
   completed: "Complete",
   note: "Note",
   manual: "You added this",
 };
+
 
 /** Everything meaningful that has happened, recorded automatically or by hand. */
 export function GoalTimeline({
