@@ -480,11 +480,9 @@ export function CreateGoalDialog({
                 />
               ) : null}
 
-              {baseTracking.method === "checklist" || baseTracking.method === "milestone" ? (
+              {baseTracking.method === "checklist" ? (
                 <div className="space-y-2">
-                  <Label htmlFor="goal-items">
-                    {baseTracking.method === "checklist" ? "What needs ticking off?" : "What are the milestones?"}
-                  </Label>
+                  <Label htmlFor="goal-items">What needs ticking off?</Label>
                   <Textarea
                     id="goal-items"
                     rows={5}
@@ -498,6 +496,13 @@ export function CreateGoalDialog({
                 </div>
               ) : null}
 
+              {baseTracking.method === "milestone" ? (
+                <p className="rounded-2xl bg-muted/60 px-5 py-4 text-sm leading-relaxed text-muted-foreground">
+                  Nothing to set up here — you'll build your steps on the next screen, and progress
+                  is worked out from the milestones you complete.
+                </p>
+              ) : null}
+
               {baseTracking.method === "reflection" ? (
                 <p className="rounded-2xl bg-muted/60 px-5 py-4 text-sm leading-relaxed text-muted-foreground">
                   Nothing to set up. Bloom will ask how you feel you're progressing each week, and
@@ -508,6 +513,47 @@ export function CreateGoalDialog({
           ) : null}
 
           {step === 5 ? (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Some goals are one action. Others are a handful of smaller steps — entirely up to
+                you, and you can add steps later.
+              </p>
+              <div className="space-y-3">
+                <OptionTile
+                  selected={draft.milestoneChoice === "none"}
+                  title="No thanks"
+                  description="Keep this goal simple — no steps to tick off."
+                  onClick={() => chooseMilestones("none")}
+                />
+                <OptionTile
+                  selected={draft.milestoneChoice === "suggest"}
+                  title="Let Bloom suggest milestones"
+                  description="A sensible starting set, based on your goal. Edit anything you like."
+                  badge="Suggested"
+                  onClick={() => chooseMilestones("suggest")}
+                />
+                <OptionTile
+                  selected={draft.milestoneChoice === "own"}
+                  title="I'll create my own"
+                  description="Add as many steps as you want, in any order."
+                  onClick={() => chooseMilestones("own")}
+                />
+              </div>
+
+              {draft.milestoneChoice && draft.milestoneChoice !== "none" ? (
+                <div className="space-y-3 rounded-2xl bg-muted/40 p-4 sm:p-5">
+                  <MilestoneList
+                    milestones={draft.milestones}
+                    onChange={(milestones) => setDraft((d) => ({ ...d, milestones }))}
+                    accent={draft.type ? goalTypeMeta[draft.type].accent : "sage"}
+                    emptyLabel="Add your first step below — you can reorder them any time."
+                  />
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          {step === 6 ? (
             <div className="space-y-2">
               <Label htmlFor="goal-deadline">Is there a date you'd like to reach it by?</Label>
               <Input
@@ -522,7 +568,7 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 6 ? (
+          {step === 7 ? (
             <dl className="divide-y divide-border/50 rounded-2xl bg-muted/50 px-5">
               {reviewRows.map(([label, value]) => (
                 <div key={label} className="flex gap-4 py-3.5 text-sm">
@@ -532,6 +578,7 @@ export function CreateGoalDialog({
               ))}
             </dl>
           ) : null}
+
         </div>
 
         <div className="flex items-center justify-between gap-3 pt-2">
