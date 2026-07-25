@@ -4,22 +4,10 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { BloomAccent } from "@/features/today/types";
-import type { CheckItem, ChecklistTracking, MilestoneTracking } from "../../types";
+import type { ChecklistTracking } from "../../types";
 import { CheckItemList } from "./check-item-list";
 
-type Tracking = ChecklistTracking | MilestoneTracking;
-
-function itemsOf(tracking: Tracking): CheckItem[] {
-  return tracking.method === "checklist" ? tracking.items : tracking.milestones;
-}
-
-function withItems(tracking: Tracking, items: CheckItem[]): Tracking {
-  return tracking.method === "checklist"
-    ? { ...tracking, items }
-    : { ...tracking, milestones: items };
-}
-
-/** Checklist and milestone tracking share the same tickable list, with different words. */
+/** Checklist tracking: a short list of things to tick off, one by one. */
 export function CheckablePanel({
   tracking,
   accent = "sage",
@@ -27,44 +15,40 @@ export function CheckablePanel({
   addLabel,
   emptyLabel,
 }: {
-  tracking: Tracking;
+  tracking: ChecklistTracking;
   accent?: BloomAccent;
-  onChange: (next: Tracking) => void;
+  onChange: (next: ChecklistTracking) => void;
   addLabel: string;
   emptyLabel: string;
 }) {
   const [draft, setDraft] = useState("");
-  const items = itemsOf(tracking);
+  const items = tracking.items;
   const done = items.filter((i) => i.done).length;
 
   const toggle = (id: string) => {
-    onChange(
-      withItems(
-        tracking,
-        items.map((i) =>
-          i.id === id
-            ? {
-                ...i,
-                done: !i.done,
-                doneOn: !i.done
-                  ? new Date().toLocaleDateString(undefined, { day: "numeric", month: "short" })
-                  : undefined,
-              }
-            : i,
-        ),
+    onChange({
+      ...tracking,
+      items: items.map((i) =>
+        i.id === id
+          ? {
+              ...i,
+              done: !i.done,
+              doneOn: !i.done
+                ? new Date().toLocaleDateString(undefined, { day: "numeric", month: "short" })
+                : undefined,
+            }
+          : i,
       ),
-    );
+    });
   };
 
   const add = () => {
     const label = draft.trim();
     if (!label) return;
-    onChange(
-      withItems(tracking, [
-        ...items,
-        { id: `i${Date.now().toString(36)}`, label, done: false },
-      ]),
-    );
+    onChange({
+      ...tracking,
+      items: [...items, { id: `i${Date.now().toString(36)}`, label, done: false }],
+    });
     setDraft("");
   };
 
