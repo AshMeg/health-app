@@ -5,17 +5,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { GoalAccentDot, GoalProgressBar } from "./goal-progress-bar";
 import { trackingRegistry } from "./tracking/registry";
-import { goalProgress, goalStatusMeta, goalTypeMeta, type BloomGoal } from "../types";
+import { goalProgress, goalStatus, goalStatusMeta, goalTypeMeta, type BloomGoal } from "../types";
 
 export function GoalStatusPill({ goal }: { goal: BloomGoal }) {
-  const meta = goalStatusMeta[goal.status];
+  const meta = goalStatusMeta[goalStatus(goal)];
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium",
+        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
         meta.className,
       )}
     >
+      <span className={cn("h-1.5 w-1.5 rounded-full", meta.dotClassName)} />
       {meta.label}
     </span>
   );
