@@ -186,6 +186,7 @@ export function CreateGoalDialog({
   }, [draft, step]);
 
   const reset = () => {
+    setPicking(true);
     setStep(0);
     setDraft(emptyDraft);
     setTouchedMethod(false);
@@ -194,6 +195,17 @@ export function CreateGoalDialog({
   const close = (next: boolean) => {
     onOpenChange(next);
     if (!next) setTimeout(reset, 200);
+  };
+
+  /** A template fills in what it knows and drops you straight into the flow. */
+  const startFromTemplate = (template: GoalTemplate) => {
+    setDraft({ ...emptyDraft, title: template.title, type: template.type });
+    if (template.method) {
+      setTouchedMethod(true);
+      setDraft((d) => ({ ...d, method: template.method ?? null }));
+    }
+    setPicking(false);
+    setStep(0);
   };
 
   const save = () => {
@@ -207,14 +219,15 @@ export function CreateGoalDialog({
       tracking,
       startDate: new Date().toISOString().slice(0, 10),
       targetDate: draft.targetDate || undefined,
-      status: "on-track",
       accent: goalTypeMeta[draft.type].accent,
       nextStep: suggestNextStep(draft.title, tracking.method),
-      updates: [{ id: "created", date: "Today", title: "Goal created" }],
+      notes: [],
+      updates: [makeUpdate("created", "Goal created", draft.why.trim() || undefined)],
     };
     onCreate(goal);
     close(false);
   };
+
 
   const setupSummary = () => {
     const t = buildTracking();
