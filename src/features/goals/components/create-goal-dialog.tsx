@@ -367,7 +367,7 @@ export function CreateGoalDialog({
 
 
         <div className="space-y-4 py-2">
-          {step === 0 ? (
+          {current === "title" ? (
             <div className="space-y-2">
               <Label htmlFor="goal-title">What would you like to achieve?</Label>
               <Textarea
@@ -384,7 +384,7 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 1 ? (
+          {current === "type" ? (
             <div className="space-y-3">
               {(Object.keys(goalTypeMeta) as GoalType[]).map((t) => (
                 <OptionTile
@@ -398,7 +398,7 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 2 ? (
+          {current === "why" ? (
             <div className="space-y-2">
               <Label htmlFor="goal-why">Why does this matter to you?</Label>
               <Textarea
@@ -411,7 +411,7 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 3 ? (
+          {current === "tracking" ? (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
                 Bloom suggests <span className="text-foreground">{trackingRegistry[recommendation.method].label}</span> — {recommendation.reason} You can pick anything else.
@@ -435,7 +435,7 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 4 ? (
+          {current === "setup" ? (
             <div className="space-y-4">
               {baseTracking.method === "automatic" ? (
                 <div className="grid gap-4 sm:grid-cols-3">
@@ -524,7 +524,7 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 5 ? (
+          {current === "steps" ? (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
                 Some goals are one action. Others are a handful of smaller steps — entirely up to
@@ -565,7 +565,7 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 6 ? (
+          {current === "deadline" ? (
             <div className="space-y-2">
               <Label htmlFor="goal-deadline">Is there a date you'd like to reach it by?</Label>
               <Input
@@ -580,7 +580,7 @@ export function CreateGoalDialog({
             </div>
           ) : null}
 
-          {step === 7 ? (
+          {current === "review" ? (
             <dl className="divide-y divide-border/50 rounded-2xl bg-muted/50 px-5">
               {reviewRows.map(([label, value]) => (
                 <div key={label} className="flex gap-4 py-3.5 text-sm">
@@ -602,7 +602,7 @@ export function CreateGoalDialog({
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
-          {step === steps.length - 1 ? (
+          {current === "review" ? (
             <Button onClick={save}>Save goal</Button>
           ) : (
             <Button
