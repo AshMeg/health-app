@@ -36,10 +36,12 @@ export type GoalEventKind =
   | "edited"
   | "progress"
   | "checklist"
+  | "milestone"
   | "reflection"
   | "completed"
   | "note"
   | "manual";
+
 
 export type GoalUpdate = {
   id: string;
