@@ -1,18 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PagePlaceholder } from "@/components/shared/page-placeholder";
+import { TodayPage } from "@/features/today/components/today-page";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Bloom" },
-      { name: "description", content: "Your health analytics dashboard." },
+      { title: "Today — Bloom" },
+      { name: "description", content: "Your daily health snapshot, insight and focus." },
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: () => (
-    <PagePlaceholder
-      title="Dashboard"
-      description="An at-a-glance view of your health signals."
-    />
-  ),
+  component: TodayRoute,
 });
+
+function TodayRoute() {
+  const { user } = Route.useRouteContext();
+  const fullName =
+    (user.user_metadata?.full_name as string | undefined) ??
+    (user.user_metadata?.name as string | undefined) ??
+    user.email?.split("@")[0] ??
+    "there";
+  const firstName = fullName.split(/[\s.]+/)[0];
+  const display = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+
+  return <TodayPage firstName={display} />;
+}
