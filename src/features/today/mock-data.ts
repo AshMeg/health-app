@@ -1,7 +1,7 @@
 import type {
   Confidence,
   FocusItem,
-  GoalCard,
+  Goal,
   LogStatusItem,
   QuickAddItem,
   SummaryStat,
@@ -18,22 +18,83 @@ export const todayInsight: {
   confidence: "Medium",
 };
 
-export const goalProgress: GoalCard[] = [
-  { id: "weight", name: "Weight Trend", description: "Down 0.3 kg over 14 days", status: "good" },
-  { id: "protein", name: "Protein", description: "Averaging 12 g under target", status: "watch" },
-  { id: "recovery", name: "Recovery", description: "Steady, above your baseline", status: "good" },
-  { id: "hydration", name: "Hydration", description: "No water logged yet today", status: "off" },
-  { id: "training", name: "Training", description: "2 of 4 sessions this week", status: "watch" },
-  { id: "sleep", name: "Sleep", description: "7 h 24 m average, on track", status: "good" },
+export const goals: Goal[] = [
+  {
+    id: "weight-loss",
+    name: "Lose 5 kg",
+    note: "Down 1.6 kg since you started, moving steadily.",
+    progress: 32,
+    currentLabel: "Current",
+    currentValue: "71.4 kg",
+    targetLabel: "Target",
+    targetValue: "68.0 kg",
+    estimate: "On pace to arrive around mid September",
+    accent: "sage",
+    status: "good",
+    emphasis: "primary",
+  },
+  {
+    id: "protein",
+    name: "Protein",
+    note: "Averaging 128 g a day over the last week.",
+    progress: 91,
+    currentLabel: "7-day average",
+    currentValue: "128 g",
+    targetLabel: "Daily target",
+    targetValue: "140 g",
+    estimate: "One extra serving a day would close the gap",
+    accent: "blush",
+    status: "watch",
+    emphasis: "primary",
+  },
+  {
+    id: "training",
+    name: "Train 4× a week",
+    note: "Two sessions logged, two still to go.",
+    progress: 50,
+    currentLabel: "This week",
+    currentValue: "2 sessions",
+    targetLabel: "Goal",
+    targetValue: "4 sessions",
+    accent: "lavender",
+    status: "watch",
+    emphasis: "supporting",
+  },
+  {
+    id: "sleep",
+    name: "Sleep 7h 30m",
+    note: "Your nights have been remarkably even.",
+    progress: 98,
+    currentLabel: "Average",
+    currentValue: "7h 24m",
+    targetLabel: "Target",
+    targetValue: "7h 30m",
+    accent: "sky",
+    status: "good",
+    emphasis: "supporting",
+  },
+  {
+    id: "hydration",
+    name: "Drink 2.5 L",
+    note: "Nothing logged yet today — an easy win.",
+    progress: 12,
+    currentLabel: "Today",
+    currentValue: "0.3 L",
+    targetLabel: "Target",
+    targetValue: "2.5 L",
+    accent: "stone",
+    status: "off",
+    emphasis: "supporting",
+  },
 ];
 
 export const todaySummary: SummaryStat[] = [
   { id: "weight", label: "Weight", value: "71.4", unit: "kg", detail: "−0.2 vs last week" },
-  { id: "cycle", label: "Cycle Day", value: "12", detail: "Follicular" },
+  { id: "cycle", label: "Cycle day", value: "12", detail: "Follicular" },
   { id: "sleep", label: "Sleep", value: "7h 38m", detail: "Bed 23:10" },
   { id: "recovery", label: "Recovery", value: "68", unit: "%", detail: "Balanced" },
-  { id: "protein", label: "Protein Yesterday", value: "118", unit: "g", detail: "Target 140 g" },
-  { id: "steps", label: "Steps Yesterday", value: "9,204", detail: "Goal 8,000" },
+  { id: "protein", label: "Protein yesterday", value: "118", unit: "g", detail: "Target 140 g" },
+  { id: "steps", label: "Steps yesterday", value: "9,204", detail: "Goal 8,000" },
 ];
 
 export const todayFocus: FocusItem[] = [
@@ -72,7 +133,7 @@ export const quickAddItems: QuickAddItem[] = [
   { id: "workout", label: "Workout" },
   { id: "water", label: "Water" },
   { id: "medication", label: "Medication" },
-  { id: "life-event", label: "Life Event" },
+  { id: "life-event", label: "Life event" },
 ];
 
 export const timelinePreview: TimelineEvent[] = [
