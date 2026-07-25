@@ -183,11 +183,65 @@ export const goalTypeMeta: Record<
   },
 };
 
-export const goalStatusMeta: Record<GoalStatus, { label: string; className: string }> = {
-  "on-track": { label: "On Track", className: "bg-success-soft text-success" },
-  behind: { label: "Behind", className: "bg-caution-soft text-caution" },
-  ahead: { label: "Ahead", className: "bg-sky-soft text-sky" },
+export const goalStatusMeta: Record<
+  GoalStatus,
+  { label: string; className: string; dotClassName: string }
+> = {
+  "on-track": {
+    label: "On Track",
+    className: "bg-success-soft text-success",
+    dotClassName: "bg-success",
+  },
+  "needs-attention": {
+    label: "Needs Attention",
+    className: "bg-caution-soft text-caution",
+    dotClassName: "bg-caution",
+  },
+  completed: {
+    label: "Completed",
+    className: "bg-sky-soft text-sky",
+    dotClassName: "bg-sky",
+  },
+  "not-started": {
+    label: "Not Started",
+    className: "bg-muted text-muted-foreground",
+    dotClassName: "bg-muted-foreground/40",
+  },
 };
+
+const DAY = 86_400_000;
+
+/**
+ * Status is always calculated, never stored: complete beats everything, then
+ * untouched goals, then pace against the deadline where there is one.
+ */
+export function goalStatus(goal: BloomGoal): GoalStatus {
+  const progress = goalProgress(goal);
+  if (goal.completedAt || progress >= 100) return "completed";
+  if (progress === 0) return "not-started";
+
+  if (goal.targetDate) {
+    const start = new Date(goal.startDate).getTime();
+    const end = new Date(goal.targetDate).getTime();
+    const now = Date.now();
+    if (!Number.isNaN(start) && !Number.isNaN(end) && end > start) {
+      if (now > end) return "needs-attention";
+      const expected = ((now - start) / (end - start)) * 100;
+      // A little slack, so a good week isn't undone by a slow one.
+      if (progress < expected - 15) return "needs-attention";
+    }
+  }
+
+  // Without a deadline, a goal only slips if nothing has happened in a while.
+  const lastEvent = goal.updates
+    .map((u) => new Date(u.date).getTime())
+    .filter((t) => !Number.isNaN(t))
+    .sort((a, b) => b - a)[0];
+  if (lastEvent && Date.now() - lastEvent > 21 * DAY) return "needs-attention";
+
+  return "on-track";
+}
+
 
 export const reflectionRatingMeta: Record<
   ReflectionRating,
