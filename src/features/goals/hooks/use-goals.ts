@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { seedGoals } from "../mock-data";
 import type { BloomGoal } from "../types";
 
-const STORAGE_KEY = "bloom.goals.v2";
+const STORAGE_KEY = "bloom.goals.v3";
 
 /**
  * Placeholder goal store. Goals live in localStorage so created goals survive
