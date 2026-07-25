@@ -423,14 +423,28 @@ export function CreateGoalDialog({
                 <OptionTile
                   key={m}
                   selected={method === m}
-                  title={trackingRegistry[m].label}
+                  title={
+                    m === "milestone"
+                      ? "🌱 Break this goal into smaller steps"
+                      : trackingRegistry[m].label
+                  }
                   description={`${trackingRegistry[m].description} ${trackingRegistry[m].examples}`}
                   badge={m === recommendation.method ? "Suggested" : undefined}
                   onClick={() => {
                     setTouchedMethod(true);
-                    setDraft((d) => ({ ...d, method: m, target: "", unit: "", start: "", items: "" }));
+                    setDraft((d) => ({
+                      ...d,
+                      method: m,
+                      target: "",
+                      unit: "",
+                      start: "",
+                      items: "",
+                      // Leave the steps decision to the steps screen.
+                      ...(m === "milestone" ? {} : { milestoneChoice: null, milestones: [] }),
+                    }));
                   }}
                 />
+
               ))}
             </div>
           ) : null}
