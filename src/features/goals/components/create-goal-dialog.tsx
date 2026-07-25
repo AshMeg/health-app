@@ -345,15 +345,16 @@ export function CreateGoalDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-3xl sm:max-w-lg">
         <DialogHeader className="space-y-2 text-left">
           <DialogTitle className="font-display text-xl font-medium">
-            {stepHeadings[step]}
+            {stepMeta[current].heading}
           </DialogTitle>
           <DialogDescription>
-            Step {step + 1} of {steps.length} · {steps[step]}
+            Step {step + 1} of {flow.length} · {stepMeta[current].label}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex gap-1.5" aria-hidden>
-          {steps.map((s, i) => (
+          {flow.map((s, i) => (
+
             <span
               key={s}
               className={cn(
