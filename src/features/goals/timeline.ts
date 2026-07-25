@@ -1,4 +1,4 @@
-import type { GoalEventKind, GoalTracking, GoalUpdate } from "./types";
+import type { GoalEventKind, GoalMilestone, GoalTracking, GoalUpdate } from "./types";
 
 export const isoToday = () => new Date().toISOString().slice(0, 10);
 
@@ -16,10 +16,36 @@ export function makeUpdate(
   };
 }
 
-function checkItems(tracking: GoalTracking) {
-  if (tracking.method === "checklist") return tracking.items;
-  if (tracking.method === "milestone") return tracking.milestones;
-  return null;
+/**
+ * Turns a milestone change into plain-language timeline entries, so the goal
+ * records its own story without the user having to write it down.
+ */
+export function describeMilestoneChange(
+  prev: GoalMilestone[],
+  next: GoalMilestone[],
+): GoalUpdate[] {
+  const events: GoalUpdate[] = [];
+
+  for (const item of next) {
+    const before = prev.find((m) => m.id === item.id);
+    if (!before) {
+      events.push(makeUpdate("milestone", "Milestone added", item.label));
+      continue;
+    }
+    if (!before.done && item.done) {
+      events.push(makeUpdate("milestone", "Milestone completed", item.label));
+    } else if (before.done && !item.done) {
+      events.push(makeUpdate("edited", "Milestone reopened", item.label));
+    }
+  }
+
+  for (const item of prev) {
+    if (!next.find((m) => m.id === item.id)) {
+      events.push(makeUpdate("edited", "Milestone removed", item.label));
+    }
+  }
+
+  return events;
 }
 
 /**
@@ -36,25 +62,23 @@ export function describeTrackingChange(
 
   const events: GoalUpdate[] = [];
 
-  const prevItems = checkItems(prev);
-  const nextItems = checkItems(next);
-  if (prevItems && nextItems) {
-    const word = next.method === "milestone" ? "Milestone" : "Checklist item";
-    for (const item of nextItems) {
-      const before = prevItems.find((i) => i.id === item.id);
+  if (prev.method === "checklist" && next.method === "checklist") {
+    for (const item of next.items) {
+      const before = prev.items.find((i) => i.id === item.id);
       if (before && !before.done && item.done) {
-        events.push(makeUpdate("checklist", `${word} completed`, item.label));
+        events.push(makeUpdate("checklist", "Checklist item completed", item.label));
       }
       if (!before) {
-        events.push(makeUpdate("edited", `${word} added`, item.label));
+        events.push(makeUpdate("edited", "Checklist item added", item.label));
       }
     }
-    for (const item of prevItems) {
-      if (!nextItems.find((i) => i.id === item.id)) {
-        events.push(makeUpdate("edited", `${word} removed`, item.label));
+    for (const item of prev.items) {
+      if (!next.items.find((i) => i.id === item.id)) {
+        events.push(makeUpdate("edited", "Checklist item removed", item.label));
       }
     }
   }
+
 
   if (prev.method === "automatic" && next.method === "automatic" && prev.current !== next.current) {
     events.push(
