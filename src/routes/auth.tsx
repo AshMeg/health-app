@@ -49,12 +49,21 @@ function AuthPage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
-        navigate({ to: redirect ?? "/dashboard", replace: true });
+        goPostAuth();
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, redirect]);
 
-  const goPostAuth = () => navigate({ to: redirect ?? "/dashboard", replace: true });
+  // Only same-origin relative paths are honoured as a post-auth destination.
+  const safeRedirect = redirect && /^\/(?!\/)/.test(redirect) ? redirect : null;
+  const goPostAuth = () => {
+    if (safeRedirect) {
+      window.location.replace(safeRedirect);
+      return;
+    }
+    navigate({ to: "/dashboard", replace: true });
+  };
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -99,7 +108,9 @@ function AuthPage() {
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: safeRedirect
+          ? `${window.location.origin}/auth?redirect=${encodeURIComponent(safeRedirect)}`
+          : `${window.location.origin}/dashboard`,
         data: { full_name: parsed.data.fullName },
       },
     });
@@ -115,7 +126,9 @@ function AuthPage() {
   const handleGoogle = async () => {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: safeRedirect
+        ? `${window.location.origin}/auth?redirect=${encodeURIComponent(safeRedirect)}`
+        : window.location.origin,
     });
     if (result.error) {
       setLoading(false);
