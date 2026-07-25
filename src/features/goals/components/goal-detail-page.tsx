@@ -1,17 +1,20 @@
+import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, Pencil, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { GoalActionsMenu } from "./goal-actions-menu";
+import { EditGoalDialog } from "./edit-goal-dialog";
 import { GoalCompletionCard } from "./goal-completion-card";
 import { GoalNextStep, GoalStatusPill, GoalTypePill } from "./goal-card";
+import { GoalManageSection } from "./goal-manage-section";
 import { GoalNotes } from "./goal-notes";
 import { GoalTimeline } from "./goal-timeline";
 import { MilestoneList } from "./milestones/milestone-list";
 import { GoalAccentDot, GoalProgressBar } from "./goal-progress-bar";
 import { trackingRegistry } from "./tracking/registry";
 import { formatGoalDateLong } from "../format";
+import { goalSummaryParts } from "../summary";
 import { useGoals } from "../hooks/use-goals";
 import { goalProgress, hasMilestones, isResting, milestoneSummary } from "../types";
 
@@ -25,10 +28,12 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
     deleteNote,
     addManualUpdate,
     addToGarden,
+    editGoal,
     resumeGoal,
     hydrated,
   } = useGoals();
   const navigate = useNavigate();
+  const [editing, setEditing] = useState(false);
   const goal = getGoal(goalId);
 
   if (!goal) {
@@ -58,7 +63,7 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
   const milestones = goal.milestones ?? [];
   // Milestone-tracked goals always show the section; others only once they have steps.
   const showMilestones = goal.tracking.method === "milestone" || hasMilestones(goal);
-
+  const summary = goalSummaryParts(goal);
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-8 pb-8">
@@ -68,16 +73,19 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
         <GoalCompletionCard title={goal.title} onAddToGarden={() => addToGarden(goal.id)} />
       ) : null}
 
-      <header className="space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <GoalAccentDot accent={goal.accent} />
-            <h1 className="font-display text-[1.75rem] leading-tight font-medium sm:text-4xl">
-              {goal.title}
-            </h1>
-          </div>
-          <GoalActionsMenu goal={goal} onDeleted={() => navigate({ to: "/goals" })} />
+      <header className="space-y-4">
+        <div className="flex items-center gap-2.5">
+          <GoalAccentDot accent={goal.accent} />
+          <h1 className="font-display text-[1.75rem] leading-tight font-medium sm:text-4xl">
+            {goal.title}
+          </h1>
         </div>
+
+        {/* Where am I? — the first thing to read after the title. */}
+        <p className="max-w-xl text-base leading-relaxed text-foreground/80">
+          {summary.join(" • ")}
+        </p>
+
         <div className="flex flex-wrap items-center gap-2">
           <GoalTypePill goal={goal} />
           <GoalStatusPill goal={goal} />
@@ -85,18 +93,32 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
             {definition.label}
           </span>
         </div>
-        {isResting(goal) ? (
-          <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-muted/60 px-4 py-3">
-            <p className="text-sm text-muted-foreground">
-              🌱 Resting in Not Right Now — everything here is kept for when you come back.
-            </p>
-            <Button size="sm" variant="secondary" onClick={() => resumeGoal(goal.id)}>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={() => setEditing(true)} className="gap-1.5">
+            <Pencil className="h-4 w-4" />
+            Edit Goal
+          </Button>
+          {isResting(goal) ? (
+            <Button variant="secondary" onClick={() => resumeGoal(goal.id)}>
               Resume goal
             </Button>
-          </div>
+          ) : null}
+        </div>
+
+        {isResting(goal) ? (
+          <p className="rounded-2xl bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
+            🌱 Resting in Not Right Now — everything here is kept for when you come back.
+          </p>
         ) : null}
+
         {goal.why ? (
-          <p className="max-w-xl text-base leading-relaxed text-muted-foreground">“{goal.why}”</p>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">Why this goal matters</p>
+            <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
+              “{goal.why}”
+            </p>
+          </div>
         ) : null}
       </header>
 
@@ -200,9 +222,19 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
           </div>
         </CardContent>
       </Card>
+
+      <GoalManageSection goal={goal} onDeleted={() => navigate({ to: "/goals" })} />
+
+      <EditGoalDialog
+        goal={goal}
+        open={editing}
+        onOpenChange={setEditing}
+        onSave={(patch, changed) => editGoal(goal.id, patch, changed)}
+      />
     </div>
   );
 }
+
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
