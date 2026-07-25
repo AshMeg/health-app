@@ -107,6 +107,7 @@ export function CreateGoalDialog({
   onOpenChange: (open: boolean) => void;
   onCreate: (goal: BloomGoal) => void;
 }) {
+  const [picking, setPicking] = useState(true);
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [touchedMethod, setTouchedMethod] = useState(false);
