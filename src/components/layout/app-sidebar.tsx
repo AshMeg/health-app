@@ -34,7 +34,7 @@ type NavItem = { title: string; url: string; icon: LucideIcon };
 
 const trackingItems: NavItem[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Timeline", url: "/timeline", icon: History },
+  { title: "Timeline", url: "/timeline", icon: HistoryIcon },
   { title: "Goals", url: "/goals", icon: Target },
 
   { title: "Weight", url: "/weight", icon: Scale },
