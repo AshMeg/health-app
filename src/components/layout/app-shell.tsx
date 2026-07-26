@@ -81,7 +81,7 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider open={sidebarOpen} onOpenChange={handleSidebarChange}>
       <AppSidebar />
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-16 items-center gap-2 border-b border-border/50 bg-background/70 px-4 backdrop-blur-md sm:px-6">
