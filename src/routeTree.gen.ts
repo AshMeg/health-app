@@ -26,6 +26,7 @@ import { Route as AuthenticatedNutritionRouteImport } from './routes/_authentica
 import { Route as AuthenticatedMeasurementsRouteImport } from './routes/_authenticated/measurements'
 import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
+import { Route as AuthenticatedGardenRouteImport } from './routes/_authenticated/garden'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCycleRouteImport } from './routes/_authenticated/cycle'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
@@ -122,6 +123,11 @@ const AuthenticatedIntegrationsRoute =
     path: '/integrations',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedGardenRoute = AuthenticatedGardenRouteImport.update({
+  id: '/garden',
+  path: '/garden',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/cycle': typeof AuthenticatedCycleRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/garden': typeof AuthenticatedGardenRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/measurements': typeof AuthenticatedMeasurementsRoute
@@ -210,6 +217,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/cycle': typeof AuthenticatedCycleRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/garden': typeof AuthenticatedGardenRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/measurements': typeof AuthenticatedMeasurementsRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/cycle': typeof AuthenticatedCycleRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/garden': typeof AuthenticatedGardenRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
   '/_authenticated/measurements': typeof AuthenticatedMeasurementsRoute
@@ -268,6 +277,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/cycle'
     | '/dashboard'
+    | '/garden'
     | '/integrations'
     | '/journal'
     | '/measurements'
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/cycle'
     | '/dashboard'
+    | '/garden'
     | '/integrations'
     | '/journal'
     | '/measurements'
@@ -323,6 +334,7 @@ export interface FileRouteTypes {
     | '/_authenticated/analytics'
     | '/_authenticated/cycle'
     | '/_authenticated/dashboard'
+    | '/_authenticated/garden'
     | '/_authenticated/integrations'
     | '/_authenticated/journal'
     | '/_authenticated/measurements'
@@ -474,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIntegrationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/garden': {
+      id: '/_authenticated/garden'
+      path: '/garden'
+      fullPath: '/garden'
+      preLoaderRoute: typeof AuthenticatedGardenRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -544,6 +563,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedCycleRoute: typeof AuthenticatedCycleRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedGardenRoute: typeof AuthenticatedGardenRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
   AuthenticatedMeasurementsRoute: typeof AuthenticatedMeasurementsRoute
@@ -563,6 +583,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedCycleRoute: AuthenticatedCycleRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedGardenRoute: AuthenticatedGardenRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedJournalRoute: AuthenticatedJournalRoute,
   AuthenticatedMeasurementsRoute: AuthenticatedMeasurementsRoute,
