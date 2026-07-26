@@ -33,6 +33,7 @@ export function SnapshotSummary() {
       ? {
           id: "weight",
           label: "Weight",
+          to: "/weight",
           value: String(today.weightKg),
           unit: "kg",
           detail: yesterday?.weightKg
@@ -44,11 +45,11 @@ export function SnapshotSummary() {
       : null,
   );
   push(
-    today.cycleDay ? { id: "cycle", label: "Cycle day", value: String(today.cycleDay) } : null,
+    today.cycleDay ? { id: "cycle", label: "Cycle day", value: String(today.cycleDay), to: "/cycle" } : null,
   );
   push(
     today.sleepMinutes
-      ? { id: "sleep", label: "Sleep", value: formatSleep(today.sleepMinutes) ?? "" }
+      ? { id: "sleep", label: "Sleep", value: formatSleep(today.sleepMinutes) ?? "", to: "/sleep" }
       : null,
   );
   push(
@@ -56,6 +57,7 @@ export function SnapshotSummary() {
       ? {
           id: "recovery",
           label: "Recovery",
+          to: "/recovery",
           value: String(today.recoveryPercent),
           unit: "%",
           detail: today.hrv ? `HRV ${today.hrv} ms` : undefined,
@@ -63,22 +65,23 @@ export function SnapshotSummary() {
       : null,
   );
   push(
-    today.proteinG ? { id: "protein", label: "Protein", value: String(today.proteinG), unit: "g" } : null,
+    today.proteinG ? { id: "protein", label: "Protein", value: String(today.proteinG), unit: "g", to: "/nutrition" } : null,
   );
   push(
     today.caloriesKcal
       ? {
           id: "calories",
           label: "Calories",
+          to: "/nutrition",
           value: today.caloriesKcal.toLocaleString(),
           unit: "kcal",
         }
       : null,
   );
-  push(today.steps ? { id: "steps", label: "Steps", value: today.steps.toLocaleString() } : null);
-  push(today.waterL ? { id: "water", label: "Water", value: String(today.waterL), unit: "L" } : null);
-  push(today.mood ? { id: "mood", label: "Mood", value: today.mood, detail: today.stress ? `Stress ${today.stress.toLowerCase()}` : undefined } : null);
-  push(today.workout ? { id: "workout", label: "Workout", value: today.workout } : null);
+  push(today.steps ? { id: "steps", label: "Steps", value: today.steps.toLocaleString(), to: "/training" } : null);
+  push(today.waterL ? { id: "water", label: "Water", value: String(today.waterL), unit: "L", to: "/nutrition" } : null);
+  push(today.mood ? { id: "mood", label: "Mood", value: today.mood, to: "/recovery", detail: today.stress ? `Stress ${today.stress.toLowerCase()}` : undefined } : null);
+  push(today.workout ? { id: "workout", label: "Workout", value: today.workout, to: "/training" } : null);
 
   if (!stats.length) {
     return (
@@ -97,12 +100,22 @@ export function SnapshotLogStatus() {
   const { today } = useBloomContext();
 
   const tracked = ["weight", "water", "sleep", "food", "mood", "journal"] as const;
+  // Each row leads to the page where that log lives.
+  const pageFor: Record<(typeof tracked)[number], string> = {
+    weight: "/weight",
+    water: "/nutrition",
+    sleep: "/sleep",
+    food: "/nutrition",
+    mood: "/recovery",
+    journal: "/journal",
+  };
   const items: LogStatusItem[] = tracked.map((category) => {
     const event = today.events.find((e) => e.category === category);
     return {
       id: category,
       label: eventCategoryMeta[category].label,
       state: !event ? "missing" : event.source === "sync" ? "synced" : "logged",
+      to: pageFor[category],
     };
   });
 
@@ -118,8 +131,8 @@ export function TodayTimelineWidget() {
         <CardContent className="space-y-4 p-8 text-center">
           <p className="text-sm text-muted-foreground">Nothing logged today — yet.</p>
           <Button asChild variant="secondary" className="gap-1.5">
-            <Link to="/timeline">
-              Open your timeline
+            <Link to="/journal">
+              Write today's journal
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>

@@ -1,9 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PagePlaceholder } from "@/components/shared/page-placeholder";
+import { MetricPage } from "@/features/metrics/components/metric-page";
+import { metricPages } from "@/features/metrics/config";
 
 export const Route = createFileRoute("/_authenticated/weight")({
-  head: () => ({ meta: [{ title: "Weight — Bloom" }, { name: "robots", content: "noindex" }] }),
-  component: () => (
-    <PagePlaceholder title="Weight" description="Track your weight over time." />
-  ),
+  head: () => ({
+    meta: [
+      { title: "Weight — Bloom" },
+      { name: "description", content: metricPages.weight.question },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
+  component: () => <MetricPage config={metricPages.weight} />,
 });

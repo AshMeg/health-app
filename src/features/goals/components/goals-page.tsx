@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { CreateGoalDialog } from "./create-goal-dialog";
@@ -50,14 +51,20 @@ export function GoalsPage() {
             )}
           </section>
 
+          {/* Finished goals live in the Garden — Goals stays about what's growing now. */}
           {complete.length ? (
-            <section className="space-y-5">
-              <h2 className="text-sm text-muted-foreground">Complete</h2>
-              <div className="grid gap-5 lg:grid-cols-2">
-                {complete.map((goal) => (
-                  <GoalCard key={goal.id} goal={goal} />
-                ))}
-              </div>
+            <section className="space-y-3">
+              <h2 className="text-sm text-muted-foreground">Completed</h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {complete.length} finished goal{complete.length === 1 ? "" : "s"} {complete.length === 1 ? "is" : "are"}{" "}
+                planted in your Garden.
+              </p>
+              <Button asChild variant="secondary" className="gap-1.5">
+                <Link to="/garden">
+                  Visit Your Garden
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
             </section>
           ) : null}
 

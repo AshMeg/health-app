@@ -17,6 +17,8 @@ export function GreetingHeader({ firstName, now = new Date() }: { firstName: str
       <h1 className="font-display text-[1.75rem] leading-tight font-medium sm:text-4xl">
         Good {partOfDay(now.getHours())}, {firstName}
       </h1>
+      {/* The one question this page answers. */}
+      <p className="font-display text-lg leading-snug text-foreground/70">How am I today?</p>
     </header>
   );
 }

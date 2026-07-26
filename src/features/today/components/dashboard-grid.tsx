@@ -1,10 +1,10 @@
 import { useState, type DragEvent } from "react";
-import { ChevronDown, ChevronUp, EyeOff, GripVertical } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, ChevronDown, ChevronUp, EyeOff, GripVertical } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { WidgetDefinition, WidgetId } from "../types";
-import { widgetActions } from "../widgets/registry";
 
 type Props = {
   widgets: WidgetDefinition[];
@@ -102,9 +102,20 @@ export function DashboardGrid({ widgets, editing, onMove, onShift, onHide }: Pro
                   {widget.locked ? "Always on" : "Hide"}
                 </Button>
               </div>
-            ) : (
-              (widgetActions[widget.id] ?? null)
-            )}
+            ) : widget.to ? (
+              /* Every card opens its full page. */
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="shrink-0 rounded-full text-muted-foreground"
+              >
+                <Link to={widget.to}>
+                  {widget.linkLabel ?? "Open"}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            ) : null}
           </header>
 
           {widget.render()}

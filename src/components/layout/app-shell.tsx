@@ -21,9 +21,31 @@ import {
 
 type Profile = { full_name: string | null; avatar_url: string | null };
 
+const SIDEBAR_KEY = "bloom.sidebar.expanded.v1";
+
 export function AppShell({ user, children }: { user: User; children: ReactNode }) {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
+  // Expanded / collapsed is a preference, so it's remembered between visits.
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(SIDEBAR_KEY);
+      if (saved !== null) setSidebarOpen(saved === "true");
+    } catch {
+      /* storage unavailable — default to expanded */
+    }
+  }, []);
+
+  const handleSidebarChange = (open: boolean) => {
+    setSidebarOpen(open);
+    try {
+      window.localStorage.setItem(SIDEBAR_KEY, String(open));
+    } catch {
+      /* preference stays for this session only */
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -59,7 +81,7 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider open={sidebarOpen} onOpenChange={handleSidebarChange}>
       <AppSidebar />
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-16 items-center gap-2 border-b border-border/50 bg-background/70 px-4 backdrop-blur-md sm:px-6">
