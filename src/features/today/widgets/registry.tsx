@@ -1,8 +1,3 @@
-import { ArrowRight } from "lucide-react";
-import { Link } from "@tanstack/react-router";
-
-import { Button } from "@/components/ui/button";
-
 import type { WidgetDefinition } from "../types";
 import {
   SnapshotFocus,
@@ -32,6 +27,8 @@ export const todayWidgets: WidgetDefinition[] = [
   },
   {
     id: "goals",
+    to: "/goals",
+    linkLabel: "Open goals",
     title: "Your goals",
     summary: "Active goals with progress towards each target.",
     span: "full",
@@ -68,7 +65,7 @@ export const todayWidgets: WidgetDefinition[] = [
   },
   {
     id: "timeline",
-    title: "Timeline",
+    title: "Today's activity",
     summary: "Everything that happened today, in order.",
     span: "full",
     render: () => <TodayTimelineWidget />,
@@ -78,6 +75,8 @@ export const todayWidgets: WidgetDefinition[] = [
   /* ---- Reserved for upcoming Bloom modules. Hidden until they have data. ---- */
   {
     id: "cycle",
+    to: "/cycle",
+    linkLabel: "Open cycle",
     title: "Cycle",
     summary: "Where you are in your cycle and what's typical for this phase.",
     span: "half",
@@ -92,6 +91,8 @@ export const todayWidgets: WidgetDefinition[] = [
   },
   {
     id: "upcoming-period",
+    to: "/cycle",
+    linkLabel: "Open cycle",
     title: "Upcoming period",
     summary: "A gentle heads up before your next predicted period.",
     span: "half",
@@ -106,6 +107,8 @@ export const todayWidgets: WidgetDefinition[] = [
   },
   {
     id: "garden",
+    to: "/garden",
+    linkLabel: "Open garden",
     title: "Garden",
     summary: "Your consistency, grown as a living garden.",
     span: "half",
@@ -117,6 +120,8 @@ export const todayWidgets: WidgetDefinition[] = [
   },
   {
     id: "weight-trend",
+    to: "/weight",
+    linkLabel: "Open weight",
     title: "Weight trend",
     summary: "Your smoothed weight direction over time.",
     span: "half",
@@ -128,6 +133,8 @@ export const todayWidgets: WidgetDefinition[] = [
   },
   {
     id: "mood",
+    to: "/recovery",
+    linkLabel: "Open recovery",
     title: "Mood",
     summary: "How you've been feeling lately.",
     span: "half",
@@ -137,6 +144,8 @@ export const todayWidgets: WidgetDefinition[] = [
   },
   {
     id: "macros",
+    to: "/nutrition",
+    linkLabel: "Open nutrition",
     title: "Macros",
     summary: "Protein, carbs and fat against your targets.",
     span: "half",
@@ -148,6 +157,8 @@ export const todayWidgets: WidgetDefinition[] = [
   },
   {
     id: "hrv",
+    to: "/recovery",
+    linkLabel: "Open recovery",
     title: "HRV",
     summary: "Heart rate variability and your baseline.",
     span: "half",
@@ -159,6 +170,8 @@ export const todayWidgets: WidgetDefinition[] = [
   },
   {
     id: "sleep",
+    to: "/sleep",
+    linkLabel: "Open sleep",
     title: "Sleep",
     summary: "Duration, timing and quality of last night.",
     span: "half",
@@ -170,6 +183,8 @@ export const todayWidgets: WidgetDefinition[] = [
   },
   {
     id: "recovery",
+    to: "/recovery",
+    linkLabel: "Open recovery",
     title: "Recovery",
     summary: "How ready your body is for load today.",
     span: "half",
@@ -195,14 +210,3 @@ export const todayWidgets: WidgetDefinition[] = [
   },
 ];
 
-/** Optional per-widget footer action rendered by the grid. */
-export const widgetActions: Partial<Record<string, React.ReactNode>> = {
-  timeline: (
-    <Button asChild variant="ghost" size="sm" className="rounded-full text-muted-foreground">
-      <Link to="/timeline">
-        View timeline
-        <ArrowRight className="h-3.5 w-3.5" />
-      </Link>
-    </Button>
-  ),
-};

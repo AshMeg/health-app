@@ -131,8 +131,8 @@ export function TodayTimelineWidget() {
         <CardContent className="space-y-4 p-8 text-center">
           <p className="text-sm text-muted-foreground">Nothing logged today — yet.</p>
           <Button asChild variant="secondary" className="gap-1.5">
-            <Link to="/timeline">
-              Open your timeline
+            <Link to="/journal">
+              Write today's journal
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
