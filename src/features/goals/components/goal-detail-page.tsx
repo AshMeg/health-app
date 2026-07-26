@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Pencil, Sparkles } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { Pencil, Sparkles } from "lucide-react";
 
+import { BackButton } from "@/components/shared/back-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EditGoalDialog } from "./edit-goal-dialog";
@@ -39,7 +40,7 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
   if (!goal) {
     return (
       <div className="mx-auto w-full max-w-3xl space-y-6">
-        <BackLink />
+        <BackButton fallbackTo="/goals" fallbackLabel="All goals" />
         <Card className="rounded-3xl border-transparent bg-card shadow-soft">
           <CardContent className="space-y-2 p-10 text-center">
             <p className="text-base font-medium">
@@ -67,7 +68,7 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-8 pb-8">
-      <BackLink />
+      <BackButton fallbackTo="/goals" fallbackLabel="All goals" />
 
       {isComplete ? (
         <GoalCompletionCard title={goal.title} onAddToGarden={() => addToGarden(goal.id)} />
@@ -242,16 +243,5 @@ function Stat({ label, value }: { label: string; value: string }) {
       <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd className="text-sm font-medium">{value}</dd>
     </div>
-  );
-}
-
-function BackLink() {
-  return (
-    <Button asChild variant="ghost" size="sm" className="-ml-2 gap-1.5 self-start">
-      <Link to="/goals">
-        <ArrowLeft className="h-4 w-4" />
-        All goals
-      </Link>
-    </Button>
   );
 }
