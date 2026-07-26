@@ -20,6 +20,8 @@ import { UpcomingWidget } from "../components/upcoming-widget";
 export const todayWidgets: WidgetDefinition[] = [
   {
     id: "insight",
+    to: "/analytics",
+    linkLabel: "Open analytics",
     title: "Today's insight",
     summary: "One observation drawn from your recent data.",
     span: "full",
@@ -44,6 +46,8 @@ export const todayWidgets: WidgetDefinition[] = [
   },
   {
     id: "focus",
+    to: "/goals",
+    linkLabel: "Open goals",
     title: "Today's focus",
     summary: "A few small actions that support your goals.",
     span: "half",
