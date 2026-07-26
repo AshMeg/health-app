@@ -3,6 +3,7 @@ import {
   Activity,
   BarChart3,
   BookOpen,
+  Droplets,
   Dumbbell,
   Flower2,
   Heart,
@@ -55,7 +56,7 @@ const healthItems: NavItem[] = [
   { title: "Sleep", url: "/sleep", icon: Moon },
   { title: "Training", url: "/training", icon: Dumbbell },
   { title: "Recovery", url: "/recovery", icon: Heart },
-  { title: "Cycle", url: "/cycle", icon: Flower2 },
+  { title: "Cycle", url: "/cycle", icon: Droplets },
   { title: "Measurements", url: "/measurements", icon: Ruler },
   { title: "Journal", url: "/journal", icon: BookOpen },
 ];
