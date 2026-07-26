@@ -41,6 +41,8 @@ export type SummaryStat = {
   value: string;
   unit?: string;
   detail?: string;
+  /** Full page this metric belongs to, for deep linking from the dashboard. */
+  to?: string;
 };
 
 export type FocusItem = {
@@ -56,6 +58,8 @@ export type LogStatusItem = {
   id: string;
   label: string;
   state: LogState;
+  /** Where to go to log or review this. */
+  to?: string;
 };
 
 export type QuickAddItem = {
@@ -89,6 +93,10 @@ export type WidgetDefinition = {
   upcoming?: boolean;
   /** Hidden by default when a user has no saved layout. */
   defaultHidden?: boolean;
+  /** Full page this widget opens — every card should lead somewhere. */
+  to?: string;
+  /** Label for the link, e.g. "Open weight". */
+  linkLabel?: string;
   render: () => React.ReactNode;
 };
 
