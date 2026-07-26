@@ -22,13 +22,12 @@ export function MetricPage({ config }: { config: MetricPageConfig }) {
   const [spec, setSpec] = useState<QuickAddSpec | null>(null);
   const [open, setOpen] = useState(false);
 
-  const stats: SummaryStat[] = config.readers
-    .map((reader, i) => {
-      const value = reader.read(today);
-      if (!value) return null;
-      return { id: `${reader.label}-${i}`, label: reader.label, value, unit: reader.unit };
-    })
-    .filter((s): s is SummaryStat => Boolean(s));
+  const stats: SummaryStat[] = config.readers.flatMap((reader, i) => {
+    const value = reader.read(today);
+    if (!value) return [];
+    return [{ id: `${reader.label}-${i}`, label: reader.label, value, unit: reader.unit }];
+  });
+
 
   const history = useMemo(
     () => events.filter((e) => config.categories.includes(e.category)),
