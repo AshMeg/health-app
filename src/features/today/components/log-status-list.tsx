@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Check, Circle, RefreshCw } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,18 +17,37 @@ export function LogStatusList({ items }: { items: LogStatusItem[] }) {
       <CardContent className="divide-y divide-border/50 px-7 py-3">
         {items.map((item) => {
           const { label, className, icon: Icon } = config[item.state];
-          return (
-            <div key={item.id} className="flex items-center justify-between gap-3 py-5">
+          const pill = (
+            <span
+              className={cn(
+                "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
+                className,
+              )}
+            >
+              <Icon className="h-3 w-3" />
+              {label}
+            </span>
+          );
+
+          const row = (
+            <>
               <p className="min-w-0 truncate text-sm font-medium">{item.label}</p>
-              <span
-                className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
-                  className,
-                )}
-              >
-                <Icon className="h-3 w-3" />
-                {label}
-              </span>
+              {pill}
+            </>
+          );
+
+          // Each line opens the page where that thing gets logged.
+          return item.to ? (
+            <Link
+              key={item.id}
+              to={item.to}
+              className="flex items-center justify-between gap-3 py-5 transition-colors hover:text-foreground"
+            >
+              {row}
+            </Link>
+          ) : (
+            <div key={item.id} className="flex items-center justify-between gap-3 py-5">
+              {row}
             </div>
           );
         })}
