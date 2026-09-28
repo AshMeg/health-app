@@ -79,6 +79,7 @@ export type Database = {
           activity_level: Database["public"]["Enums"]["activity_level"] | null
           avatar_url: string | null
           biological_sex: Database["public"]["Enums"]["biological_sex"] | null
+          bloom_personality: Database["public"]["Enums"]["bloom_personality"]
           calorie_target: number | null
           carb_target: number | null
           created_at: string
@@ -95,6 +96,7 @@ export type Database = {
           activity_level?: Database["public"]["Enums"]["activity_level"] | null
           avatar_url?: string | null
           biological_sex?: Database["public"]["Enums"]["biological_sex"] | null
+          bloom_personality?: Database["public"]["Enums"]["bloom_personality"]
           calorie_target?: number | null
           carb_target?: number | null
           created_at?: string
@@ -111,6 +113,7 @@ export type Database = {
           activity_level?: Database["public"]["Enums"]["activity_level"] | null
           avatar_url?: string | null
           biological_sex?: Database["public"]["Enums"]["biological_sex"] | null
+          bloom_personality?: Database["public"]["Enums"]["bloom_personality"]
           calorie_target?: number | null
           carb_target?: number | null
           created_at?: string
@@ -204,6 +207,7 @@ export type Database = {
         | "very_active"
       app_role: "admin" | "user"
       biological_sex: "male" | "female" | "other" | "prefer_not_to_say"
+      bloom_personality: "gentle" | "encouraging" | "cheerful" | "calm"
       data_source:
         | "manual"
         | "apple_health"
@@ -350,6 +354,7 @@ export const Constants = {
       ],
       app_role: ["admin", "user"],
       biological_sex: ["male", "female", "other", "prefer_not_to_say"],
+      bloom_personality: ["gentle", "encouraging", "cheerful", "calm"],
       data_source: [
         "manual",
         "apple_health",

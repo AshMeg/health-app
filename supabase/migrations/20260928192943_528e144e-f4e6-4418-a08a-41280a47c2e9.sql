@@ -1,0 +1,2 @@
+CREATE TYPE public.bloom_personality AS ENUM ('gentle','encouraging','cheerful','calm');
+ALTER TABLE public.profiles ADD COLUMN bloom_personality public.bloom_personality NOT NULL DEFAULT 'encouraging';
