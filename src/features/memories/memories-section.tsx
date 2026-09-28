@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { isMemory } from "@/features/garden/model";
 import { useBloomContext } from "@/features/timeline/hooks/use-bloom-context";
 import { updateEvent } from "@/features/timeline/store";
+import { isJournalEntry } from "@/features/timeline/types";
+import { cn } from "@/lib/utils";
 
 import { MemoryDialog } from "./memory-dialog";
 
@@ -20,16 +22,39 @@ export function MemoriesSection({
 }) {
   const { events } = useBloomContext();
   const [creating, setCreating] = useState(false);
-  const memories = events.filter(isMemory).sort((a, b) => b.at.localeCompare(a.at));
+  const [filter, setFilter] = useState<"all" | "garden" | "kept">("all");
+  const all = events.filter(isMemory).sort((a, b) => b.at.localeCompare(a.at));
+  const memories = all.filter((m) =>
+    filter === "all" ? true : filter === "garden" ? m.inGarden !== false : m.inGarden === false,
+  );
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {all.length ? (
+          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Show memories">
+            {([["all", "All"], ["garden", "In your Garden"], ["kept", "Not in Garden"]] as const).map(([v, l]) => (
+              <button
+                key={v}
+                type="button"
+                role="radio"
+                aria-checked={filter === v}
+                onClick={() => setFilter(v)}
+                className={cn("rounded-full px-3 py-1.5 text-xs", filter === v ? "bg-sage-soft" : "bg-muted text-muted-foreground")}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+        ) : <span />}
         <Button className="gap-1.5" onClick={() => setCreating(true)}>
           <Plus className="h-4 w-4" /> Add memory
         </Button>
       </div>
 
+      {all.length && !memories.length ? (
+        <p className="text-sm text-muted-foreground">No memories here right now.</p>
+      ) : null}
       {memories.length ? (
         <div className="grid gap-4 sm:grid-cols-2">
           {memories.map((m) => {
@@ -46,7 +71,9 @@ export function MemoriesSection({
                     {m.description ? <p className="line-clamp-2 text-sm text-muted-foreground">{m.description}</p> : null}
                   </button>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs text-muted-foreground">{planted ? "🦋 In your Garden" : "Kept in Memories"}</span>
+                    <span className="text-xs text-muted-foreground">{planted ? "🦋 In your Garden" : "Kept in Memories"}
+                      {isJournalEntry(m) ? " · Also in Journal" : ""}
+                    </span>
                     <Button size="sm" variant="ghost" className="rounded-full text-xs" onClick={() => updateEvent(m.id, { inGarden: !planted })}>
                       {planted ? "Remove from Garden" : "Plant in Garden"}
                     </Button>
@@ -56,7 +83,7 @@ export function MemoriesSection({
             );
           })}
         </div>
-      ) : (
+      ) : all.length ? null : (
         <Card className="rounded-[2rem] border-transparent bg-card shadow-soft">
           <CardContent className="flex min-h-[260px] flex-col items-center justify-center gap-5 p-10 text-center">
             <span className="text-3xl" aria-hidden>🦋</span>
