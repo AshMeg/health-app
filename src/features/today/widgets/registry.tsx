@@ -21,9 +21,9 @@ export const todayWidgets: WidgetDefinition[] = [
   {
     id: "insight",
     to: "/analytics",
-    linkLabel: "Open analytics",
+    linkLabel: "See what Bloom is noticing",
     title: "Today's insight",
-    summary: "One observation drawn from your recent data.",
+    summary: "What your own data says about today — with the evidence behind it.",
     span: "full",
     render: () => <TodayInsight />,
   },

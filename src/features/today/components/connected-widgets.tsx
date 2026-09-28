@@ -1,4 +1,7 @@
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { buildDailyInsight, isQuickNote, QUICK_NOTE_ORIGIN } from "@/features/insights/engine";
+import { removeEvent, updateEvent } from "@/features/timeline/store";
 import { Link } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
@@ -152,32 +155,31 @@ export function TodayTimelineWidget() {
   );
 }
 
-/** Reads the day so far and says, plainly, what changed. */
+/** Evidence-based insight for the current part of the day, plus Quick Notes. */
 export function TodayInsight() {
-  const { today, whatChangedToday, goals } = useBloomContext();
+  const { today, recent, goals, record } = useBloomContext();
+  // Re-evaluate the part of the day every few minutes.
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 5 * 60_000);
+    return () => clearInterval(t);
+  }, []);
 
-  const headline = today.events.length
-    ? `${today.events.length} thing${today.events.length === 1 ? "" : "s"} recorded today across ${
-        new Set(today.events.map((e) => e.category)).size
-      } part${new Set(today.events.map((e) => e.category)).size === 1 ? "" : "s"} of Bloom.`
-    : "Nothing recorded today yet — Bloom is ready when you are.";
-
-  const bodyParts = [...whatChangedToday];
-  if (today.goalsCompleted) bodyParts.push(`${today.goalsCompleted} goal completed today`);
-  if (today.goalStepsCompleted)
-    bodyParts.push(`${today.goalStepsCompleted} goal step(s) ticked off`);
-  if (today.missingLogs.length)
-    bodyParts.push(
-      `Still waiting on ${today.missingLogs.map((c) => eventCategoryMeta[c].label.toLowerCase()).join(", ")}`,
-    );
-  if (goals.active.length)
-    bodyParts.push(`${goals.active.length} active goal${goals.active.length === 1 ? "" : "s"} are listening for new data`);
+  const insight = useMemo(
+    () => buildDailyInsight({ today, recent, goals: goals.active, now }),
+    [today, recent, goals.active, now],
+  );
+  const notes = today.events.filter(isQuickNote);
 
   return (
     <InsightHeroCard
-      headline={headline}
-      body={bodyParts.join(". ") + (bodyParts.length ? "." : "")}
-      confidence={today.events.length > 4 ? "High" : today.events.length ? "Medium" : "Low"}
+      insight={insight}
+      notes={notes}
+      onSaveNote={(text, id) => {
+        if (id) updateEvent(id, { title: text });
+        else record({ category: "life-event", title: text, detail: "Quick note", origin: QUICK_NOTE_ORIGIN });
+      }}
+      onDeleteNote={removeEvent}
     />
   );
 }
