@@ -83,7 +83,7 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
   return (
     <SidebarProvider open={sidebarOpen} onOpenChange={handleSidebarChange}>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0 min-w-0">
         <header className="sticky top-0 z-10 flex h-16 items-center gap-2 border-b border-border/50 bg-background/70 px-4 backdrop-blur-md sm:px-6">
           <SidebarTrigger />
           <Separator orientation="vertical" className="mx-1 h-5" />
