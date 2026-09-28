@@ -80,6 +80,10 @@ export type NewEvent = {
   journalEntryId?: string;
   memory?: boolean;
   inJournal?: boolean;
+  /** Cycle day logs (origin "cycle-day"): flow, symptoms and energy for one day. */
+  flow?: string;
+  symptoms?: string[];
+  energy?: string;
   /** Defaults to now — pass an ISO string to backdate an entry. */
   at?: string;
 };
