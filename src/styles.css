@@ -306,7 +306,7 @@
   --g-foliage: oklch(0.66 0.09 135);
   --g-foliage-light: oklch(0.82 0.09 120);
   --g-foliage-dark: oklch(0.5 0.07 160);
-  --g-trunk: oklch(0.55 0.04 280);
+  --g-trunk: oklch(0.5 0.05 50);
   --g-hive: oklch(0.86 0.07 85);
   --g-hive-line: oklch(0.7 0.07 60);
   --g-accent-line: oklch(0.6 0.05 280);

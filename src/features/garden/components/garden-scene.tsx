@@ -32,7 +32,7 @@ const seasonFilter: Record<Season, string> = {
 };
 
 export function sceneWidth(flowers: number, butterflies: number, years: number) {
-  return Math.max(1100, 420 + years * 180 + Math.ceil(flowers / 3) * 110 + butterflies * 20);
+  return Math.max(1100, 420 + years * 230 + Math.ceil(flowers / 3) * 110 + butterflies * 20);
 }
 
 /**
@@ -73,7 +73,7 @@ export function GardenScene({
   onOpenMemory: (id: string) => void;
 }) {
   const ground = Math.round(gardenStyle.horizon * SCENE_HEIGHT);
-  const treesEnd = 60 + years.length * 180;
+  const treesEnd = 60 + years.length * 230;
   const hiveX = treesEnd + 30;
   const meadowStart = hiveX + 150;
   const meadowWidth = Math.max(300, width - meadowStart - 60);
@@ -120,7 +120,7 @@ export function GardenScene({
 
       {/* Trees — one per year, each with its yearbook at its roots */}
       {years.map((y, i) => (
-        <YearTree key={y.year} year={y} x={60 + i * 180} baseY={ground + 95} render={gardenStyle.tree} onOpen={() => onOpenYear(y.year)} />
+        <YearTree key={y.year} year={y} x={60 + i * 230} baseY={ground + 95} render={gardenStyle.tree} onOpen={() => onOpenYear(y.year)} />
       ))}
 
       <Hive x={hiveX} top={ground - 5} habits={habits} render={gardenStyle.hive} onOpen={onOpenHive} />
@@ -211,7 +211,7 @@ function Light({ time, weather }: { time: TimeOfDay; weather: Weather | null }) 
   const layers: { bg: string; opacity: number; blend: "multiply" | "soft-light" | "screen" }[] = [];
   if (time === "morning") layers.push({ bg: "linear-gradient(120deg, var(--garden-morning), transparent 70%)", opacity: 0.35, blend: "soft-light" });
   if (time === "evening") layers.push({ bg: "linear-gradient(to bottom, transparent, var(--garden-evening))", opacity: 0.35, blend: "multiply" });
-  if (time === "night") layers.push({ bg: "var(--garden-night)", opacity: 0.38, blend: "multiply" });
+  if (time === "night") layers.push({ bg: "var(--garden-night)", opacity: 0.24, blend: "multiply" });
   if (grey) layers.push({ bg: "var(--garden-storm)", opacity: 0.18, blend: "multiply" });
   return (
     <>
@@ -277,8 +277,8 @@ function YearTree({ year, x, baseY, render, onOpen }: { year: GardenYear; x: num
   // A tree grows with the year: fuller as months pass and memories gather.
   const monthsIn = isCurrent ? new Date().getMonth() + 1 : 12;
   const scale = 0.75 + Math.min(0.5, monthsIn / 40 + year.size / 30);
-  const w = 150 * scale;
-  const h = 200 * scale;
+  const w = 150 * scale * 1.35;
+  const h = 200 * scale * 1.35;
   return (
     <div className="absolute flex flex-col items-center" style={{ left: x, top: baseY - h, width: w, zIndex: Math.round(baseY) }}>
       <button
