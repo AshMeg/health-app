@@ -36,6 +36,7 @@ import { Route as AuthenticatedGoalsIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedGoalsGoalIdRouteImport } from './routes/_authenticated/goals/$goalId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as AuthenticatedGoalsHabitsHabitIdRouteImport } from './routes/_authenticated/goals/habits.$habitId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -177,6 +178,12 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedGoalsHabitsHabitIdRoute =
+  AuthenticatedGoalsHabitsHabitIdRouteImport.update({
+    id: '/goals/habits/$habitId',
+    path: '/goals/habits/$habitId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -205,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/goals/$goalId': typeof AuthenticatedGoalsGoalIdRoute
   '/goals/': typeof AuthenticatedGoalsIndexRoute
+  '/goals/habits/$habitId': typeof AuthenticatedGoalsHabitsHabitIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -233,6 +241,7 @@ export interface FileRoutesByTo {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/goals/$goalId': typeof AuthenticatedGoalsGoalIdRoute
   '/goals': typeof AuthenticatedGoalsIndexRoute
+  '/goals/habits/$habitId': typeof AuthenticatedGoalsHabitsHabitIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -263,6 +272,7 @@ export interface FileRoutesById {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/goals/$goalId': typeof AuthenticatedGoalsGoalIdRoute
   '/_authenticated/goals/': typeof AuthenticatedGoalsIndexRoute
+  '/_authenticated/goals/habits/$habitId': typeof AuthenticatedGoalsHabitsHabitIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -293,6 +303,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/goals/$goalId'
     | '/goals/'
+    | '/goals/habits/$habitId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -321,6 +332,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/goals/$goalId'
     | '/goals'
+    | '/goals/habits/$habitId'
   id:
     | '__root__'
     | '/'
@@ -350,6 +362,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/goals/$goalId'
     | '/_authenticated/goals/'
+    | '/_authenticated/goals/habits/$habitId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -556,6 +569,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/goals/habits/$habitId': {
+      id: '/_authenticated/goals/habits/$habitId'
+      path: '/goals/habits/$habitId'
+      fullPath: '/goals/habits/$habitId'
+      preLoaderRoute: typeof AuthenticatedGoalsHabitsHabitIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -577,6 +597,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedWeightRoute: typeof AuthenticatedWeightRoute
   AuthenticatedGoalsGoalIdRoute: typeof AuthenticatedGoalsGoalIdRoute
   AuthenticatedGoalsIndexRoute: typeof AuthenticatedGoalsIndexRoute
+  AuthenticatedGoalsHabitsHabitIdRoute: typeof AuthenticatedGoalsHabitsHabitIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -597,6 +618,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedWeightRoute: AuthenticatedWeightRoute,
   AuthenticatedGoalsGoalIdRoute: AuthenticatedGoalsGoalIdRoute,
   AuthenticatedGoalsIndexRoute: AuthenticatedGoalsIndexRoute,
+  AuthenticatedGoalsHabitsHabitIdRoute: AuthenticatedGoalsHabitsHabitIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

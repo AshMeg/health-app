@@ -11,6 +11,7 @@ import { GoalNextStep, GoalStatusPill, GoalTypePill } from "./goal-card";
 import { GoalManageSection } from "./goal-manage-section";
 import { GoalNotes } from "./goal-notes";
 import { GoalPhotos } from "./goal-photos";
+import { LinkedHabits } from "@/features/habits/components/linked-habits";
 import { GoalTrend } from "./goal-trend";
 import { GoalTimeline } from "./goal-timeline";
 import { MilestoneList } from "./milestones/milestone-list";
@@ -212,6 +213,8 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
           </CardContent>
         </Card>
       ) : null}
+
+      <LinkedHabits goalId={goal.id} />
 
       <Card className="rounded-3xl border-transparent bg-card shadow-soft">
         <CardContent className="space-y-5 p-7 sm:p-8">
