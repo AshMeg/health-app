@@ -16,7 +16,8 @@ export type HabitFrequency =
   /** Specific weekdays, 0 = Sunday … 6 = Saturday. */
   | { kind: "custom"; days: number[] };
 
-export type HabitMethod = "yes-no" | "quantity" | "duration" | "repetitions";
+/** Frequency says how often; method only says what extra (if anything) is recorded. */
+export type HabitMethod = "completion" | "amount" | "duration";
 
 export type Habit = {
   id: string;
@@ -26,7 +27,7 @@ export type Habit = {
   goalId?: string;
   frequency: HabitFrequency;
   method: HabitMethod;
-  /** Amount per check-in for quantity/duration/repetitions. */
+  /** Optional target per completion for amount/duration. */
   target?: number;
   unit?: string;
   createdAt: string;
@@ -34,11 +35,25 @@ export type Habit = {
 };
 
 export const methodMeta: Record<HabitMethod, { label: string; example: string; unit?: string }> = {
-  "yes-no": { label: "Yes / No", example: "Took vitamins" },
-  quantity: { label: "Quantity", example: "Drink 2 litres of water", unit: "litres" },
+  completion: { label: "Just completion", example: "Work out, take vitamins, stretch" },
+  amount: { label: "Amount", example: "2 litres, 20 reps, 10 pages, 8,000 steps", unit: "" },
   duration: { label: "Duration", example: "Meditate for 10 minutes", unit: "minutes" },
-  repetitions: { label: "Repetitions", example: "3 sets of exercises", unit: "reps" },
 };
+
+export const unitSuggestions = ["litres", "glasses", "reps", "pages", "steps", "servings", "kilometres"];
+
+/** Older habits used Yes/No, Quantity, Duration or Repetitions — map them carefully, keeping history. */
+function migrate(h: Habit): Habit {
+  const m = h.method as string;
+  if (m === "yes-no") return { ...h, method: "completion", target: undefined, unit: undefined };
+  if (m === "quantity") return { ...h, method: "amount" };
+  if (m === "repetitions") {
+    // "1 × something" was really just "did I do it?"
+    if (!h.target || h.target <= 1) return { ...h, method: "completion", target: undefined, unit: undefined };
+    return { ...h, method: "amount", unit: h.unit || "reps" };
+  }
+  return h;
+}
 
 export const habitIcons = ["🌿", "💧", "🚶", "🏋️", "🧘", "📖", "💊", "🥗", "😴", "✍️", "🎵", "☀️"];
 export const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -53,7 +68,10 @@ function load() {
   loaded = true;
   try {
     const raw = window.localStorage.getItem(KEY);
-    if (raw) store = JSON.parse(raw) as Habit[];
+    if (raw) {
+      store = (JSON.parse(raw) as Habit[]).map(migrate);
+      window.localStorage.setItem(KEY, JSON.stringify(store));
+    }
   } catch {
     /* ignore */
   }
@@ -106,7 +124,8 @@ export function frequencyText(f: HabitFrequency) {
 }
 
 export function targetText(h: Habit) {
-  if (h.method === "yes-no" || !h.target) return "Done / not done";
+  if (h.method === "completion") return "Just completion";
+  if (!h.target) return h.method === "duration" ? "Records duration" : `Records ${h.unit || "amount"}`;
   return `${h.target} ${h.unit ?? methodMeta[h.method].unit ?? ""}`.trim();
 }
 
@@ -118,13 +137,32 @@ export function dailyTotals(events: BloomEvent[], habitId: string) {
   const map = new Map<string, number>();
   for (const e of checkInsFor(events, habitId)) {
     const d = localDate(e.at);
-    map.set(d, (map.get(d) ?? 0) + (e.value ?? 1));
+    map.set(d, (map.get(d) ?? 0) + (e.value ?? 0));
   }
   return map;
 }
 
-const met = (h: Habit, amount: number | undefined) =>
-  amount !== undefined && (h.method === "yes-no" || !h.target ? amount > 0 : amount >= h.target);
+/** Any check-in completes the habit; reaching a target is tracked separately. */
+const met = (_h: Habit, amount: number | undefined) => amount !== undefined;
+
+export const reachedTarget = (h: Habit, amount: number | undefined) =>
+  h.method !== "completion" && !!h.target && amount !== undefined && amount >= h.target;
+
+export function mondayOf(today = localDate()) {
+  const t = new Date(`${today}T12:00:00`);
+  return addDays(today, -((t.getDay() + 6) % 7));
+}
+
+/** This week's completion days (Mon–Sun) — extra completions are kept, the target isn't a cap. */
+export function thisWeek(h: Habit, events: BloomEvent[], today = localDate()) {
+  const totals = dailyTotals(events, h.id);
+  const start = mondayOf(today);
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const date = addDays(start, i);
+    return { date, label: weekdayNames[(i + 1) % 7], done: totals.has(date), future: date > today };
+  });
+  return { days, count: days.filter((d) => d.done).length };
+}
 
 function addDays(iso: string, n: number) {
   const d = new Date(`${iso}T12:00:00`);
