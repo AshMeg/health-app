@@ -78,6 +78,8 @@ export type BloomEvent = {
   photos?: string[];
   /** Which body measurement a measurement event records ("waist", "hips", "custom-forearm"). */
   measure?: string;
+  /** Last day of a recorded period (YYYY-MM-DD), when the user chooses to log it. */
+  periodEnd?: string;
 };
 
 export type EventCategoryMeta = {
