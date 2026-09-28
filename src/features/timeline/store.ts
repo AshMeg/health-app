@@ -74,6 +74,10 @@ export type NewEvent = {
   notes?: string;
   photos?: string[];
   measure?: string;
+  periodEnd?: string;
+  habitId?: string;
+  inGarden?: boolean;
+  journalEntryId?: string;
   /** Defaults to now — pass an ISO string to backdate an entry. */
   at?: string;
 };
