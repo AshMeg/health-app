@@ -15,7 +15,7 @@ import { eventCategoryMeta } from "@/features/timeline/types";
 
 /** Most recently active goal, preferring one with something to do today. */
 function pickFocus(goals: BloomGoal[]): BloomGoal | undefined {
-  const lastActivity = (g: BloomGoal) => g.updates[0]?.date ?? g.createdAt ?? "";
+  const lastActivity = (g: BloomGoal) => g.updates[0]?.date ?? "";
   return [...goals].sort((a, b) => {
     const step = Number(Boolean(b.nextStep)) - Number(Boolean(a.nextStep));
     return step || lastActivity(b).localeCompare(lastActivity(a));
