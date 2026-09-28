@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { MEMORY_ORIGIN, fileToPhoto } from "@/features/garden/model";
+import { MEMORY_ORIGIN, fileToPhoto, isMemory } from "@/features/garden/model";
+import { isJournalEntry } from "@/features/timeline/types";
 import { useGoals } from "@/features/goals/hooks/use-goals";
 import { useBloomContext } from "@/features/timeline/hooks/use-bloom-context";
 import { removeEvent, updateEvent } from "@/features/timeline/store";
@@ -38,6 +39,10 @@ export function MemoryDialog({
   const [photos, setPhotos] = useState<string[]>([]);
   const [goalId, setGoalId] = useState("");
   const [inGarden, setInGarden] = useState(defaultInGarden);
+  const [inJournal, setInJournal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const alreadyMemory = existing ? isMemory(existing) : false;
+  const bothPlaces = !!existing && alreadyMemory && isJournalEntry(existing);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -48,14 +53,23 @@ export function MemoryDialog({
     setNotes(existing?.notes ?? "");
     setPhotos(existing?.photos ?? []);
     setGoalId(existing?.goalId ?? "");
-    setInGarden(existing ? existing.inGarden !== false : defaultInGarden);
+    setInGarden(existing && alreadyMemory ? existing.inGarden !== false : defaultInGarden);
+    setInJournal(existing ? isJournalEntry(existing) : false);
+    setConfirmDelete(false);
   }, [open, existing?.id]);
 
   const save = () => {
     if (!title.trim()) return;
     const at = new Date(`${date}T12:00:00`).toISOString();
-    const patch = { title: title.trim(), at, description, notes, photos, goalId: goalId || undefined, inGarden };
-    if (existing) updateEvent(existing.id, patch);
+    const patch = { title: title.trim(), at, description, notes, photos, goalId: goalId || undefined, inGarden, memory: true, inJournal };
+    if (existing) {
+      // Same record everywhere — a journal entry keeps its journal fields in step.
+      const journalBits =
+        existing.category === "journal"
+          ? { detail: description.length > 90 ? `${description.slice(0, 90)}…` : description, metrics: { ...existing.metrics, journal: description } }
+          : {};
+      updateEvent(existing.id, { ...patch, ...journalBits });
+    }
     else record({ category: "life-event", detail: "Memory", origin: MEMORY_ORIGIN, ...patch });
     onClose();
   };
@@ -64,8 +78,12 @@ export function MemoryDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-3xl sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display">{existing ? "A memory" : "Create a memory"}</DialogTitle>
-          <DialogDescription>What would you like to remember?</DialogDescription>
+          <DialogTitle className="font-display">{existing ? (alreadyMemory ? "A memory" : "Save as a memory") : "Create a memory"}</DialogTitle>
+          <DialogDescription>
+            {existing && !alreadyMemory
+              ? "Your journal entry stays just as it is. Give it a title to keep it in Memories too."
+              : "What would you like to remember?"}
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
@@ -135,13 +153,55 @@ export function MemoryDialog({
             </span>
             <Switch checked={inGarden} onCheckedChange={setInGarden} aria-label="Plant in Garden" />
           </label>
+          <label className="flex items-center justify-between gap-3 rounded-2xl bg-muted/50 px-4 py-3">
+            <span className="text-sm">
+              📖 Also in Journal
+              <span className="block text-xs text-muted-foreground">
+                {inJournal ? "The same entry appears in your Journal." : "Kept in Memories, not in your Journal."}
+              </span>
+            </span>
+            <Switch checked={inJournal} onCheckedChange={setInJournal} aria-label="Also in Journal" />
+          </label>
+          {confirmDelete ? (
+            <div className="space-y-3 rounded-2xl bg-blush-soft/50 px-4 py-4">
+              <p className="text-sm">This memory is also saved in your Journal.</p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="rounded-full"
+                  onClick={() => {
+                    if (existing) updateEvent(existing.id, { memory: false, inGarden: false });
+                    onClose();
+                  }}
+                >
+                  Remove from Memories only
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="rounded-full text-destructive"
+                  onClick={() => {
+                    if (existing) removeEvent(existing.id);
+                    onClose();
+                  }}
+                >
+                  Delete everywhere
+                </Button>
+                <Button size="sm" variant="ghost" className="rounded-full" onClick={() => setConfirmDelete(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : null}
         </div>
         <DialogFooter className="gap-2 sm:justify-between">
-          {existing ? (
+          {existing && alreadyMemory ? (
             <Button
               variant="ghost"
               className="rounded-full text-destructive"
               onClick={() => {
+                if (bothPlaces) return setConfirmDelete(true);
                 if (!window.confirm("Delete this memory for good? This can't be undone.")) return;
                 removeEvent(existing.id);
                 onClose();
@@ -153,7 +213,7 @@ export function MemoryDialog({
             <span />
           )}
           <Button className="rounded-full" onClick={save} disabled={!title.trim()}>
-            {existing ? "Save" : inGarden ? "Save and plant" : "Save memory"}
+            {existing && alreadyMemory ? "Save" : existing ? "Add to Memories" : inGarden ? "Save and plant" : "Save memory"}
           </Button>
         </DialogFooter>
       </DialogContent>

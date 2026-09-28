@@ -1,4 +1,4 @@
-import type { BloomEvent, DailySnapshot, EventCategory } from "./types";
+import { isJournalEntry, type BloomEvent, type DailySnapshot, type EventCategory } from "./types";
 
 /** Categories Bloom expects to see on a normal day. */
 const expected: EventCategory[] = ["weight", "water", "sleep", "food", "mood", "journal"];
@@ -78,7 +78,7 @@ export function buildDailySnapshot(
     carbs += num(m.carbs) ?? 0;
     fat += num(m.fat) ?? 0;
 
-    if (event.category === "journal") snapshot.journalWritten = true;
+    if (isJournalEntry(event)) snapshot.journalWritten = true;
     if (event.category === "medication") snapshot.medicationTaken = true;
     if (event.category === "goal") {
       if (event.detail?.toLowerCase().includes("step")) snapshot.goalStepsCompleted += 1;

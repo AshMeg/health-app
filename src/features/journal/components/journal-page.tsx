@@ -1,6 +1,11 @@
 import { useMemo, useState } from "react";
 import { Pencil, Sparkles, Trash2 } from "lucide-react";
 
+import { Switch } from "@/components/ui/switch";
+import { MEMORY_ORIGIN, isMemory } from "@/features/garden/model";
+import { MemoryDialog } from "@/features/memories/memory-dialog";
+import { isJournalEntry } from "@/features/timeline/types";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -65,19 +70,37 @@ export function JournalPage() {
   const [editing, setEditing] = useState<BloomEvent | null>(null);
   const [editText, setEditText] = useState("");
 
+  const [keep, setKeep] = useState<"journal" | "memory" | "both">("journal");
+  const [memTitle, setMemTitle] = useState("");
+  const [plant, setPlant] = useState(false);
+  const [memoryOpen, setMemoryOpen] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const needsTitle = keep !== "journal";
+
   const saveEntry = () => {
     const text = draft.trim();
-    if (!text) return;
-    record({
-      category: "journal",
-      title: "Journal written",
-      detail: text.length > 90 ? `${text.slice(0, 90)}…` : text,
-      description: text,
-      metrics: { journal: text },
-      at: atForDate(entryDate),
-    });
+    if (!text || (needsTitle && !memTitle.trim())) return;
+    const at = atForDate(entryDate);
+    if (keep === "memory") {
+      // A memory on its own — the same shape as "+ Add memory" in Goal Centre.
+      record({ category: "life-event", detail: "Memory", origin: MEMORY_ORIGIN, title: memTitle.trim(), description: text, at, inGarden: plant, memory: true });
+    } else {
+      // One record; "Both" simply carries memory status too.
+      record({
+        category: "journal",
+        title: keep === "both" ? memTitle.trim() : "Journal written",
+        detail: text.length > 90 ? `${text.slice(0, 90)}…` : text,
+        description: text,
+        metrics: { journal: text },
+        at,
+        ...(keep === "both" ? { memory: true, inGarden: plant } : {}),
+      });
+    }
     setDraft("");
     setEntryDate(today);
+    setMemTitle("");
+    setPlant(false);
+    setKeep("journal");
   };
 
   const saveEdit = () => {
@@ -105,7 +128,12 @@ export function JournalPage() {
   };
 
   const days = useMemo(() => {
-    const items = events.filter((e) => ["journal", "mood", "life-event"].includes(e.category));
+    const items = events.filter(
+      (e) =>
+        isJournalEntry(e) ||
+        e.category === "mood" ||
+        (e.category === "life-event" && e.origin !== MEMORY_ORIGIN),
+    );
     const map = new Map<string, BloomEvent[]>();
     for (const e of items.sort((a, b) => b.at.localeCompare(a.at))) {
       const d = localDate(e.at);
@@ -125,8 +153,8 @@ export function JournalPage() {
         <h1 className="font-display text-[1.75rem] leading-tight font-medium sm:text-4xl">Journal</h1>
         <p className="max-w-2xl font-display text-lg leading-snug text-foreground/80">{config.question}</p>
         <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
-          Your own words, kept private and alongside everything else Bloom knows. Bloom never reads
-          meaning into what you write.
+          A space for your thoughts. Write down what happened, how you felt, or whatever you'd like
+          to keep track of. Bloom never reads meaning into what you write.
         </p>
       </header>
 
@@ -197,6 +225,41 @@ export function JournalPage() {
               placeholder="What has been on your mind?"
               className="min-h-32 resize-y rounded-2xl border-transparent bg-muted/40 text-base"
             />
+            <div className="space-y-2">
+              <p className="text-sm font-medium">What would you like to do with this?</p>
+              <p className="text-xs text-muted-foreground">
+                You can keep this as a journal entry, save it as a memory, or let it live in both places.
+              </p>
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="What would you like to do with this?">
+                {([["journal", "📖 Journal"], ["memory", "🦋 Memory"], ["both", "✨ Both"]] as const).map(([v, l]) => (
+                  <button
+                    key={v}
+                    type="button"
+                    role="radio"
+                    aria-checked={keep === v}
+                    onClick={() => setKeep(v)}
+                    className={cn(
+                      "rounded-full px-4 py-2 text-sm transition-colors",
+                      keep === v ? "bg-sage-soft text-foreground" : "bg-muted text-foreground/80 hover:bg-muted/70",
+                    )}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {needsTitle ? (
+              <div className="space-y-3 rounded-2xl bg-muted/40 p-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="entry-mem-title">Memory title</Label>
+                  <Input id="entry-mem-title" value={memTitle} onChange={(e) => setMemTitle(e.target.value)} placeholder="Summer in Italy" />
+                </div>
+                <label className="flex items-center justify-between gap-3 text-sm">
+                  <span>🦋 Plant in Your Garden</span>
+                  <Switch checked={plant} onCheckedChange={setPlant} aria-label="Plant in Garden" />
+                </label>
+              </div>
+            ) : null}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <Input
                 type="date"
@@ -206,8 +269,8 @@ export function JournalPage() {
                 onChange={(e) => setEntryDate(e.target.value || today)}
                 className="h-9 w-auto rounded-full"
               />
-              <Button className="rounded-full px-6" disabled={!draft.trim()} onClick={saveEntry}>
-                Save entry
+              <Button className="rounded-full px-6" disabled={!draft.trim() || (needsTitle && !memTitle.trim())} onClick={saveEntry}>
+                {keep === "journal" ? "Save entry" : keep === "memory" ? "Save memory" : "Save to both"}
               </Button>
             </div>
           </CardContent>
@@ -243,7 +306,7 @@ export function JournalPage() {
       <section className="space-y-6">
         <h2 className="text-base font-medium text-foreground/80">History</h2>
         {days.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nothing here yet. Your first entry will appear here.</p>
+          <p className="text-sm text-muted-foreground">A space for your thoughts. Write down what happened, how you felt, or whatever you'd like to record.</p>
         ) : (
           days.map(([date, items]) => (
             <div key={date} className="space-y-3">
@@ -256,8 +319,8 @@ export function JournalPage() {
                         <span>
                           {e.category === "mood"
                             ? "Mood"
-                            : e.category === "journal"
-                              ? "Journal"
+                            : isJournalEntry(e)
+                              ? isMemory(e) ? "Journal · 🦋 Memory" : "Journal"
                               : e.origin === "quick-note"
                                 ? "Quick note"
                                 : "Life event"}
@@ -265,6 +328,11 @@ export function JournalPage() {
                         <span>·</span>
                         <span>{time(e.at)}</span>
                         <div className="ml-auto flex">
+                          {isJournalEntry(e) ? (
+                            <Button size="sm" variant="ghost" className="h-7 rounded-full text-xs" onClick={() => setMemoryOpen(e.id)}>
+                              {isMemory(e) ? "Open memory" : "Save as memory"}
+                            </Button>
+                          ) : null}
                           {e.category === "journal" ? (
                             <Button size="icon" variant="ghost" className="h-7 w-7 rounded-full" aria-label="Edit entry" onClick={() => { setEditing(e); setEditText(textOf(e)); }}>
                               <Pencil className="h-3.5 w-3.5" />
@@ -276,6 +344,7 @@ export function JournalPage() {
                             className="h-7 w-7 rounded-full"
                             aria-label="Delete"
                             onClick={() => {
+                              if (isJournalEntry(e) && isMemory(e)) return setDeleting(e.id);
                               if (window.confirm("Delete this entry?")) removeEvent(e.id);
                             }}
                           >
@@ -283,6 +352,20 @@ export function JournalPage() {
                           </Button>
                         </div>
                       </div>
+                      {deleting === e.id ? (
+                        <div className="space-y-3 rounded-2xl bg-blush-soft/50 px-4 py-3">
+                          <p className="text-sm">This entry is also saved as a memory.</p>
+                          <div className="flex flex-wrap gap-2">
+                            <Button size="sm" variant="secondary" className="rounded-full" onClick={() => { updateEvent(e.id, { inJournal: false }); setDeleting(null); }}>
+                              Remove from Journal only
+                            </Button>
+                            <Button size="sm" variant="ghost" className="rounded-full text-destructive" onClick={() => { removeEvent(e.id); setDeleting(null); }}>
+                              Delete everywhere
+                            </Button>
+                            <Button size="sm" variant="ghost" className="rounded-full" onClick={() => setDeleting(null)}>Cancel</Button>
+                          </div>
+                        </div>
+                      ) : null}
                       {editing?.id === e.id ? (
                         <div className="space-y-2">
                           <Textarea aria-label="Edit entry" value={editText} onChange={(ev) => setEditText(ev.target.value)} className="min-h-24 rounded-2xl" />
@@ -295,8 +378,16 @@ export function JournalPage() {
                         <p className="text-sm">
                           {emojiFor(e.metrics?.mood as string)} {String(e.metrics?.mood ?? e.detail ?? "")}
                         </p>
-                      ) : e.category === "journal" ? (
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed">{textOf(e)}</p>
+                      ) : isJournalEntry(e) ? (
+                        <div className="space-y-1">
+                          {e.origin === MEMORY_ORIGIN ? <p className="font-medium">{e.title}</p> : null}
+                          <p className="whitespace-pre-wrap text-sm leading-relaxed">{textOf(e)}</p>
+                          {e.photos?.length ? (
+                            <div className="flex gap-2 pt-1">
+                              {e.photos.slice(0, 3).map((src, i) => <img key={i} src={src} alt="" className="h-14 w-14 rounded-xl object-cover" />)}
+                            </div>
+                          ) : null}
+                        </div>
                       ) : (
                         <p className="text-sm">{e.title}{e.detail ? ` — ${e.detail}` : ""}</p>
                       )}
@@ -308,6 +399,7 @@ export function JournalPage() {
           ))
         )}
       </section>
+      <MemoryDialog open={!!memoryOpen} memoryId={memoryOpen ?? undefined} onClose={() => setMemoryOpen(null)} />
     </div>
   );
 }

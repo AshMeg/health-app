@@ -107,7 +107,7 @@ export function buildFlowers(completed: BloomGoal[]): GardenFlower[] {
 }
 
 export function isMemory(event: BloomEvent) {
-  return event.origin === MEMORY_ORIGIN;
+  return event.origin === MEMORY_ORIGIN ? event.memory !== false : event.memory === true;
 }
 
 export function buildButterflies(events: BloomEvent[]): GardenButterfly[] {

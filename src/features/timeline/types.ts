@@ -87,7 +87,16 @@ export type BloomEvent = {
   inGarden?: boolean;
   /** Memories: a journal entry this memory is connected to (same content, never copied). */
   journalEntryId?: string;
+  /** Memory status on a shared record. Memory-origin events default to true; others to false. */
+  memory?: boolean;
+  /** Journal status on a shared record. Journal-category events default to true; others to false. */
+  inJournal?: boolean;
 };
+
+/** One piece of the user's life can live in Journal, Memories, or both — never copied. */
+export function isJournalEntry(e: BloomEvent) {
+  return e.category === "journal" ? e.inJournal !== false : e.inJournal === true;
+}
 
 export type EventCategoryMeta = {
   label: string;
