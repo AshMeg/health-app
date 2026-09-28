@@ -114,6 +114,8 @@ export type DailySnapshot = {
   weightKg?: number;
   bodyFatPercent?: number;
   cycleDay?: number;
+  /** Set by Analytics from completed recorded cycles: the 5 days before a period. */
+  cycleLateLuteal?: boolean;
   sleepMinutes?: number;
   recoveryPercent?: number;
   hrv?: number;
