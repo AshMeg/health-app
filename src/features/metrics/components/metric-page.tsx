@@ -75,6 +75,22 @@ export function MetricPage({ config }: { config: MetricPageConfig }) {
           {config.question}
         </p>
         <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">{config.intro}</p>
+        {/* Log first, analyse second: the primary action sits with the header. */}
+        {loggers.length ? (
+          <div className="flex flex-wrap gap-2.5 pt-2">
+            {loggers.map((item, i) => (
+              <Button
+                key={item.id}
+                variant={i === 0 ? "default" : "secondary"}
+                className="rounded-full px-5 shadow-none transition-transform hover:-translate-y-0.5"
+                onClick={() => openLogger(item)}
+              >
+                <Plus className="h-4 w-4" />
+                {ctaLabel(item, config.id)}
+              </Button>
+            ))}
+          </div>
+        ) : null}
       </header>
 
       <section className="space-y-4">
@@ -84,8 +100,9 @@ export function MetricPage({ config }: { config: MetricPageConfig }) {
         ) : (
           <Card className="rounded-3xl border-transparent bg-card shadow-none">
             <CardContent className="p-8 text-center text-sm text-muted-foreground">
-              Nothing recorded for {config.title.toLowerCase()} today. Log something below and it
-              will appear here, on your dashboard and in any goal it supports.
+              {history.length
+                ? `Nothing recorded for ${config.title.toLowerCase()} today yet.`
+                : `Start building your ${config.title.toLowerCase()} history — your first entry will appear here, on your dashboard and in any goal it supports.`}
             </CardContent>
           </Card>
         )}
@@ -94,26 +111,13 @@ export function MetricPage({ config }: { config: MetricPageConfig }) {
       {config.trends?.length ? (
         <section className="space-y-4">
           <h2 className="text-base font-medium text-foreground/80">Over time</h2>
-          <TrendPanel trends={config.trends} />
+          {history.length ? (
+            <TrendPanel trends={config.trends} />
+          ) : (
+            <p className="text-sm text-muted-foreground">Log a few entries and your trend will appear here.</p>
+          )}
         </section>
       ) : null}
-
-      <section className="space-y-4">
-        <h2 className="text-base font-medium text-foreground/80">Log it now</h2>
-        <div className="flex flex-wrap gap-2.5">
-          {loggers.map((item) => (
-            <Button
-              key={item.id}
-              variant="secondary"
-              className="rounded-full px-5 font-normal shadow-none transition-transform hover:-translate-y-0.5"
-              onClick={() => openLogger(item)}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              {item.label}
-            </Button>
-          ))}
-        </div>
-      </section>
 
       {week.length ? (
         <section className="space-y-4">
@@ -177,4 +181,22 @@ export function MetricPage({ config }: { config: MetricPageConfig }) {
       <LogEventDialog spec={spec} open={open} onOpenChange={setOpen} />
     </div>
   );
+}
+
+const ctaLabels: Record<string, string> = {
+  weight: "Log weight",
+  food: "Log food",
+  water: "Log water",
+  sleep: "Log sleep",
+  workout: "Log workout",
+  period: "Log cycle",
+  measurement: "Log measurement",
+  journal: "Write entry",
+  "life-event": "Record a life event",
+  steps: "Log steps",
+};
+
+function ctaLabel(item: QuickAddSpec, pageId: string) {
+  if (item.id === "mood") return pageId === "recovery" ? "Log recovery" : "Log mood";
+  return ctaLabels[item.id] ?? `Log ${item.label.toLowerCase()}`;
 }
