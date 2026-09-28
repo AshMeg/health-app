@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Archive, Pencil, RotateCcw, Target, Trash2 } from "lucide-react";
+import { Archive, CalendarPlus, Pencil, RotateCcw, Target, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +23,8 @@ import {
 import { HabitCheckIn } from "./habit-check-in";
 import { WeekProgress } from "./week-progress";
 import { HabitDialog } from "./habit-dialog";
+import { PastCompletionDialog } from "./past-completion-dialog";
+import type { BloomEvent } from "@/features/timeline/types";
 
 export function HabitDetailPage({ habitId }: { habitId: string }) {
   const { habits } = useHabits();
@@ -30,6 +32,7 @@ export function HabitDetailPage({ habitId }: { habitId: string }) {
   const { events } = useBloomContext();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
+  const [past, setPast] = useState<{ event?: BloomEvent } | null>(null);
   const habit = habits.find((h) => h.id === habitId);
 
   if (!habit) {
@@ -141,7 +144,12 @@ export function HabitDetailPage({ habitId }: { habitId: string }) {
       </Card>
 
       <section className="space-y-3">
-        <h2 className="text-base font-medium text-foreground/80">Recent check-ins</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-medium text-foreground/80">Recent check-ins</h2>
+          <Button size="sm" variant="secondary" className="gap-1.5 rounded-full" onClick={() => setPast({})}>
+            <CalendarPlus className="h-3.5 w-3.5" /> Add a past completion
+          </Button>
+        </div>
         {recent.length ? (
           <Card className="rounded-3xl border-transparent bg-card shadow-none">
             <CardContent className="divide-y divide-border/50 px-7 py-2">
@@ -151,6 +159,9 @@ export function HabitDetailPage({ habitId }: { habitId: string }) {
                     {new Date(e.at).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}
                   </span>
                   <span className="ml-auto text-sm">{e.detail}</span>
+                  <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full" aria-label="Edit check-in" onClick={() => setPast({ event: e })}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
                   <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full" aria-label="Remove check-in" onClick={() => removeEvent(e.id)}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -163,6 +174,7 @@ export function HabitDetailPage({ habitId }: { habitId: string }) {
         )}
       </section>
 
+      <PastCompletionDialog habit={habit} open={!!past} onOpenChange={(o) => !o && setPast(null)} editing={past?.event ?? null} />
       <HabitDialog open={editing} onOpenChange={setEditing} editing={habit} />
     </div>
   );
