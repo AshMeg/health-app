@@ -9,6 +9,7 @@ import {
 import { GoalsWidget } from "../components/goal-progress-card";
 import { QuickAddBar } from "../components/quick-add-bar";
 import { UpcomingWidget } from "../components/upcoming-widget";
+import { TrendPreview } from "../components/trend-preview";
 
 /**
  * Single source of truth for Today's widgets.
@@ -43,6 +44,15 @@ export const todayWidgets: WidgetDefinition[] = [
     summary: "Latest numbers across your daily metrics.",
     span: "full",
     render: () => <SnapshotSummary />,
+  },
+  {
+    id: "weight-trend",
+    to: "/weight",
+    linkLabel: "Open weight",
+    title: "Weight trend",
+    summary: "A small preview of how your weight is changing.",
+    span: "half",
+    render: () => <TrendPreview id="weight" to="/weight" />,
   },
   {
     id: "focus",
