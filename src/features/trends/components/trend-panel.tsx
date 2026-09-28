@@ -163,12 +163,12 @@ function Chart({
   const domain: [number, number] =
     def.visual === "bar" ? [0, Math.ceil(max + pad)] : [Math.floor(min - pad), Math.ceil(max + pad)];
 
-  const common = (
-    <>
-      <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 6" />
-      <XAxis dataKey="date" tickFormatter={shortDate} tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" minTickGap={24} />
-      <YAxis domain={domain} tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" width={44} tickFormatter={(v: number) => (id === "sleep" ? `${Math.round(v / 60)}h` : v.toLocaleString())} />
+  const common = [
+      <CartesianGrid key="grid" vertical={false} stroke="var(--border)" strokeDasharray="3 6" />
+      <XAxis key="x" dataKey="date" tickFormatter={shortDate} tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" minTickGap={24} />,
+      <YAxis key="y" domain={domain} tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" width={44} tickFormatter={(v: number) => (id === "sleep" ? `${Math.round(v / 60)}h` : v.toLocaleString())} />,
       <Tooltip
+        key="tip"
         cursor={{ fill: "var(--muted)", opacity: 0.4 }}
         content={({ active, payload }) => {
           const p = active && payload?.[0]?.payload as TrendPoint | undefined;
@@ -181,18 +181,18 @@ function Chart({
             </div>
           );
         }}
-      />
-      {target !== undefined ? (
+      />,
+      target !== undefined ? (
         <ReferenceLine
+          key="target"
           y={target}
           stroke="var(--muted-foreground)"
           strokeDasharray="4 4"
           strokeOpacity={0.6}
           label={{ value: targetLabel ?? `Target ${def.format(target)}`, position: "insideTopRight", fontSize: 11, fill: "var(--muted-foreground)" }}
         />
-      ) : null}
-    </>
-  );
+      ) : null,
+  ];
 
   return (
     <div className="h-56 w-full">
