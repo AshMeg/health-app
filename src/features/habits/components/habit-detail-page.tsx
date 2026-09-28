@@ -21,6 +21,7 @@ import {
   useHabits,
 } from "../model";
 import { HabitCheckIn } from "./habit-check-in";
+import { WeekProgress } from "./week-progress";
 import { HabitDialog } from "./habit-dialog";
 
 export function HabitDetailPage({ habitId }: { habitId: string }) {
@@ -46,7 +47,7 @@ export function HabitDetailPage({ habitId }: { habitId: string }) {
   const c = consistency(habit, events);
   const goal = habit.goalId ? goals.find((g) => g.id === habit.goalId) : undefined;
   const recent = checkInsFor(events, habit.id).slice(0, 12);
-  const unit = habit.unit ?? methodMeta[habit.method].unit ?? "";
+  const unit = habit.unit || methodMeta[habit.method]?.unit || "";
   const maxAmount = Math.max(1, ...c.recent.map((o) => o.amount ?? 0), habit.target ?? 0);
 
   return (
@@ -62,7 +63,7 @@ export function HabitDetailPage({ habitId }: { habitId: string }) {
         {habit.description ? <p className="max-w-xl text-muted-foreground">{habit.description}</p> : null}
         <div className="flex flex-wrap gap-2 text-xs">
           <span className="rounded-full bg-muted px-3 py-1">{frequencyText(habit.frequency)}</span>
-          <span className="rounded-full bg-muted px-3 py-1">Target: {targetText(habit)}</span>
+          <span className="rounded-full bg-muted px-3 py-1">{habit.method === "completion" ? "Just completion" : habit.target ? `Target: ${targetText(habit)} each time` : targetText(habit)}</span>
           {habit.archivedAt ? <span className="rounded-full bg-muted px-3 py-1">Archived — history kept</span> : null}
         </div>
         <div className="flex flex-wrap gap-2 pt-1">
@@ -111,6 +112,7 @@ export function HabitDetailPage({ habitId }: { habitId: string }) {
             </div>
             {habit.archivedAt ? null : <HabitCheckIn habit={habit} />}
           </div>
+          {habit.frequency.kind === "weekly" ? <WeekProgress habit={habit} /> : null}
 
           {c.recent.length ? (
             <div className="space-y-2">
@@ -118,11 +120,11 @@ export function HabitDetailPage({ habitId }: { habitId: string }) {
                 {c.recent.map((o) => (
                   <div
                     key={o.date}
-                    title={`${o.label}: ${o.done ? "done" : "not this time"}${o.amount ? ` (${o.amount}${habit.method === "yes-no" ? "" : ` ${unit}`})` : ""}`}
+                    title={`${o.label}: ${o.done ? "done" : "not this time"}${o.amount ? ` (${o.amount}${habit.method === "completion" ? "" : ` ${unit}`})` : ""}`}
                     className={cn("max-w-6 flex-1 rounded-t-lg", o.done ? "bg-sage/70" : "bg-muted")}
                     style={{
                       height:
-                        habit.method === "yes-no" || habit.frequency.kind === "weekly"
+                        habit.method === "completion" || habit.frequency.kind === "weekly"
                           ? o.done ? "100%" : "18%"
                           : `${Math.max(12, ((o.amount ?? 0) / maxAmount) * 100)}%`,
                     }}
@@ -130,7 +132,7 @@ export function HabitDetailPage({ habitId }: { habitId: string }) {
                 ))}
               </div>
               <p className="text-xs text-muted-foreground">
-                Your recent {c.unit === "weeks" ? "weeks" : "scheduled days"}, oldest first. Green means done — a grey one is just a
+                Your recent {c.unit === "weeks" ? "weeks" : "scheduled days"}, oldest first. {habit.method !== "completion" && habit.frequency.kind !== "weekly" ? "Bar height shows what you recorded. " : ""}Green means done — a grey one is just a
                 pause, not a failure.
               </p>
             </div>

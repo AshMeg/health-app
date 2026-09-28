@@ -12,6 +12,7 @@ import {
   addHabit,
   habitIcons,
   methodMeta,
+  unitSuggestions,
   updateHabit,
   weekdayNames,
   type Habit,
@@ -54,14 +55,15 @@ function HabitForm({ editing, defaultGoalId, onDone }: { editing?: Habit; defaul
   const [kind, setKind] = useState<HabitFrequency["kind"]>(editing?.frequency.kind ?? "daily");
   const [times, setTimes] = useState(editing?.frequency.kind === "weekly" ? editing.frequency.times : 3);
   const [days, setDays] = useState<number[]>(editing?.frequency.kind === "custom" ? editing.frequency.days : [1, 3, 6]);
-  const [method, setMethod] = useState<HabitMethod>(editing?.method ?? "yes-no");
+  const [method, setMethod] = useState<HabitMethod>(editing?.method ?? "completion");
   const [target, setTarget] = useState(editing?.target?.toString() ?? "");
   const [unit, setUnit] = useState(editing?.unit ?? "");
 
   const frequency: HabitFrequency =
     kind === "daily" ? { kind } : kind === "weekly" ? { kind, times: Math.max(1, Math.min(7, times)) } : { kind, days };
-  const needsTarget = method !== "yes-no";
-  const valid = name.trim() && (!needsTarget || Number(target) > 0) && (kind !== "custom" || days.length);
+  const needsTarget = method !== "completion";
+  const valid =
+    name.trim() && (!needsTarget || !target || Number(target) > 0) && (method !== "amount" || unit.trim()) && (kind !== "custom" || days.length);
 
   const save = () => {
     if (!valid) return;
@@ -72,8 +74,8 @@ function HabitForm({ editing, defaultGoalId, onDone }: { editing?: Habit; defaul
       goalId: goalId || undefined,
       frequency,
       method,
-      target: needsTarget ? Number(target) : undefined,
-      unit: needsTarget ? unit.trim() || methodMeta[method].unit : undefined,
+      target: needsTarget && Number(target) > 0 ? Number(target) : undefined,
+      unit: method === "amount" ? unit.trim() : method === "duration" ? "minutes" : undefined,
     };
     if (editing) updateHabit(editing.id, data);
     else addHabit(data);
@@ -127,7 +129,7 @@ function HabitForm({ editing, defaultGoalId, onDone }: { editing?: Habit; defaul
           ) : null}
         </div>
         <div className="space-y-1.5">
-          <Label>How will you track it?</Label>
+          <Label>Do you want to record anything extra?</Label>
           <div className="flex flex-wrap gap-2">
             {(Object.keys(methodMeta) as HabitMethod[]).map((m) => (
               <button key={m} type="button" className={chip(method === m)} onClick={() => setMethod(m)}>
@@ -135,12 +137,28 @@ function HabitForm({ editing, defaultGoalId, onDone }: { editing?: Habit; defaul
               </button>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">e.g. {methodMeta[method].example}</p>
-          {needsTarget ? (
-            <div className="flex items-center gap-2 pt-1">
-              <Input type="number" min={0} step="any" value={target} onChange={(e) => setTarget(e.target.value)} className="w-24" aria-label="Target" placeholder="Target" />
-              <Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder={methodMeta[method].unit} className="w-32" aria-label="Unit" />
-              <span className="text-sm text-muted-foreground">each time</span>
+          <p className="text-xs text-muted-foreground">
+            {method === "completion" ? "You'll simply mark it as complete." : `e.g. ${methodMeta[method].example}`}
+          </p>
+          {method === "amount" ? (
+            <div className="space-y-2 pt-1">
+              <div className="flex items-center gap-2">
+                <Input type="number" min={0} step="any" value={target} onChange={(e) => setTarget(e.target.value)} className="w-24" aria-label="Target amount" placeholder="Target" />
+                <Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="Unit, e.g. litres" className="w-40" aria-label="Unit" />
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {unitSuggestions.map((u) => (
+                  <button key={u} type="button" className={cn(chip(unit === u), "px-2.5 py-1 text-xs")} onClick={() => setUnit(u)}>
+                    {u}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {method === "duration" ? (
+            <div className="flex items-center gap-2 pt-1 text-sm">
+              <Input type="number" min={0} step="any" value={target} onChange={(e) => setTarget(e.target.value)} className="w-24" aria-label="Target duration" placeholder="Target" />
+              minutes
             </div>
           ) : null}
         </div>

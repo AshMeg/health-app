@@ -5,6 +5,7 @@ import { useBloomContext } from "@/features/timeline/hooks/use-bloom-context";
 
 import { consistency, consistencyText, frequencyText, isBuzzing, targetText, type Habit } from "../model";
 import { HabitCheckIn } from "./habit-check-in";
+import { WeekProgress } from "./week-progress";
 
 export function HabitCard({ habit }: { habit: Habit }) {
   const { events } = useBloomContext();
@@ -24,6 +25,7 @@ export function HabitCard({ habit }: { habit: Habit }) {
           </span>
           <span className="ml-auto text-xs text-muted-foreground">{isBuzzing(c) ? "🐝" : "💤"}</span>
         </Link>
+        {habit.frequency.kind === "weekly" ? <WeekProgress habit={habit} /> : null}
         <p className="text-sm text-muted-foreground">{consistencyText(c)}</p>
         {habit.archivedAt ? null : <HabitCheckIn habit={habit} />}
       </CardContent>
