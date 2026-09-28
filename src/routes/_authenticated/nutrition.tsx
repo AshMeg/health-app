@@ -1,14 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MetricPage } from "@/features/metrics/components/metric-page";
-import { metricPages } from "@/features/metrics/config";
+import { NutritionPage } from "@/features/nutrition/components/nutrition-page";
 
 export const Route = createFileRoute("/_authenticated/nutrition")({
   head: () => ({
     meta: [
       { title: "Nutrition — Bloom" },
-      { name: "description", content: metricPages.nutrition.question },
+      { name: "description", content: "Log what you eat and see how your nutrition adds up over time." },
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: () => <MetricPage config={metricPages.nutrition} />,
+  component: NutritionPage,
 });

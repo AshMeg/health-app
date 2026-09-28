@@ -103,6 +103,8 @@ export const quickAddSpecs: QuickAddSpec[] = [
     fields: [
       { kind: "number", label: "Calories", unit: "kcal", metric: "calories", placeholder: "620" },
       { kind: "number", label: "Protein", unit: "g", metric: "protein", placeholder: "38" },
+      { kind: "number", label: "Carbohydrates", unit: "g", metric: "carbs", placeholder: "optional" },
+      { kind: "number", label: "Fat", unit: "g", metric: "fat", placeholder: "optional" },
     ],
   },
   {

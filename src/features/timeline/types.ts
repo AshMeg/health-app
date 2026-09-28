@@ -16,6 +16,11 @@ export type MetricKey =
   | "protein"
   | "carbs"
   | "fat"
+  | "fibre"
+  | "sugar"
+  | "satFat"
+  | "salt"
+  | "sodium"
   | "steps"
   | "sleep"
   | "hrv"
@@ -95,6 +100,25 @@ export type BloomEvent = {
   flow?: string;
   symptoms?: string[];
   energy?: string;
+  /** Food entries (category "food"): what was eaten. Nutrients live in `metrics`; unknown = absent, never 0. */
+  food?: FoodDetails;
+};
+
+export type MealSlot = "breakfast" | "lunch" | "dinner" | "snack" | "other";
+
+export type FoodDetails = {
+  name: string;
+  /** Numeric amount and unit kept apart ("150" + "g"), when known. */
+  quantity?: number;
+  unit?: string;
+  /** Free serving description when it isn't a number ("1 medium", "2 slices"). */
+  serving?: string;
+  meal?: MealSlot;
+  /** Optional time eaten, HH:MM. Without it the entry has a date only. */
+  time?: string;
+  /** "manual" today; a provider name for future food databases. */
+  provider?: string;
+  updatedAt?: string;
 };
 
 /** One piece of the user's life can live in Journal, Memories, or both — never copied. */
@@ -112,7 +136,7 @@ export type EventCategoryMeta = {
 export const eventCategoryMeta: Record<EventCategory, EventCategoryMeta> = {
   weight: { label: "Weight", metrics: ["weight", "bodyFat"], accent: "sage" },
   water: { label: "Water", metrics: ["water"], accent: "sky" },
-  food: { label: "Food", metrics: ["calories", "protein", "carbs", "fat"], accent: "blush" },
+  food: { label: "Food", metrics: ["calories", "protein", "carbs", "fat", "fibre", "sugar", "satFat", "salt"], accent: "blush" },
   workout: { label: "Training", metrics: ["training", "steps"], accent: "lavender" },
   sleep: { label: "Sleep", metrics: ["sleep"], accent: "sky" },
   recovery: { label: "Recovery", metrics: ["recovery", "hrv", "restingHr"], accent: "sage" },
@@ -144,6 +168,10 @@ export type DailySnapshot = {
   caloriesKcal?: number;
   carbsG?: number;
   fatG?: number;
+  fibreG?: number;
+  sugarG?: number;
+  satFatG?: number;
+  saltG?: number;
   steps?: number;
   waterL?: number;
   mood?: string;
