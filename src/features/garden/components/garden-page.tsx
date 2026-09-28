@@ -51,7 +51,12 @@ export function GardenPage() {
   const { goals, complete } = useGoals();
   const { events } = useBloomContext();
   const [season, setSeason] = useState<Season>("spring");
-  const [view, setView] = useState<View>(null);
+  const search = useSearch({ strict: false }) as { view?: string };
+  const navigate = useNavigate();
+  const view = decodeView(search.view);
+  // Replace (not push) so browser Back never steps through sheet states.
+  const setView = (next: View) =>
+    navigate({ to: "/garden", search: next ? { view: encodeView(next) } : {}, replace: true, resetScroll: false });
   const [zoom, setZoom] = useState(1);
   const viewport = useRef<HTMLDivElement>(null);
 

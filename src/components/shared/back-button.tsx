@@ -1,37 +1,27 @@
-import type { ReactNode } from "react";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
 /**
- * Context-aware back navigation. If the user arrived here from somewhere else
- * inside Bloom we step back to that exact page; otherwise we fall back to the
- * natural parent of this screen.
+ * Bloom's one Back button. It always says "Back" and returns to wherever you
+ * actually came from. Only when there is no in-app history (fresh tab, shared
+ * link) does it fall back to a sensible parent page.
  */
-export function BackButton({
-  fallbackTo,
-  fallbackLabel,
-  children,
-}: {
-  fallbackTo: string;
-  fallbackLabel: string;
-  children?: ReactNode;
-}) {
+export function BackButton({ fallbackTo }: { fallbackTo: string; fallbackLabel?: string }) {
   const router = useRouter();
   // TanStack records its position in the history stack — index 0 means we
   // landed here directly (fresh tab, refresh or shared link).
   const index = useRouterState({
     select: (s) => (s.location.state as { __TSR_index?: number } | undefined)?.__TSR_index ?? 0,
   });
-  const canGoBack = index > 0;
 
-  if (!canGoBack) {
+  if (index <= 0) {
     return (
       <Button asChild variant="ghost" size="sm" className="-ml-2 gap-1.5 self-start">
         <Link to={fallbackTo}>
           <ArrowLeft className="h-4 w-4" />
-          {children ?? fallbackLabel}
+          Back
         </Link>
       </Button>
     );
