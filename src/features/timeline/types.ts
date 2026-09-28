@@ -46,7 +46,8 @@ export type EventCategory =
   | "steps"
   | "goal"
   | "document"
-  | "life-event";
+  | "life-event"
+  | "habit";
 
 /** Manual entry by the user, or data arriving from a connected service. */
 export type EventSource = "manual" | "sync";
@@ -80,6 +81,12 @@ export type BloomEvent = {
   measure?: string;
   /** Last day of a recorded period (YYYY-MM-DD), when the user chooses to log it. */
   periodEnd?: string;
+  /** The habit a habit check-in belongs to (category "habit"). */
+  habitId?: string;
+  /** Memories: whether the user has planted it in the Garden. Undefined = planted (older memories). */
+  inGarden?: boolean;
+  /** Memories: a journal entry this memory is connected to (same content, never copied). */
+  journalEntryId?: string;
 };
 
 export type EventCategoryMeta = {
@@ -105,6 +112,7 @@ export const eventCategoryMeta: Record<EventCategory, EventCategoryMeta> = {
   goal: { label: "Goals", metrics: [], accent: "sage" },
   document: { label: "Documents", metrics: [], accent: "stone" },
   "life-event": { label: "Life events", metrics: [], accent: "blush" },
+  habit: { label: "Habits", metrics: [], accent: "sage" },
 };
 
 /** A hidden, automatically maintained summary of one day. */
