@@ -84,7 +84,7 @@ export function GardenPage() {
   }, []);
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-8 pb-20">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-8 pb-20">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-2">
           <h1 className="font-display text-[1.75rem] leading-tight font-medium sm:text-4xl">Your Garden</h1>
@@ -96,7 +96,7 @@ export function GardenPage() {
         </Button>
       </header>
 
-      <div className="relative overflow-hidden rounded-[2rem] shadow-soft">
+      <div className="relative w-full max-w-full min-w-0 overflow-hidden rounded-[2rem] shadow-soft">
         <div
           ref={viewport}
           className="overflow-auto"
