@@ -45,6 +45,12 @@ export function describeMilestoneChange(
     }
   }
 
+  const kept = (list: GoalMilestone[]) =>
+    list.filter((m) => prev.some((p) => p.id === m.id) && next.some((n) => n.id === m.id)).map((m) => m.id).join();
+  if (!events.length && kept(prev) !== kept(next)) {
+    events.push(makeUpdate("milestone", "Steps reordered"));
+  }
+
   return events;
 }
 

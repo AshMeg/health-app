@@ -6,7 +6,7 @@ import type { BloomEvent } from "@/features/timeline/types";
 import { saveGardenMemory } from "../garden";
 import { seedGoals } from "../mock-data";
 import { describeMilestoneChange, describeTrackingChange, makeUpdate } from "../timeline";
-import { goalProgress, type BloomGoal, type GoalMilestone, type GoalTracking } from "../types";
+import { goalProgress, type BloomGoal, type GoalMilestone, type GoalPhoto, type GoalTracking, type GoalUpdate } from "../types";
 
 const STORAGE_KEY = "bloom.goals.v5";
 
@@ -248,6 +248,51 @@ export function useGoals() {
     [mutate],
   );
 
+  /** Photos live on the goal once; each change is told in its story. */
+  const setPhotos = useCallback(
+    (id: string, photos: GoalPhoto[]) =>
+      mutate(id, (goal) => {
+        const before = goal.photos ?? [];
+        const events: GoalUpdate[] = [];
+        for (const p of photos) {
+          const prev = before.find((b) => b.id === p.id);
+          if (!prev) {
+            const u = makeUpdate("photo", "Added a photo", p.caption);
+            events.push({ ...u, photoId: p.id });
+          } else if ((prev.caption ?? "") !== (p.caption ?? "") && p.caption) {
+            events.push({ ...makeUpdate("photo", "Photo caption added", p.caption), photoId: p.id });
+          }
+        }
+        for (const p of before)
+          if (!photos.some((x) => x.id === p.id)) events.push(makeUpdate("photo", "Removed a photo"));
+        return { ...goal, photos, updates: [...events.reverse(), ...goal.updates] };
+      }),
+    [mutate],
+  );
+
+  /** Optional, gentle reflection — becomes part of the permanent story. */
+  const addReflection = useCallback(
+    (id: string, prompt: string, body: string) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        reflections: [
+          { id: `r${Date.now().toString(36)}`, date: new Date().toISOString(), prompt, body: body.trim() },
+          ...(goal.reflections ?? []),
+        ],
+        updates: [makeUpdate("reflection", prompt, body.trim()), ...goal.updates],
+      })),
+    [mutate],
+  );
+
+  const deleteReflection = useCallback(
+    (id: string, reflectionId: string) =>
+      mutate(id, (goal) => ({
+        ...goal,
+        reflections: (goal.reflections ?? []).filter((r) => r.id !== reflectionId),
+      })),
+    [mutate],
+  );
+
   /** A timeline entry the user writes themselves. */
   const addManualUpdate = useCallback(
     (id: string, title: string, detail?: string) =>
@@ -349,6 +394,9 @@ export function useGoals() {
     editNote,
     deleteNote,
     addManualUpdate,
+    setPhotos,
+    addReflection,
+    deleteReflection,
     addToGarden,
     pauseGoal,
     resumeGoal,

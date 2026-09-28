@@ -56,9 +56,13 @@ export function GoalsPage() {
             <section className="space-y-3">
               <h2 className="text-sm text-muted-foreground">Completed</h2>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                {complete.length} finished goal{complete.length === 1 ? "" : "s"} {complete.length === 1 ? "is" : "are"}{" "}
-                planted in your Garden.
+                Each one is also a flower in your Garden — open any to see its whole story.
               </p>
+              <div className="grid gap-5 sm:grid-cols-2">
+                {complete.map((goal) => (
+                  <GoalCard key={goal.id} goal={goal} />
+                ))}
+              </div>
               <Button asChild variant="secondary" className="gap-1.5">
                 <Link to="/garden">
                   Visit Your Garden

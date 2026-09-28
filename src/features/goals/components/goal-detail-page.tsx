@@ -30,7 +30,9 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
     editNote,
     deleteNote,
     addManualUpdate,
-    updateGoal,
+    setPhotos,
+    addReflection,
+    deleteReflection,
     addToGarden,
     editGoal,
     resumeGoal,
@@ -74,7 +76,11 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
       <BackButton fallbackTo="/goals" fallbackLabel="All goals" />
 
       {isComplete ? (
-        <GoalCompletionCard title={goal.title} onAddToGarden={() => addToGarden(goal.id)} />
+        <GoalCompletionCard
+          goal={goal}
+          onPlant={() => addToGarden(goal.id)}
+          onReflect={(prompt, body) => addReflection(goal.id, prompt, body)}
+        />
       ) : null}
 
       <header className="space-y-4">
@@ -190,10 +196,27 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
 
       <GoalTrend goal={goal} />
 
+      {goal.reflections?.length ? (
+        <Card className="rounded-3xl border-transparent bg-lavender-soft/50 shadow-soft">
+          <CardContent className="space-y-5 p-7 sm:p-8">
+            <h2 className="text-base font-medium">Reflections</h2>
+            {goal.reflections.map((r) => (
+              <div key={r.id} className="group space-y-1">
+                <p className="text-xs text-muted-foreground">{r.prompt} · {formatGoalDateLong(r.date.slice(0, 10))}</p>
+                <p className="text-base leading-relaxed">“{r.body}”</p>
+                <button type="button" className="text-xs text-muted-foreground opacity-0 transition group-hover:opacity-100 hover:text-destructive" onClick={() => deleteReflection(goal.id, r.id)}>
+                  Remove
+                </button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card className="rounded-3xl border-transparent bg-card shadow-soft">
         <CardContent className="space-y-5 p-7 sm:p-8">
           <h2 className="text-base font-medium">Photos</h2>
-          <GoalPhotos photos={goal.photos ?? []} onChange={(photos) => updateGoal(goal.id, { photos })} />
+          <GoalPhotos photos={goal.photos ?? []} onChange={(photos) => setPhotos(goal.id, photos)} />
         </CardContent>
       </Card>
 
@@ -213,6 +236,7 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
         <CardContent className="space-y-5 p-7 sm:p-8">
           <h2 className="text-base font-medium">Timeline of updates</h2>
           <GoalTimeline
+            photos={goal.photos}
             updates={goal.updates}
             accent={goal.accent}
             onAdd={(title) => addManualUpdate(goal.id, title)}

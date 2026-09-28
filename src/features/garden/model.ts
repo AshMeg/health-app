@@ -191,6 +191,8 @@ export function buildYears(input: {
     m.photos.push(...(b.event.photos ?? []));
   }
   for (const g of input.goals) {
+    for (const r of g.reflections ?? [])
+      month(r.date).reflections.push({ goalId: g.id, goalTitle: g.title, body: r.body, date: r.date });
     for (const n of g.notes) {
       if (!months.has(n.date.slice(0, 7)) && !g.completedAt) continue;
       month(n.date).reflections.push({ goalId: g.id, goalTitle: g.title, body: n.body, date: n.date });

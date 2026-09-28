@@ -42,6 +42,7 @@ export type GoalEventKind =
   | "note"
   | "paused"
   | "resumed"
+  | "photo"
   | "manual";
 
 
@@ -52,6 +53,8 @@ export type GoalUpdate = {
   title: string;
   detail?: string;
   kind: GoalEventKind;
+  /** Photo this entry is about — a reference, never a copy. */
+  photoId?: string;
 };
 
 /** A dated line in the goal's story. */
@@ -162,6 +165,13 @@ export type GoalTracking =
   | ReflectionTracking;
 
 /** A photo kept with a goal — stored once here and read by the Garden. */
+export type GoalMemoryReflection = {
+  id: string;
+  date: string;
+  prompt: string;
+  body: string;
+};
+
 export type GoalPhoto = {
   id: string;
   /** Downscaled data URL (swap for storage URLs once uploads are persisted). */
@@ -197,6 +207,8 @@ export type BloomGoal = {
   pausedAt?: string;
   /** Photos attached to this goal — race finishes, certificates, moments. */
   photos?: GoalPhoto[];
+  /** Optional reflections — "What did this goal mean to you?" */
+  reflections?: GoalMemoryReflection[];
 };
 
 /** Goals resting in "Not Right Now" — kept whole, just out of the way. */
