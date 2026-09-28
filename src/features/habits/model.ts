@@ -154,7 +154,9 @@ export type Consistency = {
  */
 export function consistency(h: Habit, events: BloomEvent[], today = localDate()): Consistency {
   const totals = dailyTotals(events, h.id);
-  const start = localDate(h.createdAt) < [...totals.keys()].sort()[0] ? localDate(h.createdAt) : ([...totals.keys()].sort()[0] ?? localDate(h.createdAt));
+  const firstLog = [...totals.keys()].sort()[0];
+  const created = localDate(h.createdAt);
+  const start = firstLog && firstLog < created ? firstLog : created;
   const lastDone = [...totals.entries()].filter(([, v]) => met(h, v)).map(([d]) => d).sort().at(-1);
 
   const occasions: { date: string; label: string; done: boolean; amount?: number }[] = [];
