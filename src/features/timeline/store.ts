@@ -78,6 +78,8 @@ export type NewEvent = {
   habitId?: string;
   inGarden?: boolean;
   journalEntryId?: string;
+  memory?: boolean;
+  inJournal?: boolean;
   /** Defaults to now — pass an ISO string to backdate an entry. */
   at?: string;
 };
