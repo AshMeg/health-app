@@ -93,6 +93,11 @@ export function removeEvent(id: string) {
   write(store.filter((e) => e.id !== id));
 }
 
+/** Edits an existing event in place (used by Quick Notes). */
+export function updateEvent(id: string, patch: Partial<Omit<BloomEvent, "id">>) {
+  write(store.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+}
+
 export function clearEvents() {
   write([]);
 }
