@@ -50,47 +50,59 @@ function save(key: string, value: unknown) {
   }
 }
 
-export function useMeasures(events: BloomEvent[]) {
-  const [custom, setCustom] = useState<MeasureDef[]>([]);
-  const [chosen, setChosen] = useState<string[]>([]);
+// One shared store so every screen sees a new custom measurement at once.
+let customStore: MeasureDef[] = [];
+let chosenStore: string[] = [];
+let loaded = false;
+const listeners = new Set<() => void>();
+const emit = () => listeners.forEach((l) => l());
 
+function load() {
+  if (loaded) return;
+  loaded = true;
+  customStore = read<MeasureDef[]>(CUSTOM_KEY, []);
+  customStore.forEach((m) => registerMeasureTrend(m.key, m.label, m.unit));
+  chosenStore = read<string[]>(TRACKED_KEY, []);
+}
+
+export function useMeasures(events: BloomEvent[]) {
+  const [, force] = useState(0);
   useEffect(() => {
-    const c = read<MeasureDef[]>(CUSTOM_KEY, []);
-    c.forEach((m) => registerMeasureTrend(m.key, m.label, m.unit));
-    setCustom(c);
-    setChosen(read<string[]>(TRACKED_KEY, []));
+    load();
+    const l = () => force((n) => n + 1);
+    listeners.add(l);
+    l();
+    return () => {
+      listeners.delete(l);
+    };
   }, []);
 
+  const custom = customStore;
+  const chosen = chosenStore;
   const all = [...standardMeasures, ...custom];
   const withData = new Set(events.filter((e) => e.category === "measurement").map(measureOf));
   // You track what you've chosen plus anything you've actually logged.
   const tracked = all.filter((m) => chosen.includes(m.key) || withData.has(m.key));
 
   const toggle = useCallback((key: string) => {
-    setChosen((prev) => {
-      const next = prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key];
-      save(TRACKED_KEY, next);
-      return next;
-    });
+    chosenStore = chosenStore.includes(key) ? chosenStore.filter((k) => k !== key) : [...chosenStore, key];
+    save(TRACKED_KEY, chosenStore);
+    emit();
   }, []);
 
   const addCustom = useCallback((label: string, unit: string): MeasureDef => {
     const def: MeasureDef = { key: slug(label), label: label.trim(), unit: unit.trim() || "cm", custom: true };
     registerMeasureTrend(def.key, def.label, def.unit);
-    setCustom((prev) => {
-      const next = [...prev.filter((m) => m.key !== def.key), def];
-      save(CUSTOM_KEY, next);
-      return next;
-    });
-    setChosen((prev) => {
-      const next = prev.includes(def.key) ? prev : [...prev, def.key];
-      save(TRACKED_KEY, next);
-      return next;
-    });
+    customStore = [...customStore.filter((m) => m.key !== def.key), def];
+    if (!chosenStore.includes(def.key)) chosenStore = [...chosenStore, def.key];
+    save(CUSTOM_KEY, customStore);
+    save(TRACKED_KEY, chosenStore);
+    emit();
     return def;
   }, []);
 
-  const find = (key: string) => all.find((m) => m.key === key);
+  const find = (key: string) =>
+    [...standardMeasures, ...customStore].find((m) => m.key === key);
 
   return { all, tracked, withData, chosen, toggle, addCustom, find };
 }
