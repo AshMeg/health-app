@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { goalMetricPage } from "@/features/metrics/config";
 import { TrendPanel } from "@/features/trends/components/trend-panel";
-import { goalMetricTrend, goalTargetInTrendUnit, trendDefinitions } from "@/features/trends/series";
+import { goalMetricTrend, goalTargetInTrendUnit, getTrend } from "@/features/trends/series";
 import { goalProgress, type BloomGoal } from "../types";
 
 /**
@@ -16,7 +16,7 @@ export function GoalTrend({ goal }: { goal: BloomGoal }) {
   const trend = goalMetricTrend[t.metric];
   if (!trend) return null;
   const page = goalMetricPage[t.metric];
-  const def = trendDefinitions[trend];
+  const def = getTrend(trend);
   const target = goalTargetInTrendUnit(trend, t.target, t.unit);
   const fmt = (v: number) => `${v.toLocaleString()} ${t.unit}`.trim();
 

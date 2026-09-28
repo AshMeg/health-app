@@ -9,7 +9,7 @@ import type { BloomAccent } from "@/features/today/types";
  * interpolated or filled in.
  */
 
-export type TrendId =
+export type BaseTrendId =
   | "weight"
   | "bodyFat"
   | "calories"
@@ -25,6 +25,9 @@ export type TrendId =
   | "trainingSessions"
   | "cycle"
   | "waist";
+
+/** A base trend, or one body measurement: `measure:hips`, `measure:custom-forearm`. */
+export type TrendId = BaseTrendId | `measure:${string}`;
 
 /** "level" = a reading of state (weight). "flow" = an amount per day (water). */
 export type TrendKind = "level" | "flow" | "count";
@@ -46,6 +49,8 @@ export type TrendDefinition = {
   /** Formats a difference, e.g. "1.4 kg" or "42 min". */
   formatDelta?: (value: number) => string;
   defaultRange: RangeId;
+  /** Only measurement events with this key count (older unkeyed ones are waist). */
+  measure?: string;
   /** Words for summaries, e.g. "weight". */
   noun: string;
   /** Lower is better for direction-neutral wording — never judged, just described. */
@@ -55,7 +60,7 @@ const fixed = (d: number, unit: string) => (v: number) => `${v.toFixed(d)} ${uni
 const whole = (unit: string) => (v: number) => `${Math.round(v).toLocaleString()}${unit ? ` ${unit}` : ""}`;
 const hm = (m: number) => `${Math.floor(m / 60)}h ${String(Math.round(m % 60)).padStart(2, "0")}m`;
 
-export const trendDefinitions: Record<TrendId, TrendDefinition> = {
+export const trendDefinitions: Record<BaseTrendId, TrendDefinition> = {
   weight: { id: "weight", label: "Weight", unit: "kg", kind: "level", visual: "line", accent: "sage", aggregate: "last", metric: "weight", format: fixed(1, "kg"), defaultRange: "30d", noun: "weight" },
   bodyFat: { id: "bodyFat", label: "Body fat", unit: "%", kind: "level", visual: "line", accent: "lavender", aggregate: "last", metric: "bodyFat", format: (v) => `${v.toFixed(1)}%`, formatDelta: (v) => `${v.toFixed(1)} points`, defaultRange: "30d", noun: "body fat" },
   calories: { id: "calories", label: "Calories", unit: "kcal", kind: "flow", visual: "bar", accent: "blush", aggregate: "sum", metric: "calories", format: whole("kcal"), defaultRange: "30d", noun: "calories" },
@@ -70,8 +75,35 @@ export const trendDefinitions: Record<TrendId, TrendDefinition> = {
   steps: { id: "steps", label: "Steps", unit: "", kind: "flow", visual: "bar", accent: "lavender", aggregate: "last", metric: "steps", format: whole(""), formatDelta: whole("steps"), defaultRange: "30d", noun: "daily steps" },
   trainingSessions: { id: "trainingSessions", label: "Sessions", unit: "", kind: "count", visual: "bar", accent: "lavender", aggregate: "count", countCategory: "workout", format: (v) => `${v} session${v === 1 ? "" : "s"}`, defaultRange: "30d", noun: "training sessions" },
   cycle: { id: "cycle", label: "Cycle day", unit: "", kind: "level", visual: "step", accent: "blush", aggregate: "last", metric: "cycle", format: (v) => `Day ${Math.round(v)}`, defaultRange: "3m", noun: "cycle day" },
-  waist: { id: "waist", label: "Waist", unit: "cm", kind: "level", visual: "line", accent: "sage", aggregate: "last", metric: "measurement", format: fixed(1, "cm"), defaultRange: "3m", noun: "waist" },
+  waist: { id: "waist", label: "Waist", unit: "cm", kind: "level", visual: "line", accent: "sage", aggregate: "last", metric: "measurement", measure: "waist", format: fixed(1, "cm"), defaultRange: "3m", noun: "waist" },
 };
+
+/** Registered at runtime by the measurements feature (custom names, units). */
+const measureDefs = new Map<string, { label: string; unit: string }>();
+export function registerMeasureTrend(key: string, label: string, unit: string) {
+  measureDefs.set(key, { label, unit });
+}
+
+/** Resolves any trend id — including per-measurement ones — to its definition. */
+export function getTrend(id: TrendId): TrendDefinition {
+  if (!id.startsWith("measure:")) return trendDefinitions[id as BaseTrendId];
+  const key = id.slice("measure:".length);
+  const meta = measureDefs.get(key) ?? { label: key, unit: "cm" };
+  return {
+    id,
+    label: meta.label,
+    unit: meta.unit,
+    kind: "level",
+    visual: "line",
+    accent: "sage",
+    aggregate: "last",
+    metric: "measurement",
+    measure: key,
+    format: fixed(1, meta.unit),
+    defaultRange: "3m",
+    noun: meta.label.toLowerCase(),
+  };
+}
 
 export type RangeId = "7d" | "30d" | "3m" | "6m" | "1y";
 export const ranges: { id: RangeId; label: string; days: number; words: string }[] = [
@@ -97,7 +129,7 @@ function dayOffset(days: number) {
 
 /** Every real daily point for a trend, oldest first. */
 export function buildSeries(events: BloomEvent[], id: TrendId): TrendPoint[] {
-  const def = trendDefinitions[id];
+  const def = getTrend(id);
   const byDay = new Map<string, { value: number; synced: boolean; at: string }>();
   const ordered = [...events].sort((a, b) => a.at.localeCompare(b.at));
   for (const e of ordered) {
@@ -106,6 +138,7 @@ export function buildSeries(events: BloomEvent[], id: TrendId): TrendPoint[] {
       if (e.category !== def.countCategory) continue;
       v = 1;
     } else {
+      if (def.measure && (e.category !== "measurement" || (e.measure ?? "waist") !== def.measure)) continue;
       const raw = def.metric ? e.metrics?.[def.metric] : undefined;
       if (typeof raw !== "number" || !Number.isFinite(raw)) continue;
       v = raw;
@@ -148,7 +181,7 @@ export function summarise(
   range: RangeId,
   target?: number,
 ): string[] {
-  const def = trendDefinitions[id];
+  const def = getTrend(id);
   const pts = pointsInRange(all, range);
   const words = ranges.find((r) => r.id === range)!.words;
   if (pts.length < MIN_POINTS) return [];
