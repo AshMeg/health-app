@@ -95,6 +95,11 @@ export function CyclePage() {
         <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
           Your cycle history, built only from the periods you record.
         </p>
+        <div className="pt-2">
+          <Button className="rounded-full px-5" onClick={() => setDay({ open: true })}>
+            <Plus className="h-4 w-4" /> Log cycle
+          </Button>
+        </div>
       </header>
 
       {!current ? (
@@ -143,9 +148,6 @@ export function CyclePage() {
                     Period ended today
                   </Button>
                 ) : null}
-                <Button className="rounded-full" onClick={() => setDay({ open: true })}>
-                  <Plus className="h-3.5 w-3.5" /> Log today
-                </Button>
                 <Button variant="secondary" className="rounded-full" onClick={() => setDialog({ open: true })}>
                   Log period
                 </Button>
@@ -324,7 +326,7 @@ export function CyclePage() {
                   </>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    Symptoms you log with "Log today" will appear here, so you can see what comes up across your cycles.
+                    Symptoms you log with "Log cycle" will appear here, so you can see what comes up across your cycles.
                   </p>
                 )}
               </CardContent>

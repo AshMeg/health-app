@@ -30,6 +30,13 @@ export const todayWidgets: WidgetDefinition[] = [
     render: () => <TodayInsight />,
   },
   {
+    id: "quick-add",
+    title: "Quick add",
+    summary: "One tap logging for the things you track most.",
+    span: "full",
+    render: () => <QuickAddBar />,
+  },
+  {
     id: "focus-goal",
     title: "Your focus",
     summary: "The one goal that matters most today.",
@@ -95,13 +102,6 @@ export const todayWidgets: WidgetDefinition[] = [
     span: "half",
     defaultHidden: true,
     render: () => <SnapshotLogStatus />,
-  },
-  {
-    id: "quick-add",
-    title: "Quick add",
-    summary: "One tap logging for the things you track most.",
-    span: "full",
-    render: () => <QuickAddBar />,
   },
   {
     id: "timeline",

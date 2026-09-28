@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pencil, Sparkles, Trash2 } from "lucide-react";
+import { Pencil, Sparkles, Trash2, Plus } from "lucide-react";
 
 import { Switch } from "@/components/ui/switch";
 import { MEMORY_ORIGIN, isMemory } from "@/features/garden/model";
@@ -156,6 +156,18 @@ export function JournalPage() {
           A space for your thoughts. Write down what happened, how you felt, or whatever you'd like
           to keep track of. Bloom never reads meaning into what you write.
         </p>
+        <div className="pt-2">
+          <Button
+            className="rounded-full px-5"
+            onClick={() => {
+              const el = document.getElementById("journal-draft");
+              el?.scrollIntoView({ behavior: "smooth", block: "center" });
+              el?.focus({ preventScroll: true });
+            }}
+          >
+            <Plus className="h-4 w-4" /> Write entry
+          </Button>
+        </div>
       </header>
 
       <section className="space-y-4">
@@ -219,6 +231,7 @@ export function JournalPage() {
         <Card className="rounded-3xl border-transparent bg-card shadow-none">
           <CardContent className="space-y-4 p-7">
             <Textarea
+              id="journal-draft"
               aria-label="Journal entry"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}

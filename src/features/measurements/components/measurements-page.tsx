@@ -49,6 +49,11 @@ export function MeasurementsPage() {
         <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
           Track only the measurements that matter to you. Weight lives on its own page.
         </p>
+        <div className="pt-2">
+          <Button className="rounded-full px-5" onClick={() => setDialog({ open: true, measure: current?.key })}>
+            <Plus className="h-4 w-4" /> Log measurement
+          </Button>
+        </div>
       </header>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -67,13 +72,6 @@ export function MeasurementsPage() {
         ))}
         <Button variant="ghost" size="sm" className="rounded-full" onClick={() => setChoosing((c) => !c)}>
           {choosing ? "Done" : "Choose what you track"}
-        </Button>
-        <Button
-          size="sm"
-          className="ml-auto rounded-full px-4"
-          onClick={() => setDialog({ open: true, measure: current?.key })}
-        >
-          <Plus className="h-3.5 w-3.5" /> Measurement
         </Button>
       </div>
 
