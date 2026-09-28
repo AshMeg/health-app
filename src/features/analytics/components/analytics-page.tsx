@@ -300,22 +300,48 @@ function Fact({ k, v }: { k: string; v: string }) {
   );
 }
 
+const DAYS_NEEDED = 12;
+
 function EmptyState({ days, words }: { days: number; words: string }) {
+  const reached = days >= DAYS_NEEDED;
+  const shown = Math.min(days, DAYS_NEEDED);
   return (
     <Card className="rounded-[2rem] border-transparent bg-card shadow-soft">
-      <CardContent className="mx-auto flex max-w-md flex-col items-center gap-4 p-10 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-soft">
-          <Sprout className="h-5 w-5 text-sage" />
+      <CardContent className="mx-auto flex max-w-md flex-col items-center gap-5 px-8 py-12 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-sage-soft">
+          <Sprout className="h-6 w-6 text-sage" />
         </div>
-        <p className="font-display text-xl font-medium">Your patterns will grow here.</p>
+        <p className="font-display text-2xl font-medium">We're planting the seeds. 🌱</p>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Bloom needs a little more information before it can start spotting reliable connections
-          across your health, goals and life. In {words} there {days === 1 ? "is" : "are"} {days}{" "}
-          {days === 1 ? "day" : "days"} with anything logged.
+          Bloom needs a little more time to learn your patterns. Keep logging consistently and,
+          once there are enough days of data, we'll start looking for meaningful connections
+          across your health, goals and life.
         </p>
-        <p className="text-sm text-muted-foreground">
-          Sleep, nutrition, recovery, training, mood and water all help.
-        </p>
+        <div className="w-full space-y-2 rounded-2xl bg-muted/50 px-5 py-4">
+          {reached ? (
+            <p className="text-sm leading-relaxed">
+              You've given Bloom enough data to start looking, but some patterns need more
+              observations before they're reliable.
+            </p>
+          ) : (
+            <p className="text-sm">Your first patterns will appear after {DAYS_NEEDED} days of data.</p>
+          )}
+          <div
+            className="h-2 rounded-full bg-background"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={DAYS_NEEDED}
+            aria-valuenow={shown}
+          >
+            <div
+              className="h-2 rounded-full bg-sage transition-all"
+              style={{ width: `${(shown / DAYS_NEEDED) * 100}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {reached ? `${days} days logged` : `${days} of ${DAYS_NEEDED} days logged`} in {words}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
