@@ -119,7 +119,7 @@ export function HabitDetailPage({ habitId }: { habitId: string }) {
                   <div
                     key={o.date}
                     title={`${o.label}: ${o.done ? "done" : "not this time"}${o.amount ? ` (${o.amount}${habit.method === "yes-no" ? "" : ` ${unit}`})` : ""}`}
-                    className={cn("flex-1 rounded-t-lg", o.done ? "bg-sage/70" : "bg-muted")}
+                    className={cn("max-w-6 flex-1 rounded-t-lg", o.done ? "bg-sage/70" : "bg-muted")}
                     style={{
                       height:
                         habit.method === "yes-no" || habit.frequency.kind === "weekly"
