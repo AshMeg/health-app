@@ -252,10 +252,11 @@ export function HiveArt({ render, layers }: { render: HiveRender; layers: number
     <>
       {base}
       <path d="M18 104 L72 104 L66 92 L24 92 Z" fill="var(--g-trunk)" opacity={0.55} />
-      {Array.from({ length: layers + 2 }, (_, i, arr) => {
-        const t = (i + 0.5) / arr.length;
+      {Array.from({ length: layers + 2 }, (_, i) => {
+        const total = layers + 2;
+        const t = (i + 0.5) / total;
         const w = 22 + Math.sin(Math.min(1, t * 1.15) * Math.PI * 0.5 + 0.2) * 40;
-        const h = 76 / arr.length;
+        const h = 76 / total;
         return <rect key={i} x={45 - w / 2} y={16 + i * h} width={w} height={h + 1.5} rx={h / 2} fill="var(--g-hive)" stroke="var(--g-hive-line)" strokeWidth={1.1} />;
       })}
       <ellipse cx={45} cy={84} rx={6} ry={4.5} fill="var(--g-foliage-dark)" opacity={0.75} />
