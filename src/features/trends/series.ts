@@ -60,7 +60,7 @@ export const trendDefinitions: Record<TrendId, TrendDefinition> = {
   bodyFat: { id: "bodyFat", label: "Body fat", unit: "%", kind: "level", visual: "line", accent: "lavender", aggregate: "last", metric: "bodyFat", format: (v) => `${v.toFixed(1)}%`, formatDelta: (v) => `${v.toFixed(1)} points`, defaultRange: "30d", noun: "body fat" },
   calories: { id: "calories", label: "Calories", unit: "kcal", kind: "flow", visual: "bar", accent: "blush", aggregate: "sum", metric: "calories", format: whole("kcal"), defaultRange: "30d", noun: "calories" },
   protein: { id: "protein", label: "Protein", unit: "g", kind: "flow", visual: "bar", accent: "sage", aggregate: "sum", metric: "protein", format: whole("g"), defaultRange: "30d", noun: "protein" },
-  carbs: { id: "carbs", label: "Carbs", unit: "g", kind: "flow", visual: "bar", accent: "caution" as BloomAccent, aggregate: "sum", metric: "carbs", format: whole("g"), defaultRange: "30d", noun: "carbohydrates" },
+  carbs: { id: "carbs", label: "Carbs", unit: "g", kind: "flow", visual: "bar", accent: "stone", aggregate: "sum", metric: "carbs", format: whole("g"), defaultRange: "30d", noun: "carbohydrates" },
   fat: { id: "fat", label: "Fat", unit: "g", kind: "flow", visual: "bar", accent: "lavender", aggregate: "sum", metric: "fat", format: whole("g"), defaultRange: "30d", noun: "fat" },
   water: { id: "water", label: "Water", unit: "L", kind: "flow", visual: "bar", accent: "sky", aggregate: "sum", metric: "water", format: fixed(1, "L"), defaultRange: "30d", noun: "water" },
   sleep: { id: "sleep", label: "Sleep", unit: "min", kind: "flow", visual: "bar", accent: "sky", aggregate: "last", metric: "sleep", format: hm, formatDelta: (v) => `${Math.round(v)} min`, defaultRange: "30d", noun: "sleep" },

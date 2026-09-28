@@ -1,6 +1,7 @@
 import type { DailySnapshot, EventCategory } from "@/features/timeline/types";
 import { formatSleep } from "@/features/timeline/snapshot";
 import type { BloomAccent } from "@/features/today/types";
+import type { TrendId } from "@/features/trends/series";
 
 /** One reading pulled out of a day's snapshot. */
 export type MetricReader = {
@@ -25,6 +26,8 @@ export type MetricPageConfig = {
   /** Quick Add specs offered as logging shortcuts. */
   quickAddIds: string[];
   readers: MetricReader[];
+  /** Trends shown under "Over time" — chosen per page, not one-size-fits-all. */
+  trends?: TrendId[];
   /** What this metric is connected to elsewhere in Bloom. */
   connectedTo: string;
 };
@@ -35,6 +38,7 @@ const one = (value?: number, digits = 0) =>
 export const metricPages: Record<string, MetricPageConfig> = {
   weight: {
     id: "weight",
+    trends: ["weight", "bodyFat"],
     title: "Weight",
     question: "Is my weight moving in the direction I want?",
     intro: "Your latest reading, how it compares with recent days, and every weight you've logged.",
@@ -49,6 +53,7 @@ export const metricPages: Record<string, MetricPageConfig> = {
   },
   nutrition: {
     id: "nutrition",
+    trends: ["calories", "protein", "carbs", "fat", "water"],
     title: "Nutrition",
     question: "Am I fuelling myself well today?",
     intro: "Calories, protein and water as they build through the day.",
@@ -66,6 +71,7 @@ export const metricPages: Record<string, MetricPageConfig> = {
   },
   sleep: {
     id: "sleep",
+    trends: ["sleep"],
     title: "Sleep",
     question: "Am I getting enough rest?",
     intro: "Last night compared with the rest of your week.",
@@ -77,6 +83,7 @@ export const metricPages: Record<string, MetricPageConfig> = {
   },
   training: {
     id: "training",
+    trends: ["trainingSessions", "steps"],
     title: "Training",
     question: "Am I moving as often as I intend to?",
     intro: "What you've done recently, and how steady the pattern has been.",
@@ -91,6 +98,7 @@ export const metricPages: Record<string, MetricPageConfig> = {
   },
   recovery: {
     id: "recovery",
+    trends: ["recovery", "hrv", "restingHr"],
     title: "Recovery",
     question: "How ready is my body today?",
     intro: "Readiness, heart rate variability and how you've been feeling.",
@@ -107,6 +115,7 @@ export const metricPages: Record<string, MetricPageConfig> = {
   },
   cycle: {
     id: "cycle",
+    trends: ["cycle"],
     title: "Cycle",
     question: "Where am I in my cycle, and what's typical here?",
     intro: "Your cycle day and everything you've noted alongside it.",
@@ -118,6 +127,7 @@ export const metricPages: Record<string, MetricPageConfig> = {
   },
   measurements: {
     id: "measurements",
+    trends: ["waist", "bodyFat"],
     title: "Measurements",
     question: "How is my body shape changing over time?",
     intro: "Measurements change slowly — this is the long view.",

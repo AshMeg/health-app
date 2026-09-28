@@ -1,3 +1,4 @@
+import { TrendPanel } from "@/features/trends/components/trend-panel";
 import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 
@@ -81,6 +82,13 @@ export function MetricPage({ config }: { config: MetricPageConfig }) {
           </Card>
         )}
       </section>
+
+      {config.trends?.length ? (
+        <section className="space-y-4">
+          <h2 className="text-base font-medium text-foreground/80">Over time</h2>
+          <TrendPanel trends={config.trends} />
+        </section>
+      ) : null}
 
       <section className="space-y-4">
         <h2 className="text-base font-medium text-foreground/80">Log it now</h2>
