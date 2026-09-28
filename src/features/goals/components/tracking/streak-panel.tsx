@@ -70,7 +70,7 @@ export function StreakPanel({
       : [...tracking.history, day].sort();
     const s = streaks(history);
     // Keep an older longest streak recorded before history was kept by date.
-    onChange({ ...tracking, history, current: s.current, longest: Math.max(s.longest, history.length ? s.longest : 0) });
+    onChange({ ...tracking, history, current: s.current, longest: s.longest });
   };
   const markToday = () => !doneToday && toggle(today);
 
