@@ -12,10 +12,10 @@ export function GoalsEmptyState({ onCreate }: { onCreate: () => void }) {
         </div>
         <div className="max-w-sm space-y-2">
           <p className="font-display text-xl font-medium sm:text-2xl">
-            Every garden starts with a single seed.
+            What are you growing towards?
           </p>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Choose one thing you'd like to grow towards. You can always add more later.
+            Set a goal and Bloom will help you keep track of the steps along the way.
           </p>
         </div>
         <Button onClick={onCreate}>Create Your First Goal</Button>
