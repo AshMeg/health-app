@@ -78,6 +78,8 @@ export type BloomEvent = {
   photos?: string[];
   /** Which body measurement a measurement event records ("waist", "hips", "custom-forearm"). */
   measure?: string;
+  /** Last day of a recorded period (YYYY-MM-DD), when the user chooses to log it. */
+  periodEnd?: string;
 };
 
 export type EventCategoryMeta = {
@@ -112,6 +114,8 @@ export type DailySnapshot = {
   weightKg?: number;
   bodyFatPercent?: number;
   cycleDay?: number;
+  /** Set by Analytics from completed recorded cycles: the 5 days before a period. */
+  cycleLateLuteal?: boolean;
   sleepMinutes?: number;
   recoveryPercent?: number;
   hrv?: number;

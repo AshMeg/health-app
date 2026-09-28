@@ -1,4 +1,5 @@
 import { buildDailySnapshot, isoDate } from "@/features/timeline/snapshot";
+import { cycleDayOn, lateLutealDays, periodsOf } from "@/features/cycle/model";
 import type { BloomEvent, DailySnapshot } from "@/features/timeline/types";
 
 /**
@@ -360,6 +361,82 @@ const comparisons: Comparison[] = [
     compared: "Cycle day and mood logged the same day",
     limitation: "This is about your recorded history only, not cycles in general.",
   },
+  {
+    id: "cycle-weight",
+    title: "Your cycle and weight",
+    category: "Cycle",
+    sources: ["cycle", "weight"],
+    pairs: (days) =>
+      each(days).flatMap((d) => {
+        const v = d.weightKg;
+        return d.cycleLateLuteal !== undefined && v !== undefined ? [{ inA: d.cycleLateLuteal, value: v }] : [];
+      }),
+    groupA: "Late luteal days (5 days before a period)",
+    groupB: "Other days in your cycle",
+    outcome: "Average weight",
+    format: (v) => `${v.toFixed(1)} kg`,
+    higher: "Based on your recorded history, your weight has tended to be a little higher in the days before your period.",
+    lower: "Based on your recorded history, your weight has tended to be a little lower in the days before your period.",
+    compared: "Days within your completed, recorded cycles",
+    limitation: "Short-term weight changes are normal. This is about your own records, not a cause.",
+  },
+  {
+    id: "cycle-recovery",
+    title: "Your cycle and recovery",
+    category: "Cycle",
+    sources: ["cycle", "recovery"],
+    pairs: (days) =>
+      each(days).flatMap((d) => {
+        const v = d.recoveryPercent;
+        return d.cycleLateLuteal !== undefined && v !== undefined ? [{ inA: d.cycleLateLuteal, value: v }] : [];
+      }),
+    groupA: "Late luteal days (5 days before a period)",
+    groupB: "Other days in your cycle",
+    outcome: "Average recovery",
+    format: pct,
+    higher: "Your recovery has tended to be higher during the late luteal phase in your recorded cycles.",
+    lower: "Your recovery has tended to be lower during the late luteal phase in your recorded cycles.",
+    compared: "Days within your completed, recorded cycles",
+    limitation: "This is about your recorded history only, not cycles in general.",
+  },
+  {
+    id: "cycle-sleep",
+    title: "Your cycle and sleep",
+    category: "Cycle",
+    sources: ["cycle", "sleep"],
+    pairs: (days) =>
+      each(days).flatMap((d) => {
+        const v = d.sleepMinutes;
+        return d.cycleLateLuteal !== undefined && v !== undefined ? [{ inA: d.cycleLateLuteal, value: v }] : [];
+      }),
+    groupA: "Late luteal days (5 days before a period)",
+    groupB: "Other days in your cycle",
+    outcome: "Average sleep",
+    format: hours,
+    higher: "You've tended to sleep longer in the days before your period.",
+    lower: "You've tended to sleep a little less in the days before your period.",
+    compared: "Days within your completed, recorded cycles",
+    limitation: "This is about your recorded history only, not cycles in general.",
+  },
+  {
+    id: "cycle-late-mood",
+    title: "Your mood before your period",
+    category: "Cycle",
+    sources: ["cycle", "mood"],
+    pairs: (days) =>
+      each(days).flatMap((d) => {
+        const v = mood(d);
+        return d.cycleLateLuteal !== undefined && v !== undefined ? [{ inA: d.cycleLateLuteal, value: v }] : [];
+      }),
+    groupA: "Late luteal days (5 days before a period)",
+    groupB: "Other days in your cycle",
+    outcome: "Average mood",
+    format: moodWord,
+    higher: "Your mood has tended to be more positive in the days before your period.",
+    lower: "You've logged a lower mood more often in the days before your period.",
+    compared: "Days within your completed, recorded cycles",
+    limitation: "An observation about your own records — not a diagnosis of anything.",
+  },
 ];
 
 export type AnalyticsResult = {
@@ -372,11 +449,16 @@ export type AnalyticsResult = {
 export function analyse(events: BloomEvent[], periodDays: number): AnalyticsResult {
   const days = new Map<string, DailySnapshot>();
   const today = new Date();
+  const starts = periodsOf(events).map((p) => p.start);
+  const { late, known } = lateLutealDays(events);
   for (let i = 0; i < periodDays; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     const snap = buildDailySnapshot(events, isoDate(d));
-    if (snap.events.length) days.set(snap.date, snap);
+    if (!snap.events.length) continue;
+    if (snap.cycleDay === undefined) snap.cycleDay = cycleDayOn(starts, snap.date);
+    if (known.has(snap.date)) snap.cycleLateLuteal = late.has(snap.date);
+    days.set(snap.date, snap);
   }
 
   const patterns: Pattern[] = [];
