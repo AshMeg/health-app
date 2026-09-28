@@ -12,22 +12,34 @@ import {
   type HabitState,
   type Season,
 } from "../model";
+import type { GardenStyle } from "../styles";
+import type { TimeOfDay, Weather } from "../atmosphere";
+import { Bee, ButterflyArt, FlowerArt, GardenDefs, HiveArt, TreeArt } from "./garden-art";
 
 export const SCENE_HEIGHT = 640;
-const GROUND_Y = 270;
+const TILE = 1920;
 
-const stageHeight: Record<GrowthStage, number> = { seedling: 34, bud: 54, bloom: 74, mature: 92 };
+const stageHeight: Record<GrowthStage, number> = { seedling: 44, bud: 60, bloom: 78, mature: 96 };
 /** Every completed goal is a full flower; stage only changes size and openness, never removes petals. */
-const stageBloom: Record<GrowthStage, number> = { seedling: 0.6, bud: 0.7, bloom: 0.85, mature: 1 };
+const stageBloom: Record<GrowthStage, number> = { seedling: 0.62, bud: 0.72, bloom: 0.86, mature: 1 };
+
+/** The painting is recoloured per season, so every style works in every season. */
+const seasonFilter: Record<Season, string> = {
+  spring: "saturate(1.05) hue-rotate(-6deg) brightness(1.03)",
+  summer: "saturate(1.08)",
+  autumn: "sepia(0.35) hue-rotate(-18deg) saturate(1.25) brightness(0.98)",
+  winter: "grayscale(0.55) brightness(1.1) contrast(0.92) hue-rotate(10deg)",
+};
 
 export function sceneWidth(flowers: number, butterflies: number, years: number) {
-  return Math.max(1100, 420 + years * 170 + Math.ceil(flowers / 3) * 110 + butterflies * 20);
+  return Math.max(1100, 420 + years * 180 + Math.ceil(flowers / 3) * 110 + butterflies * 20);
 }
 
 /**
- * The illustrated meadow. Pure presentation — every element is positioned
- * deterministically from its id so the garden keeps its shape between visits
- * and simply spreads wider as it grows.
+ * The illustrated garden. A painted environment for the chosen style,
+ * recoloured by season and lit by time of day and real weather, with every
+ * Bloom record drawn on top as its own interactive object. Positions are
+ * seeded from ids so the garden keeps its shape and simply grows wider.
  */
 export function GardenScene({
   season,
@@ -37,6 +49,9 @@ export function GardenScene({
   habits,
   years,
   months,
+  gardenStyle,
+  time = "day",
+  weather = null,
   onOpenYear,
   onOpenMonth,
   onOpenHive,
@@ -49,86 +64,80 @@ export function GardenScene({
   habits: HabitState[];
   years: GardenYear[];
   months: GardenMonth[];
+  gardenStyle: GardenStyle;
+  time?: TimeOfDay;
+  weather?: Weather | null;
   onOpenYear: (year: number) => void;
   onOpenMonth: (key: string) => void;
   onOpenHive: () => void;
   onOpenMemory: (id: string) => void;
 }) {
-  const treesEnd = 60 + years.length * 170;
+  const ground = Math.round(gardenStyle.horizon * SCENE_HEIGHT);
+  const treesEnd = 60 + years.length * 180;
   const hiveX = treesEnd + 30;
   const meadowStart = hiveX + 150;
   const meadowWidth = Math.max(300, width - meadowStart - 60);
+  const tiles = Math.ceil(width / TILE);
+  // Wind speeds up the sway a little — never more than twice as fast.
+  const sway = weather ? Math.max(0.5, 1 - weather.windKmh / 60) : 1;
+  const snowing = weather?.kind === "snow";
+
+  // Order flowers into gentle drifts rather than a grid: rows by depth, spread by seed.
+  const placed = flowers.map((f, i) => {
+    const x = meadowStart + 20 + seeded(f.id) * (meadowWidth - 40);
+    const y = ground + 80 + seeded(f.id, 7) * (SCENE_HEIGHT - ground - 190) + (i % 3) * 5;
+    return { f, x, y };
+  });
 
   return (
     <div
-      className={cn("garden-scene relative overflow-hidden", `season-${season}`)}
-      style={{
-        width,
-        height: SCENE_HEIGHT,
-        background:
-          "linear-gradient(to bottom, var(--season-sky-top), var(--season-sky-bottom) 42%, var(--season-ground) 42%, var(--season-ground-deep))",
-      }}
+      className={cn("garden-scene relative overflow-hidden bg-muted", `season-${season}`, `garden-style-${gardenStyle.id}`)}
+      style={{ width, height: SCENE_HEIGHT, ["--garden-sway" as string]: sway }}
     >
-      {/* Sun / cottage glow */}
-      <div
-        className="absolute rounded-full blur-2xl"
-        style={{ left: width - 260, top: 30, width: 180, height: 180, background: "var(--season-sun)" }}
-      />
-      {/* Soft rolling hills */}
-      <svg className="absolute inset-x-0" style={{ top: GROUND_Y - 70 }} width={width} height={120} aria-hidden>
-        <path
-          d={hills(width)}
-          fill="var(--season-ground)"
-          opacity={0.9}
-        />
-      </svg>
+      <GardenDefs />
+      {/* Painted environment, mirrored on every other tile so the landscape flows seamlessly */}
+      <div className="absolute inset-0 flex" style={{ filter: seasonFilter[season] }} aria-hidden>
+        {Array.from({ length: tiles }, (_, i) => (
+          <img
+            key={i}
+            src={gardenStyle.image}
+            alt=""
+            width={TILE}
+            height={SCENE_HEIGHT}
+            loading={i === 0 ? "eager" : "lazy"}
+            draggable={false}
+            className="h-full max-w-none shrink-0 select-none"
+            style={{ width: TILE, transform: i % 2 ? "scaleX(-1)" : undefined }}
+          />
+        ))}
+      </div>
+      {season === "winter" || snowing ? (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0" style={{ top: ground - 20, background: "linear-gradient(to bottom, transparent, color-mix(in oklab, var(--garden-snow) 55%, transparent) 30%, color-mix(in oklab, var(--garden-snow) 70%, transparent))" }} aria-hidden />
+      ) : null}
 
-      <SeasonParticles season={season} width={width} />
-
-      {/* Garden path along the bottom */}
-      <svg className="absolute left-0" style={{ top: SCENE_HEIGHT - 90 }} width={width} height={90} aria-hidden>
-        <path
-          d={`M0 55 C ${width * 0.25} 25, ${width * 0.5} 80, ${width * 0.75} 45 S ${width} 60 ${width} 50 L ${width} 90 L 0 90 Z`}
-          fill="var(--stone-soft)"
-          opacity={0.75}
-        />
-      </svg>
+      <Sky width={width} ground={ground} time={time} weather={weather} />
+      <SeasonParticles season={snowing ? "winter" : season} width={width} />
 
       {/* Trees — one per year, each with its yearbook at its roots */}
       {years.map((y, i) => (
-        <YearTree key={y.year} year={y} x={60 + i * 170} onOpen={() => onOpenYear(y.year)} />
+        <YearTree key={y.year} year={y} x={60 + i * 180} baseY={ground + 95} render={gardenStyle.tree} onOpen={() => onOpenYear(y.year)} />
       ))}
 
-      <Hive x={hiveX} habits={habits} onOpen={onOpenHive} />
+      <Hive x={hiveX} top={ground - 5} habits={habits} render={gardenStyle.hive} onOpen={onOpenHive} />
 
-      {/* Wild grass tufts for texture */}
-      {Array.from({ length: Math.floor(width / 60) }, (_, i) => (
-        <svg
-          key={`g-${i}`}
-          aria-hidden
-          className="absolute"
-          style={{ left: i * 60 + seeded(`g${i}`) * 40, top: GROUND_Y + 40 + seeded(`g${i}`, 2) * 240 }}
-          width={18}
-          height={16}
-        >
-          <path d="M2 16 Q4 6 6 16 M8 16 Q9 2 11 16 M13 16 Q15 7 16 16" stroke="var(--season-foliage)" strokeWidth={1.5} fill="none" opacity={0.55} />
-        </svg>
-      ))}
+      {/* Foreground grasses for depth */}
+      <Grasses width={width} ground={ground} />
 
       {/* Flowers — completed goals */}
-      {flowers.map((f, i) => {
-        const x = meadowStart + seeded(f.id) * meadowWidth;
-        const y = GROUND_Y + 60 + seeded(f.id, 7) * 200 + (i % 3) * 6;
-        return <Flower key={f.id} flower={f} x={x} y={y} />;
-      })}
+      {placed.map(({ f, x, y }) => (
+        <Flower key={f.id} flower={f} x={x} y={y} render={gardenStyle.flower} />
+      ))}
 
-      {/* Butterflies — life memories */}
+      {/* Butterflies — memories planted in the Garden */}
       {butterflies.map((b) => {
         const x = meadowStart + seeded(b.id, 3) * meadowWidth;
-        const y = 120 + seeded(b.id, 5) * 220;
-        return (
-          <Butterfly key={b.id} x={x} y={y} seed={seeded(b.id, 9)} title={b.title} onOpen={() => onOpenMemory(b.id)} />
-        );
+        const y = ground - 150 + seeded(b.id, 5) * 220;
+        return <Butterfly key={b.id} x={x} y={y} seed={seeded(b.id, 9)} title={b.title} onOpen={() => onOpenMemory(b.id)} />;
       })}
 
       {/* Monthly books resting along the path */}
@@ -138,21 +147,26 @@ export function GardenScene({
           type="button"
           onClick={() => onOpenMonth(m.key)}
           title={`${monthNames[m.month]} ${m.year}`}
-          aria-label={`Open ${monthNames[m.month]} ${m.year}`}
+          aria-label={`Open ${monthNames[m.month]} ${m.year} — monthly book`}
           className="group absolute flex flex-col items-center gap-1 transition-transform hover:-translate-y-1"
-          style={{ left: 40 + i * 78, top: SCENE_HEIGHT - 70 }}
+          style={{ left: 40 + i * 78, top: SCENE_HEIGHT - 70, zIndex: SCENE_HEIGHT }}
         >
-          <svg width={34} height={30} aria-hidden>
-            <path d="M3 5 Q17 1 17 6 Q17 1 31 5 L31 27 Q17 23 17 28 Q17 23 3 27 Z" fill="var(--card)" stroke="var(--stone)" strokeWidth={1} />
-            <path d="M17 6 L17 28" stroke="var(--stone)" strokeWidth={0.8} />
-            <rect x={6} y={10} width={8} height={1.5} rx={0.75} fill={`var(--${accentForMonth(m.month)})`} />
-            <rect x={20} y={10} width={8} height={1.5} rx={0.75} fill={`var(--${accentForMonth(m.month)})`} />
+          <svg width={36} height={30} aria-hidden>
+            <ellipse cx={18} cy={28} rx={15} ry={2} fill="var(--g-foliage-dark)" opacity={0.3} />
+            <path d="M3 5 Q17 1 18 6 Q19 1 33 5 L33 26 Q19 22 18 27 Q17 22 3 26 Z" fill="var(--card)" stroke="var(--g-accent-line)" strokeWidth={1} />
+            <path d="M18 6 L18 27" stroke="var(--g-accent-line)" strokeWidth={0.8} />
+            <rect x={6} y={10} width={9} height={1.5} rx={0.75} fill={`var(--g-petal-${accentForMonth(m.month)})`} />
+            <rect x={21} y={10} width={9} height={1.5} rx={0.75} fill={`var(--g-petal-${accentForMonth(m.month)})`} />
+            <rect x={6} y={14} width={7} height={1} rx={0.5} fill="var(--g-accent-line)" opacity={0.4} />
+            <rect x={21} y={14} width={7} height={1} rx={0.5} fill="var(--g-accent-line)" opacity={0.4} />
           </svg>
-          <span className="rounded-full bg-card/80 px-2 text-[10px] text-muted-foreground">
+          <span className="rounded-full bg-card/85 px-2 text-[10px] text-muted-foreground backdrop-blur-sm">
             {monthNames[m.month].slice(0, 3)} {String(m.year).slice(2)}
           </span>
         </button>
       ))}
+
+      <Light time={time} weather={weather} />
     </div>
   );
 }
@@ -161,10 +175,72 @@ function accentForMonth(month: number) {
   return (["sky", "lavender", "sage", "blush", "sage", "sky"] as const)[month % 6];
 }
 
-function hills(width: number) {
-  let d = `M0 70`;
-  for (let x = 0; x <= width; x += 240) d += ` Q ${x + 120} ${20 + (x % 480 ? 25 : 0)} ${x + 240} 70`;
-  return `${d} L ${width} 120 L 0 120 Z`;
+/** Clouds, stars and sun — calm, never a weather app. */
+function Sky({ width, ground, time, weather }: { width: number; ground: number; time: TimeOfDay; weather: Weather | null }) {
+  const cover = weather ? weather.cloudCover : 0;
+  const clouds = weather ? Math.round((cover / 100) * (width / 260)) : 0;
+  const rainy = weather?.kind === "rain" || weather?.kind === "storm";
+  return (
+    <div className="pointer-events-none absolute inset-0" aria-hidden>
+      {time === "night" && cover < 70
+        ? Array.from({ length: Math.floor(width / 40) }, (_, i) => (
+            <span key={i} className="absolute rounded-full" style={{ left: seeded(`st${i}`) * width, top: seeded(`st${i}`, 1) * (ground * 0.6), width: 2, height: 2, background: "var(--garden-star)", animation: `garden-twinkle ${3 + seeded(`st${i}`, 2) * 4}s ease-in-out infinite` }} />
+          ))
+        : null}
+      {weather?.kind === "clear" && time !== "night" ? (
+        <div className="absolute rounded-full blur-3xl" style={{ right: 120, top: 10, width: 220, height: 220, background: "var(--garden-sunlight)", opacity: 0.55 }} />
+      ) : null}
+      {Array.from({ length: clouds }, (_, i) => (
+        <div key={i} className="absolute inset-x-0" style={{ top: 10 + seeded(`c${i}`) * (ground * 0.45), animation: `garden-drift ${160 + seeded(`c${i}`, 1) * 120}s linear ${-seeded(`c${i}`, 2) * 200}s infinite` }}>
+          <div className="rounded-full blur-2xl" style={{ width: 240 + seeded(`c${i}`, 3) * 200, height: 60 + seeded(`c${i}`, 4) * 40, background: rainy ? "var(--garden-storm)" : "var(--garden-cloud)", opacity: rainy ? 0.45 : 0.7 }} />
+        </div>
+      ))}
+      {rainy
+        ? Array.from({ length: Math.floor(width / 18) }, (_, i) => (
+            <span key={i} className="absolute" style={{ left: seeded(`r${i}`) * width, top: -40, width: 1, height: 16, background: "var(--garden-rain)", opacity: 0.55, transform: "rotate(8deg)", animation: `garden-rain ${1.1 + seeded(`r${i}`, 1) * 0.8}s linear ${-seeded(`r${i}`, 2) * 2}s infinite` }} />
+          ))
+        : null}
+      {weather?.kind === "fog" ? <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 20%, color-mix(in oklab, var(--garden-cloud) 55%, transparent) 60%, transparent)" }} /> : null}
+    </div>
+  );
+}
+
+/** Time-of-day and weather light, over everything but never blocking it. */
+function Light({ time, weather }: { time: TimeOfDay; weather: Weather | null }) {
+  const grey = weather && (weather.kind === "rain" || weather.kind === "storm" || weather.cloudCover > 75);
+  const layers: { bg: string; opacity: number; blend: "multiply" | "soft-light" | "screen" }[] = [];
+  if (time === "morning") layers.push({ bg: "linear-gradient(120deg, var(--garden-morning), transparent 70%)", opacity: 0.35, blend: "soft-light" });
+  if (time === "evening") layers.push({ bg: "linear-gradient(to bottom, transparent, var(--garden-evening))", opacity: 0.35, blend: "multiply" });
+  if (time === "night") layers.push({ bg: "var(--garden-night)", opacity: 0.38, blend: "multiply" });
+  if (grey) layers.push({ bg: "var(--garden-storm)", opacity: 0.18, blend: "multiply" });
+  return (
+    <>
+      {layers.map((l, i) => (
+        <div key={i} aria-hidden className="pointer-events-none absolute inset-0" style={{ background: l.bg, opacity: l.opacity, mixBlendMode: l.blend, zIndex: 2000 }} />
+      ))}
+    </>
+  );
+}
+
+function Grasses({ width, ground }: { width: number; ground: number }) {
+  return (
+    <>
+      {Array.from({ length: Math.floor(width / 34) }, (_, i) => {
+        const k = `g${i}`;
+        const top = ground + 60 + seeded(k, 2) * (SCENE_HEIGHT - ground - 80);
+        const h = 12 + seeded(k, 3) * 14;
+        return (
+          <svg key={k} aria-hidden className="pointer-events-none absolute origin-bottom" style={{ left: i * 34 + seeded(k) * 24, top, zIndex: Math.round(top + h), animation: `garden-sway calc(${5 + seeded(k, 4) * 4}s * var(--garden-sway, 1)) ease-in-out infinite` }} width={22} height={h}>
+            {Array.from({ length: 5 }, (_, b) => {
+              const x = 2 + b * 4.5;
+              const lean = (seeded(k, b + 10) - 0.5) * 8;
+              return <path key={b} d={`M${x} ${h} Q${x + lean * 0.4} ${h * 0.5} ${x + lean} ${h * (0.1 + seeded(k, b + 20) * 0.3)}`} stroke={b % 2 ? "var(--g-foliage-light)" : "var(--g-foliage)"} strokeWidth={1.2} fill="none" opacity={0.75} strokeLinecap="round" />;
+            })}
+          </svg>
+        );
+      })}
+    </>
+  );
 }
 
 function SeasonParticles({ season, width }: { season: Season; width: number }) {
