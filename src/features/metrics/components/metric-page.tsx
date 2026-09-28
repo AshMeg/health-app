@@ -1,10 +1,12 @@
 import { TrendPanel } from "@/features/trends/components/trend-panel";
 import { useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Plus, Target } from "lucide-react";
 
 import { BackButton } from "@/components/shared/back-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useGoals } from "@/features/goals/hooks/use-goals";
 import { LogEventDialog } from "@/features/timeline/components/log-event-dialog";
 import { TimelineFeed } from "@/features/timeline/components/timeline-feed";
 import { useBloomContext } from "@/features/timeline/hooks/use-bloom-context";
@@ -12,7 +14,7 @@ import { quickAddSpecs, type QuickAddSpec } from "@/features/timeline/quick-add"
 import { SummaryGrid } from "@/features/today/components/summary-stat-card";
 import type { SummaryStat } from "@/features/today/types";
 
-import type { MetricPageConfig } from "../config";
+import { goalMetricPage, type MetricPageConfig } from "../config";
 
 /**
  * One page, one question. Every metric page reads from Bloom's shared data,
@@ -20,8 +22,14 @@ import type { MetricPageConfig } from "../config";
  */
 export function MetricPage({ config }: { config: MetricPageConfig }) {
   const { today, recent, events } = useBloomContext();
+  const { active } = useGoals();
   const [spec, setSpec] = useState<QuickAddSpec | null>(null);
   const [open, setOpen] = useState(false);
+
+  // Only goals genuinely tracked by this metric — never guessed from titles.
+  const relatedGoals = active.filter(
+    (g) => g.tracking.method === "automatic" && goalMetricPage[g.tracking.metric] === config.id,
+  );
 
   const stats: SummaryStat[] = config.readers.flatMap((reader, i) => {
     const value = reader.read(today);
@@ -132,6 +140,25 @@ export function MetricPage({ config }: { config: MetricPageConfig }) {
         </section>
       ) : null}
 
+      {relatedGoals.length ? (
+        <section className="space-y-4">
+          <h2 className="text-base font-medium text-foreground/80">Related goals</h2>
+          <div className="flex flex-wrap gap-2.5">
+            {relatedGoals.map((g) => (
+              <Link
+                key={g.id}
+                to="/goals/$goalId"
+                params={{ goalId: g.id }}
+                className="inline-flex items-center gap-1.5 rounded-full bg-sage-soft px-4 py-2 text-sm text-foreground transition-colors hover:bg-sage-soft/70"
+              >
+                <Target className="h-3.5 w-3.5 text-sage" />
+                {g.title}
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="space-y-4">
         <h2 className="text-base font-medium text-foreground/80">History</h2>
         <TimelineFeed
@@ -141,7 +168,10 @@ export function MetricPage({ config }: { config: MetricPageConfig }) {
       </section>
 
       <p className="text-sm leading-relaxed text-muted-foreground">
-        Connected to {config.connectedTo}.
+        Connected to {config.connectedTo}.{" "}
+        <Link to="/analytics" className="underline-offset-4 hover:underline">
+          Patterns across metrics live in Analytics.
+        </Link>
       </p>
 
       <LogEventDialog spec={spec} open={open} onOpenChange={setOpen} />

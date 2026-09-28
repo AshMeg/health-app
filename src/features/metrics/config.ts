@@ -32,6 +32,18 @@ export type MetricPageConfig = {
   connectedTo: string;
 };
 
+/** Which metric page a measurable goal's metric lives on. */
+export const goalMetricPage: Record<string, string | undefined> = {
+  weight: "weight",
+  protein: "nutrition",
+  water: "nutrition",
+  sleep: "sleep",
+  training: "training",
+  steps: "training",
+  mood: "recovery",
+  journal: "journal",
+};
+
 const one = (value?: number, digits = 0) =>
   value === undefined ? undefined : value.toFixed(digits);
 
