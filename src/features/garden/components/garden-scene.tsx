@@ -17,7 +17,8 @@ export const SCENE_HEIGHT = 640;
 const GROUND_Y = 270;
 
 const stageHeight: Record<GrowthStage, number> = { seedling: 34, bud: 54, bloom: 74, mature: 92 };
-const stageBloom: Record<GrowthStage, number> = { seedling: 0, bud: 0.45, bloom: 0.8, mature: 1 };
+/** Every completed goal is a full flower; stage only changes size and openness, never removes petals. */
+const stageBloom: Record<GrowthStage, number> = { seedling: 0.6, bud: 0.7, bloom: 0.85, mature: 1 };
 
 export function sceneWidth(flowers: number, butterflies: number, years: number) {
   return Math.max(1100, 420 + years * 170 + Math.ceil(flowers / 3) * 110 + butterflies * 20);
@@ -282,8 +283,8 @@ function Hive({ x, habits, onOpen }: { x: number; habits: HabitState[]; onOpen: 
 }
 
 function Flower({ flower, x, y }: { flower: GardenFlower; x: number; y: number }) {
-  const h = stageHeight[flower.stage];
-  const bloom = stageBloom[flower.stage];
+  const h = stageHeight[flower.stage] ?? stageHeight.bloom;
+  const bloom = stageBloom[flower.stage] ?? stageBloom.bloom;
   const petals = flower.variety === "daisy" ? 8 : flower.variety === "rose" ? 6 : 5;
   const color = `var(--${flower.accent})`;
   return (
@@ -305,9 +306,7 @@ function Flower({ flower, x, y }: { flower: GardenFlower; x: number; y: number }
       >
         <path d={`M30 ${h + 12} Q${26 + (x % 8)} ${h / 2} 30 20`} stroke="var(--season-foliage)" strokeWidth={2.5} fill="none" />
         <ellipse cx={22} cy={h * 0.7} rx={7} ry={3} fill="var(--season-foliage)" transform={`rotate(-30 22 ${h * 0.7})`} />
-        {bloom === 0 ? (
-          <ellipse cx={30} cy={20} rx={5} ry={7} fill="var(--season-foliage)" />
-        ) : flower.variety === "tulip" ? (
+        {flower.variety === "tulip" ? (
           <path d={`M${30 - 11 * bloom} 22 Q30 ${22 - 22 * bloom} ${30 + 11 * bloom} 22 Q30 ${30} ${30 - 11 * bloom} 22`} fill={color} />
         ) : flower.variety === "bell" ? (
           <path d={`M${30 - 10 * bloom} 14 Q30 ${2} ${30 + 10 * bloom} 14 L${30 + 13 * bloom} 28 Q30 24 ${30 - 13 * bloom} 28 Z`} fill={color} />
