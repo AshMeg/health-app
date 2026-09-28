@@ -6,7 +6,7 @@ import type { BloomEvent } from "@/features/timeline/types";
 import { saveGardenMemory } from "../garden";
 import { seedGoals } from "../mock-data";
 import { describeMilestoneChange, describeTrackingChange, makeUpdate } from "../timeline";
-import { goalProgress, type BloomGoal, type GoalMilestone, type GoalTracking } from "../types";
+import { goalProgress, type BloomGoal, type GoalMilestone, type GoalPhoto, type GoalTracking, type GoalUpdate } from "../types";
 
 const STORAGE_KEY = "bloom.goals.v5";
 

@@ -26,6 +26,7 @@ const kindLabel: Record<GoalEventKind, string> = {
   completed: "Complete",
   note: "Note",
   paused: "Not right now",
+  photo: "Photo",
   resumed: "Resumed",
   manual: "You added this",
 };
