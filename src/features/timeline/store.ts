@@ -98,6 +98,7 @@ export function logEvent(input: NewEvent): BloomEvent {
     at: input.at ?? new Date().toISOString(),
     source: input.source ?? "manual",
     ...input,
+    loggedAt: new Date().toISOString(),
   };
   write([event, ...store]);
   return event;
@@ -109,7 +110,7 @@ export function removeEvent(id: string) {
 
 /** Edits an existing event in place (used by Quick Notes). */
 export function updateEvent(id: string, patch: Partial<Omit<BloomEvent, "id">>) {
-  write(store.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+  write(store.map((e) => (e.id === id ? { ...e, ...patch, editedAt: new Date().toISOString() } : e)));
 }
 
 export function clearEvents() {

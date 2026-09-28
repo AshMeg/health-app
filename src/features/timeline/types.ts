@@ -59,8 +59,12 @@ export type EventSource = "manual" | "sync";
 
 export type BloomEvent = {
   id: string;
-  /** ISO timestamp — the timeline is ordered by this. */
+  /** ISO timestamp of when it happened — the timeline, trends and goals use this. */
   at: string;
+  /** When it was entered into Bloom (internal provenance, not shown). */
+  loggedAt?: string;
+  /** When it was last changed. */
+  editedAt?: string;
   category: EventCategory;
   source: EventSource;
   /** Plain-language headline, e.g. "Weight logged". */
