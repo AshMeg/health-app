@@ -5,7 +5,7 @@ import { Flower2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { isInGarden } from "../garden";
+import { hasGardenMemory } from "../garden";
 import type { BloomGoal } from "../types";
 
 const prompts = ["What did this goal mean to you?", "What did you learn?", "What are you proud of?"];
@@ -26,7 +26,7 @@ export function GoalCompletionCard({
 
   // Plant once, quietly — the flower references this same goal record.
   useEffect(() => {
-    if (!isInGarden(goal.id)) onPlant();
+    if (!hasGardenMemory(goal.id)) onPlant();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goal.id]);
 
