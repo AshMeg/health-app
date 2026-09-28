@@ -46,7 +46,7 @@ export const quickAddSpecs: QuickAddSpec[] = [
         kind: "choice",
         label: "How are you feeling?",
         metric: "mood",
-        options: ["Great", "Calm", "Okay", "Flat", "Tired", "Low"],
+        options: ["Great", "Good", "Calm", "Okay", "Low", "Sad", "Stressed"],
       },
       {
         kind: "choice",

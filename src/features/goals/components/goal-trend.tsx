@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { goalMetricPage } from "@/features/metrics/config";
 import { TrendPanel } from "@/features/trends/components/trend-panel";
-import { goalMetricTrend, goalTargetInTrendUnit, getTrend } from "@/features/trends/series";
+import { goalMetricTrend, goalTargetInTrendUnit, getTrend, type TrendId } from "@/features/trends/series";
 import { goalProgress, type BloomGoal } from "../types";
 
 /**
@@ -13,7 +13,8 @@ import { goalProgress, type BloomGoal } from "../types";
 export function GoalTrend({ goal }: { goal: BloomGoal }) {
   const t = goal.tracking;
   if (t.method !== "automatic") return null;
-  const trend = goalMetricTrend[t.metric];
+  const trend: TrendId | undefined =
+    t.metric === "measurement" ? `measure:${t.measure ?? "waist"}` : goalMetricTrend[t.metric];
   if (!trend) return null;
   const page = goalMetricPage[t.metric];
   const def = getTrend(trend);

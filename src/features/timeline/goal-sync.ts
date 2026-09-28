@@ -16,6 +16,7 @@ const categoryMetric: Partial<Record<EventCategory, GoalMetric>> = {
   steps: "steps",
   mood: "mood",
   journal: "journal",
+  measurement: "measurement",
 };
 
 /** Words that tie a free-text goal title to an area of Bloom. */
@@ -40,7 +41,10 @@ const moodRating: Record<string, ReflectionRating> = {
   great: "much-better",
   happy: "much-better",
   energised: "much-better",
+  good: "better",
   calm: "better",
+  sad: "worse",
+  stressed: "worse",
   content: "better",
   okay: "same",
   flat: "same",
@@ -81,6 +85,7 @@ export function syncGoalsWithEvent(goals: BloomGoal[], event: BloomEvent): GoalS
     switch (tracking.method) {
       case "automatic": {
         if (!metric || tracking.metric !== metric) break;
+        if (metric === "measurement" && (event.measure ?? "waist") !== (tracking.measure ?? "waist")) break;
         if (typeof event.value !== "number") break;
         const current = cumulative.includes(metric)
           ? Math.round((tracking.current + event.value) * 100) / 100

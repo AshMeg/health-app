@@ -76,6 +76,8 @@ export type BloomEvent = {
   notes?: string;
   /** Downscaled photo data URLs attached to the event. */
   photos?: string[];
+  /** Which body measurement a measurement event records ("waist", "hips", "custom-forearm"). */
+  measure?: string;
 };
 
 export type EventCategoryMeta = {
