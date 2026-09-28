@@ -135,12 +135,13 @@ export function analyseCycle(events: BloomEvent[], today = localDate()): CycleSt
         : state.periodLength ?? 0;
       const ovFrom = ov - ovHalf + 1;
       const ovTo = ov + ovHalf + 1;
-      state.segments = [
+      const segs: { phase: Phase; from: number; to: number }[] = [
         ...(menEnd ? [{ phase: "menstrual" as Phase, from: 1, to: menEnd }] : []),
         { phase: "follicular", from: menEnd + 1, to: ovFrom - 1 },
         { phase: "ovulation", from: ovFrom, to: ovTo },
         { phase: "luteal", from: ovTo + 1, to: len },
-      ].filter((s) => s.to >= s.from);
+      ];
+      state.segments = segs.filter((s) => s.to >= s.from);
       state.phase = state.segments.find((s) => state.current!.day >= s.from && state.current!.day <= s.to)?.phase;
     }
   }
