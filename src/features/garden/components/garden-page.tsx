@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { ArrowRight, ImagePlus, Minus, Plus, Maximize2, Trash2 } from "lucide-react";
+import { ArrowRight, ImagePlus, Minus, Palette, Plus, Maximize2, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +36,9 @@ import {
 import { MemoryDialog } from "@/features/memories/memory-dialog";
 import { useHabits, consistency, isBuzzing } from "@/features/habits/model";
 import { GardenScene, SCENE_HEIGHT, sceneWidth } from "./garden-scene";
+import { GardenStylePicker } from "./garden-style-picker";
+import { useGardenStyle } from "../styles";
+import { useTimeOfDay, useWeather } from "../atmosphere";
 
 type View =
   | { kind: "year"; year: number }
@@ -78,6 +81,10 @@ export function GardenPage() {
   const setView = (next: View) =>
     navigate({ to: "/garden", search: next ? { view: encodeView(next) } : {}, replace: true, resetScroll: false });
   const [zoom, setZoom] = useState(1);
+  const gardenStyle = useGardenStyle();
+  const weather = useWeather();
+  const time = useTimeOfDay(weather);
+  const [picking, setPicking] = useState(false);
   const viewport = useRef<HTMLDivElement>(null);
 
   useEffect(() => setSeason(seasonFor()), []);
@@ -125,10 +132,16 @@ export function GardenPage() {
           <h1 className="font-display text-[1.75rem] leading-tight font-medium sm:text-4xl">Your Garden</h1>
           <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">{seasonCopy[season]}</p>
         </div>
-        <Button variant="secondary" className="rounded-full" onClick={() => setView({ kind: "memory" })}>
-          <span aria-hidden>🦋</span>
-          Capture a memory
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="ghost" className="rounded-full" onClick={() => setPicking(true)}>
+            <Palette className="h-4 w-4" />
+            Garden style
+          </Button>
+          <Button variant="secondary" className="rounded-full" onClick={() => setView({ kind: "memory" })}>
+            <span aria-hidden>🦋</span>
+            Capture a memory
+          </Button>
+        </div>
       </header>
 
       <div className="relative w-full max-w-full min-w-0 overflow-hidden rounded-[2rem] shadow-soft">
@@ -141,6 +154,9 @@ export function GardenPage() {
             <div style={{ transform: `scale(${zoom})`, transformOrigin: "top left" }}>
               <GardenScene
                 season={season}
+                gardenStyle={gardenStyle}
+                time={time}
+                weather={weather}
                 width={width}
                 flowers={flowers}
                 butterflies={butterflies}
@@ -189,6 +205,8 @@ export function GardenPage() {
           </Button>
         </div>
       </div>
+
+      <GardenStylePicker open={picking} onOpenChange={setPicking} />
 
       <p className="text-center text-sm text-muted-foreground">
         🌸 flowers are finished goals · 🦋 butterflies are memories · 🐝 the hive holds your habits · 🌳 each tree is a year

@@ -272,38 +272,31 @@ function SeasonParticles({ season, width }: { season: Season; width: number }) {
   );
 }
 
-function YearTree({ year, x, onOpen }: { year: GardenYear; x: number; onOpen: () => void }) {
+function YearTree({ year, x, baseY, render, onOpen }: { year: GardenYear; x: number; baseY: number; render: GardenStyle["tree"]; onOpen: () => void }) {
   const isCurrent = year.year === new Date().getFullYear();
-  // A tree grows with the year: its canopy fills out as the months pass and memories gather.
+  // A tree grows with the year: fuller as months pass and memories gather.
   const monthsIn = isCurrent ? new Date().getMonth() + 1 : 12;
-  const scale = 0.7 + Math.min(0.5, monthsIn / 40 + year.size / 30);
-  const h = 190 * scale;
+  const scale = 0.75 + Math.min(0.5, monthsIn / 40 + year.size / 30);
+  const w = 150 * scale;
+  const h = 200 * scale;
   return (
-    <div className="absolute" style={{ left: x, top: GROUND_Y + 60 - h }}>
+    <div className="absolute flex flex-col items-center" style={{ left: x, top: baseY - h, width: w, zIndex: Math.round(baseY) }}>
       <button
         type="button"
         onClick={onOpen}
-        aria-label={`Open ${year.year} Yearbook`}
+        aria-label={`Year ${year.year} — open the Yearbook`}
         title={`${year.year} — open the Yearbook`}
         className="group block origin-bottom transition-transform hover:scale-[1.03]"
-        style={{ animation: "garden-sway 9s ease-in-out infinite" }}
+        style={{ animation: "garden-sway calc(10s * var(--garden-sway, 1)) ease-in-out infinite" }}
       >
-        <svg width={140 * scale} height={h} viewBox="0 0 140 190" aria-hidden>
-          <path d="M66 190 L68 110 Q60 95 48 90 M68 120 Q80 100 94 96 M70 190 L72 110" stroke="var(--stone)" strokeWidth={8} strokeLinecap="round" fill="none" />
-          <circle cx={70} cy={70} r={52} fill="var(--season-foliage)" opacity={0.85} />
-          <circle cx={38} cy={90} r={32} fill="var(--season-foliage)" opacity={0.7} />
-          <circle cx={104} cy={88} r={34} fill="var(--season-foliage)" opacity={0.75} />
-          <circle cx={72} cy={36} r={30} fill="var(--season-foliage)" opacity={0.6} />
-          {Array.from({ length: Math.min(14, year.size + 3) }, (_, i) => (
-            <circle key={i} cx={30 + seeded(`${year.year}${i}`) * 80} cy={30 + seeded(`${year.year}${i}`, 1) * 80} r={3.5} fill="var(--season-accent)" />
-          ))}
+        <svg width={w} height={h} viewBox="0 0 150 200" aria-hidden>
+          <TreeArt render={render} seed={String(year.year)} blossoms={Math.min(16, year.size + 3)} />
         </svg>
       </button>
       <button
         type="button"
         onClick={onOpen}
-        className="mx-auto mt-1 flex items-center gap-1.5 rounded-full bg-card/85 px-3 py-1 text-xs shadow-soft transition hover:bg-card"
-        style={{ marginLeft: (140 * scale) / 2 - 42 }}
+        className="mt-1 flex items-center gap-1.5 rounded-full bg-card/85 px-3 py-1 text-xs shadow-soft backdrop-blur-sm transition hover:bg-card"
       >
         <span aria-hidden>📚</span>
         {year.year}
@@ -312,7 +305,7 @@ function YearTree({ year, x, onOpen }: { year: GardenYear; x: number; onOpen: ()
   );
 }
 
-function Hive({ x, habits, onOpen }: { x: number; habits: HabitState[]; onOpen: () => void }) {
+function Hive({ x, top, habits, render, onOpen }: { x: number; top: number; habits: HabitState[]; render: GardenStyle["hive"]; onOpen: () => void }) {
   const active = habits.filter((h) => h.active);
   const dormant = habits.length - active.length;
   const layers = Math.min(5, 2 + Math.floor(habits.reduce((n, h) => n + h.activityCount, 0) / 8));
@@ -320,128 +313,74 @@ function Hive({ x, habits, onOpen }: { x: number; habits: HabitState[]; onOpen: 
     <button
       type="button"
       onClick={onOpen}
-      aria-label="Open your hive of habits"
-      title="Your beehive of consistency"
+      aria-label={`Your hive of habits — ${active.length} active, ${dormant} resting`}
+      title="Your hive of habits"
       className="absolute flex flex-col items-center transition-transform hover:scale-105"
-      style={{ left: x, top: GROUND_Y - 10 }}
+      style={{ left: x, top, zIndex: top + 110 }}
     >
       <div className="relative" style={{ width: 90, height: 110 }}>
         <svg width={90} height={110} viewBox="0 0 90 110" aria-hidden>
-          <path d="M44 0 L44 14" stroke="var(--stone)" strokeWidth={2} />
-          {Array.from({ length: layers }, (_, i) => {
-            const w = 30 + Math.sin(((i + 0.5) / layers) * Math.PI) * 30;
-            return <rect key={i} x={45 - w / 2} y={14 + i * (70 / layers)} width={w} height={70 / layers + 2} rx={10} fill="var(--caution-soft)" stroke="var(--caution)" strokeWidth={1.2} />;
-          })}
-          <ellipse cx={45} cy={70} rx={5} ry={4} fill="var(--stone)" opacity={0.6} />
-          <path d="M20 108 L70 108 L64 90 L26 90 Z" fill="var(--stone)" opacity={0.35} />
+          <HiveArt render={render} layers={layers} />
         </svg>
         {active.slice(0, 6).map((h, i) => (
-          <span
-            key={h.goalId}
-            aria-hidden
-            className="absolute text-sm"
-            style={{ left: 38, top: 40, animation: `garden-buzz ${4 + i}s linear ${i * -0.7}s infinite` }}
-          >
-            🐝
+          <span key={h.habitId ?? h.goalId} aria-hidden className="absolute" style={{ left: 38, top: 44, animation: `garden-buzz ${4 + i}s linear ${i * -0.7}s infinite` }}>
+            <Bee />
           </span>
         ))}
         {Array.from({ length: Math.min(4, dormant) }, (_, i) => (
-          <span key={i} aria-hidden className="absolute text-[11px] opacity-60 grayscale" style={{ left: 18 + i * 14, top: 92 }}>
-            🐝
+          <span key={i} aria-hidden className="absolute" style={{ left: 16 + i * 15, top: 96 }}>
+            <Bee resting />
           </span>
         ))}
       </div>
-      <span className="mt-1 rounded-full bg-card/85 px-3 py-1 text-xs shadow-soft">
+      <span className="mt-1 rounded-full bg-card/85 px-3 py-1 text-xs shadow-soft backdrop-blur-sm">
         {habits.length ? `${active.length} buzzing${dormant ? ` · ${dormant} resting` : ""}` : "Your hive"}
       </span>
     </button>
   );
 }
 
-function Flower({ flower, x, y }: { flower: GardenFlower; x: number; y: number }) {
+function Flower({ flower, x, y, render }: { flower: GardenFlower; x: number; y: number; render: GardenStyle["flower"] }) {
   const h = stageHeight[flower.stage] ?? stageHeight.bloom;
-  const bloom = stageBloom[flower.stage] ?? stageBloom.bloom;
-  const petals = flower.variety === "daisy" ? 8 : flower.variety === "rose" ? 6 : 5;
-  const color = `var(--${flower.accent})`;
+  const open = stageBloom[flower.stage] ?? stageBloom.bloom;
   return (
     <Link
       to="/goals/$goalId"
       params={{ goalId: flower.goalId }}
       title={flower.title}
-      aria-label={`${flower.title} — completed goal`}
-      className="group absolute flex flex-col items-center"
-      style={{ left: x - 30, top: y - h, zIndex: Math.round(y) }}
+      aria-label={`Completed goal: ${flower.title}`}
+      className="group absolute flex flex-col items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      style={{ left: x - 32, top: y - h, zIndex: Math.round(y) }}
     >
       <svg
-        width={60}
-        height={h + 12}
-        viewBox={`0 0 60 ${h + 12}`}
+        width={64}
+        height={h + 14}
+        viewBox={`0 0 64 ${h + 14}`}
         className="origin-bottom transition-transform duration-300 group-hover:scale-110"
-        style={{ animation: `garden-sway ${6 + (x % 4)}s ease-in-out infinite` }}
+        style={{ animation: `garden-sway calc(${6 + (x % 4)}s * var(--garden-sway, 1)) ease-in-out infinite` }}
         aria-hidden
       >
-        <path d={`M30 ${h + 12} Q${26 + (x % 8)} ${h / 2} 30 20`} stroke="var(--season-foliage)" strokeWidth={2.5} fill="none" />
-        <ellipse cx={22} cy={h * 0.7} rx={7} ry={3} fill="var(--season-foliage)" transform={`rotate(-30 22 ${h * 0.7})`} />
-        {flower.variety === "tulip" ? (
-          <path d={`M${30 - 11 * bloom} 22 Q30 ${22 - 22 * bloom} ${30 + 11 * bloom} 22 Q30 ${30} ${30 - 11 * bloom} 22`} fill={color} />
-        ) : flower.variety === "bell" ? (
-          <path d={`M${30 - 10 * bloom} 14 Q30 ${2} ${30 + 10 * bloom} 14 L${30 + 13 * bloom} 28 Q30 24 ${30 - 13 * bloom} 28 Z`} fill={color} />
-        ) : (
-          <g>
-            {Array.from({ length: petals }, (_, i) => (
-              <ellipse
-                key={i}
-                cx={30}
-                cy={20 - 8 * bloom}
-                rx={4 + 2 * bloom}
-                ry={8 * bloom + 2}
-                fill={color}
-                opacity={0.9}
-                transform={`rotate(${(360 / petals) * i} 30 20)`}
-              />
-            ))}
-            <circle cx={30} cy={20} r={4 + bloom * 2} fill="var(--caution)" />
-          </g>
-        )}
+        <FlowerArt render={render} variety={flower.variety} accent={flower.accent} open={open} height={h} seed={flower.id} />
       </svg>
-      <span className="pointer-events-none -mt-1 max-w-[120px] truncate rounded-full bg-card/90 px-2 py-0.5 text-[11px] opacity-0 shadow-soft transition group-hover:opacity-100 group-focus-visible:opacity-100">
+      <span className="pointer-events-none -mt-1 max-w-[140px] truncate rounded-full bg-card/90 px-2 py-0.5 text-[11px] opacity-0 shadow-soft backdrop-blur-sm transition group-hover:opacity-100 group-focus-visible:opacity-100">
         {flower.title}
       </span>
     </Link>
   );
 }
 
-function Butterfly({
-  x,
-  y,
-  seed,
-  title,
-  onOpen,
-}: {
-  x: number;
-  y: number;
-  seed: number;
-  title: string;
-  onOpen: () => void;
-}) {
-  const colors = ["lavender", "blush", "sky", "caution"];
-  const color = `var(--${colors[Math.floor(seed * colors.length)]})`;
+function Butterfly({ x, y, seed, title, onOpen }: { x: number; y: number; seed: number; title: string; onOpen: () => void }) {
+  const accents = ["lavender", "blush", "sky", "sage"];
   return (
     <button
       type="button"
       onClick={onOpen}
       title={title}
-      aria-label={`${title} — life memory`}
-      className="group absolute z-[999]"
-      style={{ left: x, top: y, animation: `garden-flutter ${10 + seed * 8}s ease-in-out ${-seed * 10}s infinite` }}
+      aria-label={`Memory: ${title}`}
+      className="group absolute"
+      style={{ left: x, top: y, zIndex: 1500, animation: `garden-flutter ${12 + seed * 8}s ease-in-out ${-seed * 10}s infinite` }}
     >
-      <svg width={30} height={24} viewBox="0 0 30 24" className="transition-transform group-hover:scale-125" aria-hidden>
-        <g style={{ transformOrigin: "15px 12px", animation: "garden-wing 0.6s ease-in-out infinite" }}>
-          <path d="M15 12 C 4 -2, -2 10, 13 13 C 2 16, 6 24, 14 14 Z" fill={color} opacity={0.9} />
-          <path d="M15 12 C 26 -2, 32 10, 17 13 C 28 16, 24 24, 16 14 Z" fill={color} opacity={0.9} />
-        </g>
-        <rect x={14.2} y={7} width={1.6} height={11} rx={0.8} fill="var(--stone)" />
-      </svg>
+      <ButterflyArt accent={accents[Math.floor(seed * accents.length)]} />
     </button>
   );
 }
