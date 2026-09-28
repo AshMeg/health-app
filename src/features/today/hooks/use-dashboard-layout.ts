@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { DashboardLayout, WidgetDefinition, WidgetId } from "../types";
 
-const STORAGE_KEY = "bloom.today.layout.v1";
+const STORAGE_KEY = "bloom.today.layout.v2";
 
 function defaultLayout(widgets: WidgetDefinition[]): DashboardLayout {
   return {

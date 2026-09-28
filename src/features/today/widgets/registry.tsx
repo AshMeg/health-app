@@ -10,6 +10,7 @@ import { GoalsWidget } from "../components/goal-progress-card";
 import { QuickAddBar } from "../components/quick-add-bar";
 import { UpcomingWidget } from "../components/upcoming-widget";
 import { TrendPreview } from "../components/trend-preview";
+import { FocusGoalWidget, HealthSnapshotWidget, NextStepWidget } from "../components/daily-home";
 
 /**
  * Single source of truth for Today's widgets.
@@ -29,13 +30,34 @@ export const todayWidgets: WidgetDefinition[] = [
     render: () => <TodayInsight />,
   },
   {
+    id: "focus-goal",
+    title: "Your focus",
+    summary: "The one goal that matters most today.",
+    span: "full",
+    render: () => <FocusGoalWidget />,
+  },
+  {
+    id: "snapshot",
+    title: "Today so far",
+    summary: "A few quiet signals — tap one for the full story.",
+    span: "full",
+    render: () => <HealthSnapshotWidget />,
+  },
+  {
+    id: "next-step",
+    title: "Your next step",
+    summary: "One small thing, only when it's useful.",
+    span: "full",
+    render: () => <NextStepWidget />,
+  },
+  {
     id: "goals",
     to: "/goals",
     linkLabel: "Open goals",
     title: "Your goals",
     summary: "Active goals with progress towards each target.",
     span: "full",
-    locked: true,
+    defaultHidden: true,
     render: () => <GoalsWidget />,
   },
   {
@@ -43,6 +65,7 @@ export const todayWidgets: WidgetDefinition[] = [
     title: "Today at a glance",
     summary: "Latest numbers across your daily metrics.",
     span: "full",
+    defaultHidden: true,
     render: () => <SnapshotSummary />,
   },
   {
@@ -52,6 +75,7 @@ export const todayWidgets: WidgetDefinition[] = [
     title: "Weight trend",
     summary: "A small preview of how your weight is changing.",
     span: "half",
+    defaultHidden: true,
     render: () => <TrendPreview id="weight" to="/weight" />,
   },
   {
@@ -61,6 +85,7 @@ export const todayWidgets: WidgetDefinition[] = [
     title: "Today's focus",
     summary: "A few small actions that support your goals.",
     span: "half",
+    defaultHidden: true,
     render: () => <SnapshotFocus />,
   },
   {
@@ -68,6 +93,7 @@ export const todayWidgets: WidgetDefinition[] = [
     title: "Still to log",
     summary: "What's already in, and what's waiting for you.",
     span: "half",
+    defaultHidden: true,
     render: () => <SnapshotLogStatus />,
   },
   {
@@ -82,6 +108,7 @@ export const todayWidgets: WidgetDefinition[] = [
     title: "Today's activity",
     summary: "Everything that happened today, in order.",
     span: "full",
+    defaultHidden: true,
     render: () => <TodayTimelineWidget />,
   },
 
