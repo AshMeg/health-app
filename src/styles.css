@@ -210,3 +210,72 @@
     letter-spacing: -0.015em;
   }
 }
+
+/* ---------- Garden seasons ---------- */
+.season-spring {
+  --season-sky-top: oklch(0.95 0.03 300);
+  --season-sky-bottom: oklch(0.97 0.02 150);
+  --season-ground: oklch(0.86 0.07 145);
+  --season-ground-deep: oklch(0.78 0.08 148);
+  --season-foliage: oklch(0.7 0.09 150);
+  --season-accent: oklch(0.8 0.07 330);
+  --season-particle: oklch(0.9 0.05 350);
+  --season-sun: oklch(0.97 0.04 95);
+}
+.season-summer {
+  --season-sky-top: oklch(0.93 0.04 230);
+  --season-sky-bottom: oklch(0.97 0.04 100);
+  --season-ground: oklch(0.8 0.1 140);
+  --season-ground-deep: oklch(0.7 0.11 145);
+  --season-foliage: oklch(0.6 0.11 145);
+  --season-accent: oklch(0.85 0.1 90);
+  --season-particle: oklch(0.95 0.06 95);
+  --season-sun: oklch(0.95 0.09 90);
+}
+.season-autumn {
+  --season-sky-top: oklch(0.93 0.035 60);
+  --season-sky-bottom: oklch(0.96 0.03 80);
+  --season-ground: oklch(0.8 0.07 85);
+  --season-ground-deep: oklch(0.7 0.08 70);
+  --season-foliage: oklch(0.66 0.13 50);
+  --season-accent: oklch(0.6 0.14 30);
+  --season-particle: oklch(0.7 0.13 50);
+  --season-sun: oklch(0.92 0.07 70);
+}
+.season-winter {
+  --season-sky-top: oklch(0.92 0.03 240);
+  --season-sky-bottom: oklch(0.97 0.012 230);
+  --season-ground: oklch(0.95 0.012 230);
+  --season-ground-deep: oklch(0.88 0.025 220);
+  --season-foliage: oklch(0.52 0.06 170);
+  --season-accent: oklch(0.85 0.08 75);
+  --season-particle: oklch(0.99 0.005 230);
+  --season-sun: oklch(0.96 0.05 80);
+}
+
+@keyframes garden-flutter {
+  0%, 100% { transform: translate(0, 0) rotate(-4deg); }
+  25% { transform: translate(14px, -10px) rotate(6deg); }
+  50% { transform: translate(26px, 4px) rotate(-2deg); }
+  75% { transform: translate(8px, 12px) rotate(4deg); }
+}
+@keyframes garden-wing {
+  0%, 100% { transform: scaleX(1); }
+  50% { transform: scaleX(0.35); }
+}
+@keyframes garden-buzz {
+  0% { transform: rotate(0deg) translateX(34px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(34px) rotate(-360deg); }
+}
+@keyframes garden-fall {
+  0% { transform: translate(0, -20px) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translate(40px, 620px) rotate(260deg); opacity: 0; }
+}
+@keyframes garden-sway {
+  0%, 100% { transform: rotate(-1.5deg); }
+  50% { transform: rotate(1.5deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .garden-scene * { animation: none !important; }
+}

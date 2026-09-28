@@ -70,6 +70,12 @@ export type BloomEvent = {
   goalId?: string;
   /** Where in Bloom the event was created, for future filtering. */
   origin?: string;
+  /** Longer free text, e.g. a life memory's description. */
+  description?: string;
+  /** Private notes attached to the event (life memories). */
+  notes?: string;
+  /** Downscaled photo data URLs attached to the event. */
+  photos?: string[];
 };
 
 export type EventCategoryMeta = {
