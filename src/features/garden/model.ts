@@ -94,7 +94,7 @@ export function growthStage(goal: BloomGoal, now = new Date()): GrowthStage {
 }
 
 const VARIETIES: FlowerVariety[] = ["daisy", "tulip", "rose", "bell"];
-const ACCENTS: BloomGoal["accent"][] = ["sage", "lavender", "blush", "sky"];
+const ACCENTS: BloomGoal["accent"][] = ["sage", "lavender", "blush", "sky", "stone"];
 const STAGES: GrowthStage[] = ["seedling", "bud", "bloom", "mature"];
 
 /** Default Bloom flower used whenever stored goal data can't describe a valid flower. */
