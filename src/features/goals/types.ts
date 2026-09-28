@@ -161,6 +161,15 @@ export type GoalTracking =
   | MilestoneTracking
   | ReflectionTracking;
 
+/** A photo kept with a goal — stored once here and read by the Garden. */
+export type GoalPhoto = {
+  id: string;
+  /** Downscaled data URL (swap for storage URLs once uploads are persisted). */
+  src: string;
+  caption?: string;
+  addedAt: string;
+};
+
 export type BloomGoal = {
   id: string;
   title: string;
@@ -186,6 +195,8 @@ export type BloomGoal = {
    * failure. Progress, notes and history are all kept exactly as they were.
    */
   pausedAt?: string;
+  /** Photos attached to this goal — race finishes, certificates, moments. */
+  photos?: GoalPhoto[];
 };
 
 /** Goals resting in "Not Right Now" — kept whole, just out of the way. */

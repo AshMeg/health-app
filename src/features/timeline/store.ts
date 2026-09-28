@@ -70,6 +70,9 @@ export type NewEvent = {
   metrics?: Partial<Record<MetricKey, number | string>>;
   goalId?: string;
   origin?: string;
+  description?: string;
+  notes?: string;
+  photos?: string[];
   /** Defaults to now — pass an ISO string to backdate an entry. */
   at?: string;
 };
