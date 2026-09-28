@@ -10,6 +10,7 @@ import { GoalCompletionCard } from "./goal-completion-card";
 import { GoalNextStep, GoalStatusPill, GoalTypePill } from "./goal-card";
 import { GoalManageSection } from "./goal-manage-section";
 import { GoalNotes } from "./goal-notes";
+import { GoalPhotos } from "./goal-photos";
 import { GoalTimeline } from "./goal-timeline";
 import { MilestoneList } from "./milestones/milestone-list";
 import { GoalAccentDot, GoalProgressBar } from "./goal-progress-bar";
@@ -28,6 +29,7 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
     editNote,
     deleteNote,
     addManualUpdate,
+    updateGoal,
     addToGarden,
     editGoal,
     resumeGoal,
@@ -184,6 +186,13 @@ export function GoalDetailPage({ goalId }: { goalId: string }) {
         </CardContent>
       </Card>
 
+
+      <Card className="rounded-3xl border-transparent bg-card shadow-soft">
+        <CardContent className="space-y-5 p-7 sm:p-8">
+          <h2 className="text-base font-medium">Photos</h2>
+          <GoalPhotos photos={goal.photos ?? []} onChange={(photos) => updateGoal(goal.id, { photos })} />
+        </CardContent>
+      </Card>
 
       <Card className="rounded-3xl border-transparent bg-card shadow-soft">
         <CardContent className="space-y-5 p-7 sm:p-8">
