@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowRight, ImagePlus, Minus, Plus, Maximize2, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,24 @@ type View =
   | { kind: "hive" }
   | { kind: "memory"; id?: string }
   | null;
+
+function encodeView(v: NonNullable<View>): string {
+  if (v.kind === "year") return `year:${v.year}`;
+  if (v.kind === "month") return `month:${v.key}`;
+  if (v.kind === "memory") return v.id ? `memory:${v.id}` : "memory";
+  return "hive";
+}
+
+function decodeView(raw?: string): View {
+  if (!raw) return null;
+  const [kind, ...rest] = raw.split(":");
+  const value = rest.join(":");
+  if (kind === "year" && Number(value)) return { kind: "year", year: Number(value) };
+  if (kind === "month" && value) return { kind: "month", key: value };
+  if (kind === "hive") return { kind: "hive" };
+  if (kind === "memory") return { kind: "memory", id: value || undefined };
+  return null;
+}
 
 /**
  * Your Garden — Bloom's emotional archive. A seasonal meadow where finished
