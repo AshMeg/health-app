@@ -78,7 +78,7 @@ export function buildDailySnapshot(
     carbs += num(m.carbs) ?? 0;
     fat += num(m.fat) ?? 0;
 
-    if (event.category === "journal") snapshot.journalWritten = true;
+    if (isJournalEntry(event)) snapshot.journalWritten = true;
     if (event.category === "medication") snapshot.medicationTaken = true;
     if (event.category === "goal") {
       if (event.detail?.toLowerCase().includes("step")) snapshot.goalStepsCompleted += 1;
