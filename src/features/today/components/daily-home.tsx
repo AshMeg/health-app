@@ -7,6 +7,8 @@ import type { BloomGoal } from "@/features/goals/types";
 import { useBloomContext } from "@/features/timeline/hooks/use-bloom-context";
 import { formatSleep } from "@/features/timeline/snapshot";
 import { eventCategoryMeta } from "@/features/timeline/types";
+import { say } from "@/features/voice/tone";
+import { usePersonality } from "@/features/voice/use-personality";
 
 /**
  * The calm daily home: one focus goal, a quiet snapshot, one next step.
@@ -29,6 +31,7 @@ function useFocusGoal() {
 
 export function FocusGoalWidget() {
   const goal = useFocusGoal();
+  const { personality } = usePersonality();
   return (
     <section className="space-y-3">
       {goal ? (
@@ -36,7 +39,7 @@ export function FocusGoalWidget() {
       ) : (
         <Card className="rounded-3xl border-transparent bg-card shadow-none">
           <CardContent className="p-7 text-sm text-muted-foreground">
-            Nothing needs your attention right now.
+            {say("noFocus", personality)}
           </CardContent>
         </Card>
       )}
@@ -51,6 +54,7 @@ type Signal = { id: string; label: string; value: string; to: string };
 
 export function HealthSnapshotWidget() {
   const { today } = useBloomContext();
+  const { personality } = usePersonality();
   const all: (Signal | null)[] = [
     today.sleepMinutes ? { id: "sleep", label: "Sleep", value: formatSleep(today.sleepMinutes) ?? "", to: "/sleep" } : null,
     today.recoveryPercent ? { id: "recovery", label: "Recovery", value: `${today.recoveryPercent}%`, to: "/recovery" } : null,
@@ -64,7 +68,7 @@ export function HealthSnapshotWidget() {
   const signals = all.filter((s): s is Signal => Boolean(s)).slice(0, 4);
 
   if (!signals.length) {
-    return <p className="px-1 text-sm text-muted-foreground">Nothing recorded yet today.</p>;
+    return <p className="px-1 text-sm text-muted-foreground">{say("nothingToday", personality)}</p>;
   }
 
   return (
@@ -86,11 +90,12 @@ export function HealthSnapshotWidget() {
 export function NextStepWidget() {
   const { today } = useBloomContext();
   const goal = useFocusGoal();
+  const { personality } = usePersonality();
   const missing = goal ? today.missingLogs[0] : undefined;
   const step = goal?.nextStep ?? (missing ? `Log today's ${eventCategoryMeta[missing].label.toLowerCase()}` : undefined);
 
   if (!step) {
-    return <p className="px-1 text-sm text-muted-foreground">You're all caught up for today.</p>;
+    return <p className="px-1 text-sm text-muted-foreground">{say("allCaughtUp", personality)}</p>;
   }
 
   return (

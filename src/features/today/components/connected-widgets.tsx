@@ -16,6 +16,8 @@ import { FocusList } from "./focus-list";
 import { InsightHeroCard } from "./insight-hero-card";
 import { LogStatusList } from "./log-status-list";
 import { SummaryGrid } from "./summary-stat-card";
+import { toneInsight } from "@/features/voice/tone";
+import { usePersonality } from "@/features/voice/use-personality";
 
 /**
  * The Today widgets that read from Bloom's shared data rather than fixtures.
@@ -165,9 +167,10 @@ export function TodayInsight() {
     return () => clearInterval(t);
   }, []);
 
+  const { personality } = usePersonality();
   const insight = useMemo(
-    () => buildDailyInsight({ today, recent, goals: goals.active, now }),
-    [today, recent, goals.active, now],
+    () => toneInsight(buildDailyInsight({ today, recent, goals: goals.active, now }), personality),
+    [today, recent, goals.active, now, personality],
   );
   const notes = today.events.filter(isQuickNote);
 

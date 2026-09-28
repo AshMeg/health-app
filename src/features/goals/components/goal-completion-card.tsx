@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { hasGardenMemory } from "../garden";
 import type { BloomGoal } from "../types";
+import { say } from "@/features/voice/tone";
+import { usePersonality } from "@/features/voice/use-personality";
 
 const prompts = ["What did this goal mean to you?", "What did you learn?", "What are you proud of?"];
 
@@ -23,6 +25,7 @@ export function GoalCompletionCard({
   const [prompt, setPrompt] = useState(prompts[0]);
   const [draft, setDraft] = useState("");
   const [open, setOpen] = useState(false);
+  const { personality } = usePersonality();
 
   // Plant once, quietly — the flower references this same goal record.
   useEffect(() => {
@@ -37,9 +40,9 @@ export function GoalCompletionCard({
       <CardContent className="flex flex-col items-center gap-5 p-10 text-center sm:p-12">
         <span className="text-3xl" role="img" aria-label="Blossom">🌸</span>
         <div className="max-w-sm space-y-2">
-          <h2 className="font-display text-2xl font-medium sm:text-3xl">Your goal has bloomed.</h2>
+          <h2 className="font-display text-2xl font-medium sm:text-3xl">{say("goalBloomed", personality)}</h2>
           <p className="text-base leading-relaxed text-foreground/70">
-            This goal is now part of your Garden — everything you gathered along the way is kept here.
+            {say("goalBloomedBody", personality)}
           </p>
         </div>
         <div className="flex flex-wrap justify-center gap-2">
