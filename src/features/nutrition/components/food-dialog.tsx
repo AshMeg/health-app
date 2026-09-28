@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
+import { EventDateField, validPastDate } from "@/components/shared/event-date-field";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -96,7 +97,7 @@ export function FoodDialog({
   });
   const invalid = numbers.some((n) => n.value !== undefined && (!Number.isFinite(n.value) || n.value < 0));
   const calories = numbers[0].value;
-  const valid = name.trim().length > 0 && calories !== undefined && !invalid && date.length === 10;
+  const valid = name.trim().length > 0 && calories !== undefined && !invalid && validPastDate(date, time || undefined);
 
   const submit = () => {
     if (!valid) return;
@@ -209,16 +210,7 @@ export function FoodDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="food-date" className="text-xs text-muted-foreground">Date</Label>
-              <Input id="food-date" type="date" value={date} max={localDate()} onChange={(e) => setDate(e.target.value)} className="rounded-xl" />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="food-time" className="text-xs text-muted-foreground">Time (optional)</Label>
-              <Input id="food-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} className="rounded-xl" />
-            </div>
-          </div>
+          <EventDateField id="food-date" date={date} onDateChange={setDate} time={time} onTimeChange={setTime} label="Date eaten" />
 
           <div className="rounded-2xl bg-muted/40">
             <button type="button" onClick={() => setMore((m) => !m)} className="flex w-full items-center justify-between px-4 py-3 text-sm">

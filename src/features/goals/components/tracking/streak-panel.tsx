@@ -1,4 +1,8 @@
+import { useState } from "react";
 import { Flame } from "lucide-react";
+
+import { EventDateField, validPastDate } from "@/components/shared/event-date-field";
+import { formatDay, isFuture, shiftDate, todayLocal } from "@/lib/event-date";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,13 +26,26 @@ const accentDot: Record<BloomAccent, string> = {
 };
 
 function lastDays(count: number) {
-  const days: string[] = [];
-  for (let i = count - 1; i >= 0; i -= 1) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    days.push(d.toISOString().slice(0, 10));
+  const today = todayLocal();
+  return Array.from({ length: count }, (_, i) => shiftDate(today, i - count + 1));
+}
+
+/** Streaks recomputed from the dates themselves, so past days count where they happened. */
+function streaks(history: string[]) {
+  const set = new Set(history);
+  let longest = 0;
+  let run = 0;
+  for (const d of [...set].sort()) {
+    run = set.has(shiftDate(d, -1)) ? run + 1 : 1;
+    longest = Math.max(longest, run);
   }
-  return days;
+  let current = 0;
+  let cursor = set.has(todayLocal()) ? todayLocal() : shiftDate(todayLocal(), -1);
+  while (set.has(cursor)) {
+    current += 1;
+    cursor = shiftDate(cursor, -1);
+  }
+  return { current, longest };
 }
 
 /** Current and longest streak, with a fortnight of dots as a calendar preview. */
@@ -41,20 +58,21 @@ export function StreakPanel({
   accent?: BloomAccent;
   onChange: (next: StreakTracking) => void;
 }) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocal();
   const doneToday = tracking.history.includes(today);
   const days = lastDays(14);
+  const [other, setOther] = useState(shiftDate(today, -1));
 
-  const markToday = () => {
-    if (doneToday) return;
-    const current = tracking.current + 1;
-    onChange({
-      ...tracking,
-      current,
-      longest: Math.max(tracking.longest, current),
-      history: [...tracking.history, today],
-    });
+  const toggle = (day: string) => {
+    if (isFuture(day)) return;
+    const history = tracking.history.includes(day)
+      ? tracking.history.filter((d) => d !== day)
+      : [...tracking.history, day].sort();
+    const s = streaks(history);
+    // Keep an older longest streak recorded before history was kept by date.
+    onChange({ ...tracking, history, current: s.current, longest: s.longest });
   };
+  const markToday = () => !doneToday && toggle(today);
 
   return (
     <div className="space-y-6">
@@ -80,22 +98,37 @@ export function StreakPanel({
 
       <div className="space-y-2">
         <p className="text-xs text-muted-foreground">Last two weeks · {tracking.cadence}</p>
-        <div className="flex flex-wrap gap-1.5" aria-hidden>
+        <div className="flex flex-wrap gap-1.5">
           {days.map((day) => (
-            <span
+            <button
               key={day}
+              type="button"
+              onClick={() => toggle(day)}
+              title={`${formatDay(day)} — ${tracking.history.includes(day) ? "done (tap to undo)" : "tap to mark done"}`}
+              aria-label={`${formatDay(day)}: ${tracking.history.includes(day) ? "done" : "not marked"}`}
               className={cn(
-                "h-6 w-6 rounded-lg",
+                "h-6 w-6 rounded-lg transition-transform hover:scale-110",
                 tracking.history.includes(day) ? accentDot[accent] : "bg-muted",
               )}
             />
           ))}
         </div>
+        <p className="text-xs text-muted-foreground">Tap a day to mark or undo it.</p>
       </div>
 
-      <Button onClick={markToday} disabled={doneToday} variant="secondary">
-        {doneToday ? "Done for today" : "Mark today complete"}
-      </Button>
+      <div className="flex flex-wrap items-end gap-3">
+        <Button onClick={markToday} disabled={doneToday} variant="secondary">
+          {doneToday ? "Done for today" : "Mark today complete"}
+        </Button>
+        <div className="flex items-end gap-2">
+          <div className="w-40">
+            <EventDateField id="streak-date" date={other} onDateChange={setOther} label="Or an earlier day" />
+          </div>
+          <Button variant="ghost" disabled={!validPastDate(other) || tracking.history.includes(other)} onClick={() => toggle(other)}>
+            Mark done
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
