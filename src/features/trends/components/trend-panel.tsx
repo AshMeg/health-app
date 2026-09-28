@@ -164,7 +164,7 @@ function Chart({
     def.visual === "bar" ? [0, Math.ceil(max + pad)] : [Math.floor(min - pad), Math.ceil(max + pad)];
 
   const common = [
-      <CartesianGrid key="grid" vertical={false} stroke="var(--border)" strokeDasharray="3 6" />
+      <CartesianGrid key="grid" vertical={false} stroke="var(--border)" strokeDasharray="3 6" />,
       <XAxis key="x" dataKey="date" tickFormatter={shortDate} tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" minTickGap={24} />,
       <YAxis key="y" domain={domain} tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" width={44} tickFormatter={(v: number) => (id === "sleep" ? `${Math.round(v / 60)}h` : v.toLocaleString())} />,
       <Tooltip
