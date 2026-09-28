@@ -27,7 +27,7 @@ export type Phase = "menstrual" | "follicular" | "ovulation" | "luteal";
 export const phaseMeta: Record<Phase, { label: string; emoji: string; tone: string; soft: string }> = {
   menstrual: { label: "Menstrual", emoji: "🩸", tone: "bg-blush", soft: "bg-blush-soft" },
   follicular: { label: "Follicular", emoji: "🌱", tone: "bg-sage", soft: "bg-sage-soft" },
-  ovulation: { label: "Estimated ovulation window", emoji: "🌸", tone: "bg-blush/70", soft: "bg-blush-soft" },
+  ovulation: { label: "Estimated ovulation", emoji: "🌸", tone: "bg-blush/70", soft: "bg-blush-soft" },
   luteal: { label: "Luteal", emoji: "🌙", tone: "bg-lavender", soft: "bg-lavender-soft" },
 };
 
@@ -190,4 +190,65 @@ export function rangeText(from: string, to: string) {
   const b = toDate(to);
   if (a.getMonth() === b.getMonth()) return `${a.getDate()}–${b.getDate()} ${b.toLocaleDateString(undefined, { month: "long" })}`;
   return `${shortDate(from)} – ${shortDate(to)}`;
+}
+
+/* ---------- Daily cycle logs ---------- */
+
+export const CYCLE_DAY_ORIGIN = "cycle-day";
+export const flows = ["Spotting", "Light", "Medium", "Heavy", "Very heavy"] as const;
+export const energies = ["Low", "Moderate", "High"] as const;
+export const symptomOptions = [
+  "Cramps", "Pelvic pain", "Headache", "Migraine", "Back pain", "Bloating", "Breast tenderness", "Fatigue",
+  "Nausea", "Digestive changes", "Constipation", "Diarrhoea", "Acne", "Skin changes", "Appetite changes",
+  "Food cravings", "Increased thirst", "Hot flushes", "Dizziness",
+] as const;
+
+export type DayLog = { id: string; date: string; flow?: string; symptoms: string[]; energy?: string; notes?: string; event: BloomEvent };
+
+/** One log per day — the newest wins if older data ever holds two. */
+export function dayLogsOf(events: BloomEvent[]): Map<string, DayLog> {
+  const map = new Map<string, DayLog>();
+  for (const e of events.filter((x) => x.category === "cycle" && x.origin === CYCLE_DAY_ORIGIN).sort((a, b) => a.at.localeCompare(b.at))) {
+    const date = localDate(e.at);
+    map.set(date, { id: e.id, date, flow: e.flow, symptoms: e.symptoms ?? [], energy: e.energy, notes: e.notes, event: e });
+  }
+  return map;
+}
+
+export type CycleSummary = {
+  start: string;
+  end: string; // last day of the cycle (day before next start), or today for the current one
+  length?: number; // only for completed cycles
+  periodEnd?: string;
+  periodDays?: number;
+  logs: DayLog[];
+  current: boolean;
+};
+
+/** Every recorded cycle (current first) with the day logs that fall inside it. */
+export function cycleSummaries(events: BloomEvent[], today = localDate()): CycleSummary[] {
+  const periods = periodsOf(events).filter((p) => p.start <= today);
+  const logs = [...dayLogsOf(events).values()];
+  return periods.map((p, i) => {
+    const next = periods[i - 1];
+    const end = next ? addDays(next.start, -1) : today;
+    const length = next ? daysBetween(p.start, next.start) : undefined;
+    return {
+      start: p.start,
+      end,
+      length,
+      periodEnd: p.end,
+      periodDays: p.end && p.end >= p.start ? daysBetween(p.start, p.end) + 1 : undefined,
+      logs: logs.filter((l) => l.date >= p.start && l.date <= end).sort((a, b) => a.date.localeCompare(b.date)),
+      current: !next,
+    };
+  });
+}
+
+/** Symptom counts across the most recent cycles — descriptive only. */
+export function symptomHistory(summaries: CycleSummary[], cycles = 3) {
+  const recent = summaries.slice(0, cycles);
+  const counts = new Map<string, number>();
+  for (const c of recent) for (const l of c.logs) for (const s of l.symptoms) counts.set(s, (counts.get(s) ?? 0) + 1);
+  return { cycles: recent.length, items: [...counts.entries()].sort((a, b) => b[1] - a[1]) };
 }

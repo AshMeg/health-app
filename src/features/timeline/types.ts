@@ -91,6 +91,10 @@ export type BloomEvent = {
   memory?: boolean;
   /** Journal status on a shared record. Journal-category events default to true; others to false. */
   inJournal?: boolean;
+  /** Cycle day logs (origin "cycle-day"): flow, symptoms and energy for one day. */
+  flow?: string;
+  symptoms?: string[];
+  energy?: string;
 };
 
 /** One piece of the user's life can live in Journal, Memories, or both — never copied. */
