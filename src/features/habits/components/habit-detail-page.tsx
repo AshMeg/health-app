@@ -49,7 +49,7 @@ export function HabitDetailPage({ habitId }: { habitId: string }) {
 
   const c = consistency(habit, events);
   const goal = habit.goalId ? goals.find((g) => g.id === habit.goalId) : undefined;
-  const recent = checkInsFor(events, habit.id).slice(0, 12);
+  const recent = [...checkInsFor(events, habit.id)].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 12);
   const unit = habit.unit || methodMeta[habit.method]?.unit || "";
   const maxAmount = Math.max(1, ...c.recent.map((o) => o.amount ?? 0), habit.target ?? 0);
 
