@@ -1,4 +1,4 @@
-import type { BloomEvent, DailySnapshot, EventCategory } from "./types";
+import { isJournalEntry, type BloomEvent, type DailySnapshot, type EventCategory } from "./types";
 
 /** Categories Bloom expects to see on a normal day. */
 const expected: EventCategory[] = ["weight", "water", "sleep", "food", "mood", "journal"];
