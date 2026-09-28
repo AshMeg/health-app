@@ -42,6 +42,7 @@ export const goalMetricPage: Record<string, string | undefined> = {
   steps: "training",
   mood: "recovery",
   journal: "journal",
+  measurement: "measurements",
 };
 
 const one = (value?: number, digits = 0) =>

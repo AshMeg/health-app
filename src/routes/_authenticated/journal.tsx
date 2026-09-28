@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MetricPage } from "@/features/metrics/components/metric-page";
+import { JournalPage } from "@/features/journal/components/journal-page";
 import { metricPages } from "@/features/metrics/config";
 
 export const Route = createFileRoute("/_authenticated/journal")({
@@ -10,5 +10,5 @@ export const Route = createFileRoute("/_authenticated/journal")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: () => <MetricPage config={metricPages.journal} />,
+  component: JournalPage,
 });

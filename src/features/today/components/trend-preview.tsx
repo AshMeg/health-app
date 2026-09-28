@@ -4,12 +4,12 @@ import { Link } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { useBloomContext } from "@/features/timeline/hooks/use-bloom-context";
 import { TrendSparkline } from "@/features/trends/components/trend-panel";
-import { buildSeries, pointsInRange, trendDefinitions, type TrendId } from "@/features/trends/series";
+import { buildSeries, pointsInRange, getTrend, type TrendId } from "@/features/trends/series";
 
 /** Small Dashboard preview of a trend — the full story lives on the metric page. */
 export function TrendPreview({ id, to }: { id: TrendId; to: string }) {
   const { events } = useBloomContext();
-  const def = trendDefinitions[id];
+  const def = getTrend(id);
   const all = useMemo(() => buildSeries(events, id), [events, id]);
   const month = pointsInRange(all, "30d");
   const latest = all.at(-1);

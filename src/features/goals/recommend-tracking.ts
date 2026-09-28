@@ -24,7 +24,24 @@ type Rule = {
   build: (title: string) => TrackingRecommendation;
 };
 
+const measureWords: [string, string][] = [
+  ["waist", "waist"], ["hips", "hips"], ["hip", "hips"], ["chest", "chest"], ["thigh", "thigh"],
+  ["upper arm", "upper-arm"], ["arm", "upper-arm"], ["calf", "calf"], ["neck", "neck"],
+];
+
 const rules: Rule[] = [
+  {
+    keywords: ["waist", "hips", "chest", "thigh", "upper arm", "calf", "neck", "measurement", "inches off", "cm off"],
+    build: (t) => {
+      const lower = t.toLowerCase();
+      const measure = measureWords.find(([w]) => lower.includes(w))?.[1] ?? "waist";
+      return {
+        method: "automatic",
+        reason: "Bloom can follow this from the measurements you log.",
+        draft: () => ({ ...automatic("measurement", "cm", 0, numberIn(t, 75)), measure } as GoalTracking),
+      };
+    },
+  },
   {
     keywords: ["weight", "lose", "kg", "lighter", "slim", "gain weight"],
     build: (t) => ({

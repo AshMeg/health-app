@@ -73,6 +73,7 @@ export type NewEvent = {
   description?: string;
   notes?: string;
   photos?: string[];
+  measure?: string;
   /** Defaults to now — pass an ISO string to backdate an entry. */
   at?: string;
 };

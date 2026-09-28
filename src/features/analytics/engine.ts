@@ -97,11 +97,14 @@ const MIN_EFFECT = 0.35;
 
 const moodScore: Record<string, number> = {
   Great: 5,
+  Good: 4,
   Calm: 4,
   Okay: 3,
   Flat: 2,
   Tired: 2,
   Low: 1,
+  Sad: 1,
+  Stressed: 1,
 };
 
 function nextDay(date: string) {
@@ -218,7 +221,7 @@ const comparisons: Comparison[] = [
     higher: "Your mood has tended to be more positive after nights with 7 hours' sleep or more.",
     lower: "Your mood has tended to be less positive after nights with 7 hours' sleep or more.",
     compared: "Sleep duration and mood recorded the same day",
-    limitation: "Mood is scored from the words you chose (Great 5 … Low 1), which is a simplification.",
+    limitation: "Mood is scored from the words you chose (Great 5 … Low, Sad or Stressed 1), which is a simplification.",
   },
   {
     id: "training-recovery",

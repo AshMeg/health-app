@@ -25,6 +25,7 @@ export type GoalMetric =
   | "steps"
   | "mood"
   | "journal"
+  | "measurement"
   | "none";
 
 /** Calculated from progress and pace — never set by hand. */
@@ -110,6 +111,8 @@ export type RepetitionLog = {
 export type AutomaticTracking = {
   method: "automatic";
   metric: GoalMetric;
+  /** For measurement goals: which body measurement (e.g. "waist"). */
+  measure?: string;
   unit: string;
   start: number;
   current: number;

@@ -23,7 +23,7 @@ import {
   pointsInRange,
   ranges,
   summarise,
-  trendDefinitions,
+  getTrend,
   type RangeId,
   type TrendId,
   type TrendPoint,
@@ -53,7 +53,7 @@ export function TrendPanel({
 }) {
   const { events } = useBloomContext();
   const [active, setActive] = useState<TrendId>(trends[0]);
-  const def = trendDefinitions[active];
+  const def = getTrend(active);
   const [range, setRange] = useState<RangeId>(def.defaultRange);
 
   const all = useMemo(() => buildSeries(events, active), [events, active]);
@@ -98,7 +98,7 @@ export function TrendPanel({
                 id === active ? "bg-sage-soft text-foreground" : "text-muted-foreground hover:bg-muted",
               )}
             >
-              {trendDefinitions[id].label}
+              {getTrend(id).label}
             </button>
           ))}
         </div>
@@ -154,7 +154,7 @@ function Chart({
   target?: number;
   targetLabel?: string;
 }) {
-  const def = trendDefinitions[id];
+  const def = getTrend(id);
   const color = `var(--${def.accent})`;
   const values = points.map((p) => p.value).concat(target ?? []);
   const min = Math.min(...values);
@@ -225,7 +225,7 @@ function Chart({
 export function TrendSparkline({ id, days = 30 }: { id: TrendId; days?: number }) {
   const { events } = useBloomContext();
   const pts = useMemo(() => buildSeries(events, id), [events, id]).slice(-days);
-  const def = trendDefinitions[id];
+  const def = getTrend(id);
   if (pts.length < MIN_POINTS) return null;
   return (
     <div className="h-14 w-full">
