@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
 import { useBloomContext } from "../hooks/use-bloom-context";
 import type { QuickAddSpec } from "../quick-add";
 import type { MetricKey } from "../types";
+import { EventDateField, validPastDate } from "@/components/shared/event-date-field";
+import { eventAt, todayLocal } from "@/lib/event-date";
 import { FoodDialog } from "@/features/nutrition/components/food-dialog";
 import { MeasurementDialog } from "@/features/measurements/components/measurement-dialog";
 
@@ -35,6 +37,14 @@ export function LogEventDialog({
 }) {
   const { record } = useBloomContext();
   const [values, setValues] = useState<Record<string, string>>({});
+  const [date, setDate] = useState(todayLocal());
+  const [time, setTime] = useState("");
+  useEffect(() => {
+    if (open) {
+      setDate(todayLocal());
+      setTime("");
+    }
+  }, [open]);
 
   if (!spec) return null;
   // Measurements have their own picker (which one, value, date).
@@ -43,7 +53,9 @@ export function LogEventDialog({
 
   const set = (label: string, value: string) => setValues((v) => ({ ...v, [label]: value }));
 
+  const dateOk = validPastDate(date, time || undefined);
   const submit = () => {
+    if (!dateOk) return;
     const metrics: Partial<Record<MetricKey, number | string>> = {};
     const details: string[] = [];
     let primary: number | undefined;
@@ -76,6 +88,7 @@ export function LogEventDialog({
       metrics,
       source: "manual",
       origin: "Quick add",
+      at: eventAt(date, time || undefined),
     });
 
     setValues({});
@@ -88,7 +101,7 @@ export function LogEventDialog({
         <DialogHeader>
           <DialogTitle className="font-display text-xl font-medium">{spec.label}</DialogTitle>
           <DialogDescription>
-            This goes straight into your timeline and updates anything it relates to.
+            Saved for the day it happened, and added to your {spec.label.toLowerCase()} history.
           </DialogDescription>
         </DialogHeader>
 
@@ -138,13 +151,20 @@ export function LogEventDialog({
               )}
             </div>
           ))}
+          <EventDateField
+            date={date}
+            onDateChange={setDate}
+            time={spec.id === "sleep" ? undefined : time}
+            onTimeChange={spec.id === "sleep" ? undefined : setTime}
+            label={spec.id === "sleep" ? "Night of" : "Date"}
+          />
         </div>
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={submit}>Save</Button>
+          <Button onClick={submit} disabled={!dateOk}>Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
