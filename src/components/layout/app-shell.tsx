@@ -124,7 +124,7 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
             </DropdownMenu>
           </div>
         </header>
-        <main className="flex-1 px-4 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">{children}</main>
+        <main className="min-w-0 flex-1 px-4 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

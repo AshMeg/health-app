@@ -137,6 +137,7 @@ export function buildHabits(goals: BloomGoal[], now = new Date()): HabitState[] 
       } else {
         dates = goal.updates.map((u) => u.date);
       }
+      dates = dates.filter((d) => /^\d{4}-\d{2}-\d{2}/.test(d));
       const lastActivity = lastOf(dates);
       const active =
         !goal.pausedAt &&
