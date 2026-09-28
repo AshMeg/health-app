@@ -33,6 +33,8 @@ import {
   type GardenMonth,
   type Season,
 } from "../model";
+import { MemoryDialog } from "@/features/memories/memory-dialog";
+import { useHabits, consistency, isBuzzing } from "@/features/habits/model";
 import { GardenScene, SCENE_HEIGHT, sceneWidth } from "./garden-scene";
 
 type View =
@@ -82,7 +84,17 @@ export function GardenPage() {
 
   const flowers = useMemo(() => buildFlowers(complete), [complete]);
   const butterflies = useMemo(() => buildButterflies(events), [events]);
-  const habits = useMemo(() => buildHabits(goals), [goals]);
+  const { active: habitList } = useHabits();
+  const habits = useMemo(
+    () => [
+      ...habitList.map((h) => {
+        const c = consistency(h, events);
+        return { goalId: h.id, habitId: h.id, title: `${h.icon} ${h.name}`, active: isBuzzing(c), lastActivity: c.lastDone, activityCount: c.allDone };
+      }),
+      ...buildHabits(goals),
+    ],
+    [goals, habitList, events],
+  );
   const years = useMemo(() => buildYears({ flowers, butterflies, goals }), [flowers, butterflies, goals]);
   const months = useMemo(() => years.flatMap((y) => y.months).filter((m) => m.flowers.length || m.butterflies.length), [years]);
   const width = sceneWidth(flowers.length, butterflies.length, years.length);
@@ -198,6 +210,7 @@ export function GardenPage() {
         open={view?.kind === "memory"}
         memoryId={view?.kind === "memory" ? view.id : undefined}
         onClose={() => setView(null)}
+        defaultInGarden
       />
     </div>
   );
@@ -360,15 +373,16 @@ function HiveSheet({
           <SheetDescription>
             {habits.length
               ? `${habits.length} habit${habits.length === 1 ? "" : "s"} live here · ${active} buzzing right now. Resting bees never leave — your consistency is still here whenever you pick it back up.`
-              : "No habits yet. Start a habit goal and your first bees will move in."}
+              : "No habits yet. Add a habit in Goals and your first bees will move in."}
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-2 px-4 pb-6">
           {habits.map((h) => (
             <Link
               key={h.goalId}
-              to="/goals/$goalId"
-              params={{ goalId: h.goalId }}
+              {...(h.habitId
+                ? { to: "/goals/habits/$habitId" as const, params: { habitId: h.habitId } }
+                : { to: "/goals/$goalId" as const, params: { goalId: h.goalId } })}
               className="block rounded-2xl bg-muted/50 px-4 py-3 hover:bg-caution-soft"
             >
               <div className="flex items-center justify-between gap-3">
@@ -390,7 +404,7 @@ function HiveSheet({
           ))}
           {!habits.length ? (
             <Button asChild variant="secondary" className="rounded-full">
-              <Link to="/goals">Start a habit</Link>
+              <Link to="/goals" search={{ tab: "habits" }}>Add a habit</Link>
             </Button>
           ) : null}
         </div>
@@ -399,108 +413,3 @@ function HiveSheet({
   );
 }
 
-function MemoryDialog({ open, memoryId, onClose }: { open: boolean; memoryId?: string; onClose: () => void }) {
-  const { events, record } = useBloomContext();
-  const existing = memoryId ? events.find((e) => e.id === memoryId) : undefined;
-  const [title, setTitle] = useState("");
-  const [date, setDate] = useState("");
-  const [description, setDescription] = useState("");
-  const [notes, setNotes] = useState("");
-  const [photos, setPhotos] = useState<string[]>([]);
-  const fileInput = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    setTitle(existing?.title ?? "");
-    setDate((existing?.at ?? new Date().toISOString()).slice(0, 10));
-    setDescription(existing?.description ?? "");
-    setNotes(existing?.notes ?? "");
-    setPhotos(existing?.photos ?? []);
-  }, [open, existing?.id]);
-
-  const save = () => {
-    if (!title.trim()) return;
-    const at = new Date(`${date}T12:00:00`).toISOString();
-    const patch = { title: title.trim(), at, description, notes, photos };
-    if (existing) updateEvent(existing.id, patch);
-    else record({ category: "life-event", detail: "Life memory", origin: MEMORY_ORIGIN, ...patch });
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-3xl sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="font-display">{existing ? "A memory" : "Capture a memory"}</DialogTitle>
-          <DialogDescription>A holiday, a new job, a birthday — it'll flutter in your garden.</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="mem-title">Title</Label>
-            <Input id="mem-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Weekend in Cornwall" />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="mem-date">Date</Label>
-            <Input id="mem-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="mem-desc">What happened</Label>
-            <Textarea id="mem-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="mem-notes">Notes</Label>
-            <Textarea id="mem-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anything you'd like to remember" />
-          </div>
-          <div className="space-y-2">
-            <Label>Photos</Label>
-            {photos.length ? (
-              <div className="grid grid-cols-3 gap-2">
-                {photos.map((src, i) => (
-                  <button key={i} type="button" className="group relative" onClick={() => setPhotos(photos.filter((_, j) => j !== i))} aria-label="Remove photo">
-                    <img src={src} alt="" className="aspect-square w-full rounded-xl object-cover" />
-                    <span className="absolute inset-0 hidden items-center justify-center rounded-xl bg-card/60 text-xs group-hover:flex">Remove</span>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-            <input
-              ref={fileInput}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={async (e) => {
-                const files = [...(e.target.files ?? [])];
-                e.target.value = "";
-                const added = await Promise.all(files.map((f) => fileToPhoto(f)));
-                setPhotos((p) => [...p, ...added]);
-              }}
-            />
-            <Button type="button" variant="secondary" size="sm" className="rounded-full" onClick={() => fileInput.current?.click()}>
-              <ImagePlus className="h-4 w-4" /> Add photo
-            </Button>
-          </div>
-        </div>
-        <DialogFooter className="gap-2 sm:justify-between">
-          {existing ? (
-            <Button
-              variant="ghost"
-              className="rounded-full text-destructive"
-              onClick={() => {
-                removeEvent(existing.id);
-                onClose();
-              }}
-            >
-              <Trash2 className="h-4 w-4" /> Let it go
-            </Button>
-          ) : (
-            <span />
-          )}
-          <Button className="rounded-full" onClick={save} disabled={!title.trim()}>
-            {existing ? "Save" : "Plant this memory"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}

@@ -50,6 +50,8 @@ export type GardenButterfly = {
 };
 
 export type HabitState = {
+  /** Set for first-class habits; absent for older habit-style goals. */
+  habitId?: string;
   goalId: string;
   title: string;
   active: boolean;
@@ -110,7 +112,7 @@ export function isMemory(event: BloomEvent) {
 
 export function buildButterflies(events: BloomEvent[]): GardenButterfly[] {
   return events
-    .filter(isMemory)
+    .filter((e) => isMemory(e) && e.inGarden !== false)
     .map((event) => ({ id: event.id, title: event.title, date: event.at.slice(0, 10), event }));
 }
 
