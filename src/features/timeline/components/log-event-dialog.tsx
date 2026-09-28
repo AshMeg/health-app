@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useBloomContext } from "../hooks/use-bloom-context";
 import type { QuickAddSpec } from "../quick-add";
 import type { MetricKey } from "../types";
+import { FoodDialog } from "@/features/nutrition/components/food-dialog";
 import { MeasurementDialog } from "@/features/measurements/components/measurement-dialog";
 
 /**
@@ -37,6 +38,7 @@ export function LogEventDialog({
 
   if (!spec) return null;
   // Measurements have their own picker (which one, value, date).
+  if (spec.id === "food") return <FoodDialog open={open} onOpenChange={onOpenChange} />;
   if (spec.id === "measurement") return <MeasurementDialog open={open} onOpenChange={onOpenChange} />;
 
   const set = (label: string, value: string) => setValues((v) => ({ ...v, [label]: value }));

@@ -57,6 +57,10 @@ export function buildDailySnapshot(
   let calories = 0;
   let carbs = 0;
   let fat = 0;
+  let fibre = 0;
+  let sugar = 0;
+  let satFat = 0;
+  let salt = 0;
 
   for (const event of ordered) {
     const m = event.metrics ?? {};
@@ -77,6 +81,11 @@ export function buildDailySnapshot(
     calories += num(m.calories) ?? 0;
     carbs += num(m.carbs) ?? 0;
     fat += num(m.fat) ?? 0;
+    fibre += num(m.fibre) ?? 0;
+    sugar += num(m.sugar) ?? 0;
+    satFat += num(m.satFat) ?? 0;
+    // Salt ≈ sodium × 2.5 when only sodium is known.
+    salt += num(m.salt) ?? (num(m.sodium) !== undefined ? num(m.sodium)! * 2.5 : 0);
 
     if (isJournalEntry(event)) snapshot.journalWritten = true;
     if (event.category === "medication") snapshot.medicationTaken = true;
@@ -92,6 +101,10 @@ export function buildDailySnapshot(
   if (calories) snapshot.caloriesKcal = Math.round(calories);
   if (carbs) snapshot.carbsG = Math.round(carbs);
   if (fat) snapshot.fatG = Math.round(fat);
+  if (fibre) snapshot.fibreG = Math.round(fibre);
+  if (sugar) snapshot.sugarG = Math.round(sugar);
+  if (satFat) snapshot.satFatG = round(satFat);
+  if (salt) snapshot.saltG = round(salt);
 
   const seen = new Set(dayEvents.map((e) => e.category));
   snapshot.missingLogs = expected.filter((c) => !seen.has(c));

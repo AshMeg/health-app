@@ -16,6 +16,10 @@ export type BaseTrendId =
   | "protein"
   | "carbs"
   | "fat"
+  | "fibre"
+  | "sugar"
+  | "satFat"
+  | "salt"
   | "water"
   | "sleep"
   | "recovery"
@@ -67,6 +71,10 @@ export const trendDefinitions: Record<BaseTrendId, TrendDefinition> = {
   protein: { id: "protein", label: "Protein", unit: "g", kind: "flow", visual: "bar", accent: "sage", aggregate: "sum", metric: "protein", format: whole("g"), defaultRange: "30d", noun: "protein" },
   carbs: { id: "carbs", label: "Carbs", unit: "g", kind: "flow", visual: "bar", accent: "stone", aggregate: "sum", metric: "carbs", format: whole("g"), defaultRange: "30d", noun: "carbohydrates" },
   fat: { id: "fat", label: "Fat", unit: "g", kind: "flow", visual: "bar", accent: "lavender", aggregate: "sum", metric: "fat", format: whole("g"), defaultRange: "30d", noun: "fat" },
+  fibre: { id: "fibre", label: "Fibre", unit: "g", kind: "flow", visual: "bar", accent: "sage", aggregate: "sum", metric: "fibre", format: whole("g"), defaultRange: "30d", noun: "fibre" },
+  sugar: { id: "sugar", label: "Sugar", unit: "g", kind: "flow", visual: "bar", accent: "blush", aggregate: "sum", metric: "sugar", format: whole("g"), defaultRange: "30d", noun: "sugar" },
+  satFat: { id: "satFat", label: "Saturated fat", unit: "g", kind: "flow", visual: "bar", accent: "lavender", aggregate: "sum", metric: "satFat", format: fixed(1, "g"), defaultRange: "30d", noun: "saturated fat" },
+  salt: { id: "salt", label: "Salt", unit: "g", kind: "flow", visual: "bar", accent: "stone", aggregate: "sum", metric: "salt", format: fixed(1, "g"), defaultRange: "30d", noun: "salt" },
   water: { id: "water", label: "Water", unit: "L", kind: "flow", visual: "bar", accent: "sky", aggregate: "sum", metric: "water", format: fixed(1, "L"), defaultRange: "30d", noun: "water" },
   sleep: { id: "sleep", label: "Sleep", unit: "min", kind: "flow", visual: "bar", accent: "sky", aggregate: "last", metric: "sleep", format: hm, formatDelta: (v) => `${Math.round(v)} min`, defaultRange: "30d", noun: "sleep" },
   recovery: { id: "recovery", label: "Recovery", unit: "%", kind: "level", visual: "line", accent: "sage", aggregate: "last", metric: "recovery", format: (v) => `${Math.round(v)}%`, formatDelta: (v) => `${Math.round(v)} points`, defaultRange: "30d", noun: "recovery" },
