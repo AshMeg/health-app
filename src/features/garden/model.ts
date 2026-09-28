@@ -93,14 +93,25 @@ export function growthStage(goal: BloomGoal, now = new Date()): GrowthStage {
   return "mature";
 }
 
+const VARIETIES: FlowerVariety[] = ["daisy", "tulip", "rose", "bell"];
+const ACCENTS: BloomGoal["accent"][] = ["sage", "lavender", "blush", "sky"];
+const STAGES: GrowthStage[] = ["seedling", "bud", "bloom", "mature"];
+
+/** Default Bloom flower used whenever stored goal data can't describe a valid flower. */
+export const DEFAULT_FLOWER = { variety: "daisy" as FlowerVariety, accent: "sage" as BloomGoal["accent"], stage: "bloom" as GrowthStage };
+
+function safe<T>(value: T | undefined, allowed: T[], fallback: T): T {
+  return value !== undefined && allowed.includes(value) ? value : fallback;
+}
+
 export function buildFlowers(completed: BloomGoal[]): GardenFlower[] {
   return completed.map((goal) => ({
     id: `flower-${goal.id}`,
     goalId: goal.id,
-    title: goal.title,
-    accent: goal.accent,
-    variety: varietyFor[goal.type],
-    stage: growthStage(goal),
+    accent: safe(goal.accent, ACCENTS, DEFAULT_FLOWER.accent),
+    variety: safe(varietyFor[goal.type], VARIETIES, DEFAULT_FLOWER.variety),
+    stage: safe(growthStage(goal), STAGES, DEFAULT_FLOWER.stage),
+    title: goal.title?.trim() || "Completed goal",
     completedOn: (goal.completedAt ?? goal.startDate).slice(0, 10),
     photoCount: goal.photos?.length ?? 0,
   }));
