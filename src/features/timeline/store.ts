@@ -88,7 +88,25 @@ export type NewEvent = {
   workout?: WorkoutDetails;
   /** Defaults to now — pass an ISO string to backdate an entry. */
   at?: string;
+  sourceProvider?: string;
+  sourceRecordId?: string;
+  sourceUpdatedAt?: string;
+  importedAt?: string;
 };
+
+/** Adds many events in one write (imports). */
+export function logEvents(inputs: NewEvent[]): BloomEvent[] {
+  const now = new Date().toISOString();
+  const created = inputs.map((input, i) => ({
+    id: `e-${Date.now().toString(36)}-${i}-${Math.random().toString(36).slice(2, 6)}`,
+    at: input.at ?? now,
+    source: input.source ?? "manual",
+    ...input,
+    loggedAt: now,
+  })) as BloomEvent[];
+  write([...created, ...store]);
+  return created;
+}
 
 /**
  * Records one thing that happened. Everything in Bloom logs through here, so
