@@ -1,5 +1,5 @@
 import { seedEvents } from "./seed";
-import type { BloomEvent, EventCategory, EventSource, MetricKey } from "./types";
+import type { BloomEvent, SleepDetails, WorkoutDetails, EventCategory, EventSource, MetricKey } from "./types";
 
 const STORAGE_KEY = "bloom.events.v1";
 
@@ -84,6 +84,8 @@ export type NewEvent = {
   flow?: string;
   symptoms?: string[];
   energy?: string;
+  sleep?: SleepDetails;
+  workout?: WorkoutDetails;
   /** Defaults to now — pass an ISO string to backdate an entry. */
   at?: string;
 };

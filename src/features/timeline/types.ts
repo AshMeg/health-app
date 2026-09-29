@@ -33,7 +33,10 @@ export type MetricKey =
   | "training"
   | "journal"
   | "medication"
-  | "measurement";
+  | "measurement"
+  | "nap"
+  | "distance"
+  | "workoutMinutes";
 
 /** The area of Bloom an event came from. */
 export type EventCategory =
@@ -106,6 +109,29 @@ export type BloomEvent = {
   energy?: string;
   /** Food entries (category "food"): what was eaten. Nutrients live in `metrics`; unknown = absent, never 0. */
   food?: FoodDetails;
+  /** Sleep entries: night sleep or a nap, each its own event. */
+  sleep?: SleepDetails;
+  /** Workout entries: what the user did. Blank = unknown, never 0. */
+  workout?: WorkoutDetails;
+};
+
+export type SleepDetails = { kind: "night" | "nap"; minutes: number; start?: string; end?: string };
+
+export type WorkoutDetails = {
+  type: string;
+  distanceKm?: number;
+  durationMin?: number;
+  calories?: number;
+  avgHr?: number;
+  elevationM?: number;
+  steps?: number;
+  laps?: number;
+  water?: "pool" | "open";
+  exercises?: string;
+  sets?: number;
+  reps?: number;
+  loadKg?: number;
+  style?: string;
 };
 
 export type MealSlot = "breakfast" | "lunch" | "dinner" | "snack" | "other";
@@ -141,8 +167,8 @@ export const eventCategoryMeta: Record<EventCategory, EventCategoryMeta> = {
   weight: { label: "Weight", metrics: ["weight", "bodyFat"], accent: "sage" },
   water: { label: "Water", metrics: ["water"], accent: "sky" },
   food: { label: "Food", metrics: ["calories", "protein", "carbs", "fat", "fibre", "sugar", "satFat", "salt"], accent: "blush" },
-  workout: { label: "Training", metrics: ["training", "steps"], accent: "lavender" },
-  sleep: { label: "Sleep", metrics: ["sleep"], accent: "sky" },
+  workout: { label: "Training", metrics: ["training", "steps", "distance", "workoutMinutes"], accent: "lavender" },
+  sleep: { label: "Sleep", metrics: ["sleep", "nap"], accent: "sky" },
   recovery: { label: "Recovery", metrics: ["recovery", "hrv", "restingHr"], accent: "sage" },
   cycle: { label: "Cycle", metrics: ["cycle", "symptoms"], accent: "blush" },
   mood: { label: "Mood", metrics: ["mood", "stress"], accent: "lavender" },
@@ -166,6 +192,9 @@ export type DailySnapshot = {
   /** Set by Analytics from completed recorded cycles: the 5 days before a period. */
   cycleLateLuteal?: boolean;
   sleepMinutes?: number;
+  napMinutes?: number;
+  distanceKm?: number;
+  workoutMinutes?: number;
   recoveryPercent?: number;
   hrv?: number;
   proteinG?: number;

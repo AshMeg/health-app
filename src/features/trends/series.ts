@@ -27,6 +27,8 @@ export type BaseTrendId =
   | "restingHr"
   | "steps"
   | "trainingSessions"
+  | "distance"
+  | "workoutMinutes"
   | "cycle"
   | "waist";
 
@@ -82,6 +84,8 @@ export const trendDefinitions: Record<BaseTrendId, TrendDefinition> = {
   restingHr: { id: "restingHr", label: "Resting heart rate", unit: "bpm", kind: "level", visual: "line", accent: "blush", aggregate: "last", metric: "restingHr", format: whole("bpm"), defaultRange: "30d", noun: "resting heart rate" },
   steps: { id: "steps", label: "Steps", unit: "", kind: "flow", visual: "bar", accent: "lavender", aggregate: "last", metric: "steps", format: whole(""), formatDelta: whole("steps"), defaultRange: "30d", noun: "daily steps" },
   trainingSessions: { id: "trainingSessions", label: "Sessions", unit: "", kind: "count", visual: "bar", accent: "lavender", aggregate: "count", countCategory: "workout", format: (v) => `${v} session${v === 1 ? "" : "s"}`, defaultRange: "30d", noun: "training sessions" },
+  distance: { id: "distance", label: "Distance", unit: "km", kind: "flow", visual: "bar", accent: "sky", aggregate: "sum", metric: "distance", format: fixed(1, "km"), defaultRange: "30d", noun: "distance" },
+  workoutMinutes: { id: "workoutMinutes", label: "Training time", unit: "min", kind: "flow", visual: "bar", accent: "sage", aggregate: "sum", metric: "workoutMinutes", format: hm, formatDelta: (v) => `${Math.round(v)} min`, defaultRange: "30d", noun: "training time" },
   cycle: { id: "cycle", label: "Cycle day", unit: "", kind: "level", visual: "step", accent: "blush", aggregate: "last", metric: "cycle", format: (v) => `Day ${Math.round(v)}`, defaultRange: "3m", noun: "cycle day" },
   waist: { id: "waist", label: "Waist", unit: "cm", kind: "level", visual: "line", accent: "sage", aggregate: "last", metric: "measurement", measure: "waist", format: fixed(1, "cm"), defaultRange: "3m", noun: "waist" },
 };
