@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, Circle } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
-import type { BloomGoal } from "@/features/goals/types";
+import { goalProgress, type BloomGoal } from "@/features/goals/types";
 import { useBloomContext } from "@/features/timeline/hooks/use-bloom-context";
 import { formatSleep } from "@/features/timeline/snapshot";
 import { eventCategoryMeta } from "@/features/timeline/types";
