@@ -391,7 +391,7 @@ function DaySummary({ bucket, daily, metrics, onClose }: { bucket: Bucket; daily
 }
 
 function GoalLink({ e }: { e: BloomEvent }) {
-  const goalId = (e as BloomEvent & { goalId?: string }).goalId;
+  const goalId = e.goalId;
   if (!goalId) return <span className="rounded-full bg-card px-3 py-1 text-xs">{e.title}</span>;
   return (
     <Link to="/goals/$goalId" params={{ goalId }} className="rounded-full bg-card px-3 py-1 text-xs hover:bg-sage-soft">

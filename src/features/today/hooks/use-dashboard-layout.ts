@@ -2,8 +2,25 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { DashboardLayout, WidgetDefinition, WidgetId } from "../types";
 
-const STORAGE_KEY = "bloom.today.layout.v3";
+const STORAGE_KEY = "bloom.today.layout.v4";
 const LEGACY_KEY = "bloom.today.layout.v2";
+const V3_KEY = "bloom.today.layout.v3";
+
+/** v3 → v4: "Your picture" sits after Quick add; "Today so far" is folded into it and hidden. */
+function migrateV3(raw: string | null): string | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<DashboardLayout>;
+    if (!Array.isArray(parsed.order)) return null;
+    const order = parsed.order.filter((id) => id !== "picture");
+    const at = order.indexOf("quick-add" as WidgetId);
+    order.splice(at >= 0 ? at + 1 : 0, 0, "picture" as WidgetId);
+    const hidden = [...new Set([...(parsed.hidden ?? []).filter((id) => id !== "picture"), "snapshot" as WidgetId])];
+    return JSON.stringify({ order, hidden });
+  } catch {
+    return null;
+  }
+}
 
 /** v2 → v3: Quick add moves up to sit just after Today's insight; everything else keeps its place. */
 function migrateLegacy(raw: string | null): string | null {
@@ -51,7 +68,7 @@ export function useDashboardLayout(widgets: WidgetDefinition[]) {
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY) ?? migrateLegacy(window.localStorage.getItem(LEGACY_KEY));
+      const raw = window.localStorage.getItem(STORAGE_KEY) ?? migrateV3(window.localStorage.getItem(V3_KEY) ?? migrateLegacy(window.localStorage.getItem(LEGACY_KEY)));
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<DashboardLayout>;
         if (Array.isArray(parsed.order)) {
