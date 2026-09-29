@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, Plus, Tags } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { CreateGoalDialog } from "./create-goal-dialog";
@@ -11,6 +11,9 @@ import { useGoals } from "../hooks/use-goals";
 import { HabitsSection } from "@/features/habits/components/habits-section";
 import { MemoriesSection } from "@/features/memories/memories-section";
 import { cn } from "@/lib/utils";
+import { useTags, tagChipClass } from "@/features/tags/store";
+import { TagManagerDialog } from "@/features/tags/components/tag-ui";
+import type { BloomGoal } from "../types";
 
 const tabs = [
   { id: "goals", label: "Goals", line: "Where you're going." },
@@ -26,6 +29,28 @@ export function GoalsPage() {
   const tab = search.tab ?? "goals";
 
   const nothingYet = active.length === 0 && complete.length === 0 && resting.length === 0;
+  const { tags, tagsFor } = useTags();
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [matchAll, setMatchAll] = useState(true);
+  const [managing, setManaging] = useState(false);
+
+  // Counts cover every goal (active, completed, resting) so they don't shift with the view.
+  const allGoals = [...active, ...complete, ...resting];
+  const counts = new Map<string, number>();
+  for (const g of allGoals) for (const t of tagsFor("goal", g.id)) counts.set(t.id, (counts.get(t.id) ?? 0) + 1);
+  const liveSelected = selectedTags.filter((id) => tags.some((t) => t.id === id));
+  const matches = (g: BloomGoal) => {
+    if (!liveSelected.length) return true;
+    const ids = tagsFor("goal", g.id).map((t) => t.id);
+    return matchAll ? liveSelected.every((id) => ids.includes(id)) : liveSelected.some((id) => ids.includes(id));
+  };
+  const shownActive = active.filter(matches);
+  const shownComplete = complete.filter(matches);
+  const shownResting = resting.filter(matches);
+  const filtering = liveSelected.length > 0;
+  const noneMatch = filtering && !shownActive.length && !shownComplete.length && !shownResting.length;
+  const toggleTag = (id: string) =>
+    setSelectedTags((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-10 pb-8">
@@ -76,14 +101,95 @@ export function GoalsPage() {
         <GoalsEmptyState onCreate={() => setCreating(true)} />
       ) : (
         <div className="space-y-10">
+          <section aria-label="Filter by tag" className="space-y-3">
+            {tags.length === 0 ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-muted/40 px-5 py-4">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">Organise your goals your way.</p>
+                  <p className="text-sm text-muted-foreground">
+                    Add tags like Fitness, Learning or Creativity to make your goals easier to find.
+                  </p>
+                </div>
+                <Button variant="secondary" size="sm" onClick={() => setManaging(true)}>
+                  Create a tag
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Filter by tag</span>
+                  <button
+                    type="button"
+                    aria-pressed={!filtering}
+                    onClick={() => setSelectedTags([])}
+                    className={cn(
+                      "rounded-full px-3 py-1 text-xs transition-colors",
+                      !filtering ? "bg-card text-foreground shadow-soft ring-1 ring-border" : "bg-muted/60 text-muted-foreground hover:bg-muted",
+                    )}
+                  >
+                    All
+                  </button>
+                  {tags.map((t) => {
+                    const on = liveSelected.includes(t.id);
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => toggleTag(t.id)}
+                        className={cn(
+                          "rounded-full px-3 py-1 text-xs transition-colors",
+                          on ? cn(tagChipClass[t.colour], "text-foreground ring-1 ring-foreground/25") : "bg-muted/60 text-muted-foreground hover:bg-muted",
+                        )}
+                      >
+                        {on ? "✓ " : ""}{t.name} · {counts.get(t.id) ?? 0}
+                      </button>
+                    );
+                  })}
+                  <Button variant="ghost" size="sm" className="gap-1.5 text-xs" onClick={() => setManaging(true)}>
+                    <Tags className="h-3.5 w-3.5" /> Manage tags
+                  </Button>
+                </div>
+                {liveSelected.length > 1 ? (
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <span>Show goals with</span>
+                    <div className="inline-flex rounded-full bg-muted/60 p-0.5">
+                      {[true, false].map((all) => (
+                        <button
+                          key={String(all)}
+                          type="button"
+                          aria-pressed={matchAll === all}
+                          onClick={() => setMatchAll(all)}
+                          className={cn("rounded-full px-3 py-1", matchAll === all ? "bg-card text-foreground shadow-soft" : "")}
+                        >
+                          {all ? "all selected tags" : "any selected tag"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            )}
+            {noneMatch ? (
+              <div className="flex flex-wrap items-center gap-3 rounded-3xl bg-muted/40 px-5 py-4 text-sm text-muted-foreground">
+                No goals with {liveSelected.length > 1 ? "these tags" : "this tag"} yet.
+                <Button variant="secondary" size="sm" onClick={() => setSelectedTags([])}>
+                  Clear filter
+                </Button>
+              </div>
+            ) : null}
+          </section>
+
           <section className="space-y-5">
             <h2 className="text-sm text-muted-foreground">Active goals</h2>
-            {active.length ? (
+            {shownActive.length ? (
               <div className="grid gap-5 lg:grid-cols-2">
-                {active.map((goal) => (
+                {shownActive.map((goal) => (
                   <GoalCard key={goal.id} goal={goal} />
                 ))}
               </div>
+            ) : filtering ? (
+              <p className="text-sm text-muted-foreground">No active goals match this filter.</p>
             ) : (
               <p className="text-sm text-muted-foreground">
                 Nothing growing right now — start something new when you're ready.
@@ -92,14 +198,14 @@ export function GoalsPage() {
           </section>
 
           {/* Finished goals live in the Garden — Goals stays about what's growing now. */}
-          {complete.length ? (
+          {shownComplete.length ? (
             <section className="space-y-3">
               <h2 className="text-sm text-muted-foreground">Completed</h2>
               <p className="text-sm leading-relaxed text-muted-foreground">
                 Each one is also a flower in your Garden — open any to see its whole story.
               </p>
               <div className="grid gap-5 sm:grid-cols-2">
-                {complete.map((goal) => (
+                {shownComplete.map((goal) => (
                   <GoalCard key={goal.id} goal={goal} />
                 ))}
               </div>
@@ -113,7 +219,7 @@ export function GoalsPage() {
           ) : null}
 
           {/* A different season, not a failure — everything is kept as it was. */}
-          {resting.length ? (
+          {shownResting.length ? (
             <section className="space-y-5">
               <div className="space-y-1">
                 <h2 className="text-sm text-muted-foreground">🌱 Not right now</h2>
@@ -123,7 +229,7 @@ export function GoalsPage() {
                 </p>
               </div>
               <div className="grid gap-4 lg:grid-cols-2">
-                {resting.map((goal) => (
+                {shownResting.map((goal) => (
                   <RestingGoalCard
                     key={goal.id}
                     goal={goal}
@@ -136,6 +242,7 @@ export function GoalsPage() {
         </div>
       )}
 
+      <TagManagerDialog open={managing} onOpenChange={setManaging} counts={counts} />
       <CreateGoalDialog open={creating} onOpenChange={setCreating} onCreate={addGoal} />
     </div>
   );

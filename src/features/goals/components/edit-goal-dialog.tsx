@@ -1,3 +1,5 @@
+import { setEntityTags, tagIdsFor, useTags } from "@/features/tags/store";
+import { TagPicker } from "@/features/tags/components/tag-ui";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -105,10 +107,17 @@ export function EditGoalDialog({
   onSave: (patch: Partial<BloomGoal>, changed: string[]) => void;
 }) {
   const [draft, setDraft] = useState<Draft>(() => fromGoal(goal));
+  const { links } = useTags();
+  const currentTagIds = tagIdsFor({ tags: [], links }, "goal", goal.id);
+  const [tagIds, setTagIds] = useState<string[]>(currentTagIds);
 
   // Reopening the dialog always starts from the goal as it is now.
   useEffect(() => {
-    if (open) setDraft(fromGoal(goal));
+    if (open) {
+      setDraft(fromGoal(goal));
+      setTagIds(tagIdsFor({ tags: [], links }, "goal", goal.id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, goal]);
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) =>
@@ -159,6 +168,8 @@ export function EditGoalDialog({
     if (JSON.stringify(milestones) !== JSON.stringify(goal.milestones ?? []))
       changed.push("the steps");
     if (JSON.stringify(draft.notes) !== JSON.stringify(goal.notes)) changed.push("the notes");
+    if ([...tagIds].sort().join() !== [...currentTagIds].sort().join()) changed.push("the tags");
+    setEntityTags("goal", goal.id, tagIds);
 
     onSave(
       {
@@ -221,6 +232,11 @@ export function EditGoalDialog({
                 />
               ))}
             </div>
+          </div>
+
+          <div className="space-y-3">
+            <Label>Tags</Label>
+            <TagPicker value={tagIds} onChange={setTagIds} />
           </div>
 
           <div className="space-y-3">

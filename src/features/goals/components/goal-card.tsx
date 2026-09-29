@@ -1,3 +1,5 @@
+import { useTags } from "@/features/tags/store";
+import { TagList } from "@/features/tags/components/tag-ui";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Sparkles } from "lucide-react";
 
@@ -61,6 +63,7 @@ export function GoalNextStep({ goal }: { goal: BloomGoal }) {
 export function GoalCard({ goal }: { goal: BloomGoal }) {
   const progress = goalProgress(goal);
   const definition = trackingRegistry[goal.tracking.method];
+  const { tagsFor } = useTags();
 
   return (
     <Card className="group relative rounded-3xl border-transparent bg-card shadow-soft transition-shadow hover:shadow-md">
@@ -80,6 +83,7 @@ export function GoalCard({ goal }: { goal: BloomGoal }) {
               </h3>
             </div>
             <GoalTypePill goal={goal} />
+            <TagList tags={tagsFor("goal", goal.id)} />
           </div>
           <div className="flex items-center gap-1.5">
             <GoalStatusPill goal={goal} />

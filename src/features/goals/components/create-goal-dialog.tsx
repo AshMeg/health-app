@@ -1,3 +1,5 @@
+import { setEntityTags } from "@/features/tags/store";
+import { TagPicker } from "@/features/tags/components/tag-ui";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
 
@@ -72,6 +74,7 @@ type Draft = {
   milestoneChoice: MilestoneChoice | null;
   milestones: GoalMilestone[];
   targetDate: string;
+  tagIds: string[];
 };
 
 const emptyDraft: Draft = {
@@ -86,6 +89,7 @@ const emptyDraft: Draft = {
   milestoneChoice: null,
   milestones: [],
   targetDate: "",
+  tagIds: [],
 };
 
 
@@ -286,6 +290,7 @@ export function CreateGoalDialog({
       ],
     };
     onCreate(goal);
+    if (draft.tagIds.length) setEntityTags("goal", goal.id, draft.tagIds);
     close(false);
   };
 
@@ -408,6 +413,10 @@ export function CreateGoalDialog({
                 placeholder="Optional — a sentence to come back to on harder days."
                 onChange={(e) => setDraft((d) => ({ ...d, why: e.target.value }))}
               />
+              <div className="space-y-2 pt-4">
+                <Label>Tags <span className="font-normal text-muted-foreground">— optional</span></Label>
+                <TagPicker value={draft.tagIds} onChange={(tagIds) => setDraft((d) => ({ ...d, tagIds }))} />
+              </div>
             </div>
           ) : null}
 
