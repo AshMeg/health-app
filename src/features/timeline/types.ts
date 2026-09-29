@@ -117,6 +117,14 @@ export type BloomEvent = {
   sleep?: SleepDetails;
   /** Workout entries: what the user did. Blank = unknown, never 0. */
   workout?: WorkoutDetails;
+  /** Imported records: which provider produced it (e.g. "health-connect"). Absent = manual. */
+  sourceProvider?: string;
+  /** The provider's own id for the record, used to prevent duplicate imports. */
+  sourceRecordId?: string;
+  /** When the provider last changed the record. */
+  sourceUpdatedAt?: string;
+  /** When Bloom imported it. */
+  importedAt?: string;
 };
 
 export type SleepDetails = { kind: "night" | "nap"; minutes: number; start?: string; end?: string };
