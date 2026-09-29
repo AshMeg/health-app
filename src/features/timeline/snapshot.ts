@@ -103,6 +103,9 @@ export function buildDailySnapshot(
 
   if (water) snapshot.waterL = round(water);
   if (steps) snapshot.steps = steps;
+  if (nap) snapshot.napMinutes = nap;
+  if (distance) snapshot.distanceKm = Math.round(distance * 100) / 100;
+  if (workoutMin) snapshot.workoutMinutes = workoutMin;
   if (protein) snapshot.proteinG = Math.round(protein);
   if (calories) snapshot.caloriesKcal = Math.round(calories);
   if (carbs) snapshot.carbsG = Math.round(carbs);
