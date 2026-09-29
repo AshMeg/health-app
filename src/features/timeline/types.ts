@@ -36,7 +36,11 @@ export type MetricKey =
   | "measurement"
   | "nap"
   | "distance"
-  | "workoutMinutes";
+  | "workoutMinutes"
+  /** A feeling at a particular moment — separate from the day's mood. */
+  | "moodObservation"
+  /** Optional 1–5 strength of the day's mood. */
+  | "moodIntensity";
 
 /** The area of Bloom an event came from. */
 export type EventCategory =
