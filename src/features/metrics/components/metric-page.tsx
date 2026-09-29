@@ -14,6 +14,8 @@ import { quickAddSpecs, type QuickAddSpec } from "@/features/timeline/quick-add"
 import { SummaryGrid } from "@/features/today/components/summary-stat-card";
 import type { SummaryStat } from "@/features/today/types";
 
+import { TargetWeightCard } from "@/features/weight/target-weight-card";
+import { useTargetWeight } from "@/features/weight/target";
 import { goalMetricPage, type MetricPageConfig } from "../config";
 
 /**
@@ -25,6 +27,8 @@ export function MetricPage({ config }: { config: MetricPageConfig }) {
   const { active } = useGoals();
   const [spec, setSpec] = useState<QuickAddSpec | null>(null);
   const [open, setOpen] = useState(false);
+  const { target: targetWeight } = useTargetWeight();
+  const isWeight = config.id === "weight";
 
   // Only goals genuinely tracked by this metric — never guessed from titles.
   const relatedGoals = active.filter(
@@ -93,6 +97,13 @@ export function MetricPage({ config }: { config: MetricPageConfig }) {
         ) : null}
       </header>
 
+      {isWeight ? (
+        <section className="space-y-4">
+          <h2 className="text-base font-medium text-foreground/80">Your target</h2>
+          <TargetWeightCard weightGoals={relatedGoals.filter((g) => g.tracking.method === "automatic" && g.tracking.metric === "weight")} />
+        </section>
+      ) : null}
+
       <section className="space-y-4">
         <h2 className="text-base font-medium text-foreground/80">Today</h2>
         {stats.length ? (
@@ -112,7 +123,11 @@ export function MetricPage({ config }: { config: MetricPageConfig }) {
         <section className="space-y-4">
           <h2 className="text-base font-medium text-foreground/80">Over time</h2>
           {history.length ? (
-            <TrendPanel trends={config.trends} />
+            <TrendPanel
+              trends={config.trends}
+              target={isWeight && config.trends[0] === "weight" ? targetWeight?.kg : undefined}
+              targetLabel={isWeight && targetWeight ? `Target ${targetWeight.kg.toFixed(1)} kg` : undefined}
+            />
           ) : (
             <p className="text-sm text-muted-foreground">Log a few entries and your trend will appear here.</p>
           )}

@@ -10,7 +10,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import {
   createTag,
@@ -75,7 +74,11 @@ export function TagList({ tags, max = 3 }: { tags: BloomTag[]; max?: number }) {
   );
 }
 
-/** Pick existing tags or create a new one. Selection is held by the caller. */
+/**
+ * Pick existing tags or create a new one. Selection is held by the caller.
+ * The picker opens inline (not a floating popover) so it is never clipped by
+ * a dialog, scrolls on its own, and works the same on phones.
+ */
 export function TagPicker({ value, onChange }: { value: string[]; onChange: (ids: string[]) => void }) {
   const { tags, byId } = useTags();
   const [open, setOpen] = useState(false);
@@ -83,37 +86,52 @@ export function TagPicker({ value, onChange }: { value: string[]; onChange: (ids
 
   const selected = value.map((id) => byId.get(id)).filter((t): t is BloomTag => Boolean(t));
   const q = query.trim().toLowerCase();
-  const available = tags.filter((t) => !value.includes(t.id) && t.name.toLowerCase().includes(q));
+  const matching = tags.filter((t) => t.name.toLowerCase().includes(q));
   const suggestions = suggestedTagNames.filter(
     (n) => !findTagByName(n) && n.toLowerCase().includes(q),
   );
-  const exact = q && (tags.some((t) => t.name.toLowerCase() === q) || suggestedTagNames.some((n) => n.toLowerCase() === q));
+  const exact =
+    q && (tags.some((t) => t.name.toLowerCase() === q) || suggestedTagNames.some((n) => n.toLowerCase() === q));
 
-  const add = (id: string) => {
-    onChange([...value, id]);
-    setQuery("");
-  };
+  const toggle = (id: string) =>
+    onChange(value.includes(id) ? value.filter((v) => v !== id) : [...value, id]);
   const addNamed = (name: string) => {
-    const tag = createTag(name);
-    if (tag && !value.includes(tag.id)) add(tag.id);
+    const tag = createTag(name) ?? findTagByName(name);
+    if (tag && !value.includes(tag.id)) onChange([...value, tag.id]);
+    setQuery("");
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {selected.map((t) => (
-        <TagChip key={t.id} tag={t} onRemove={() => onChange(value.filter((id) => id !== t.id))} />
-      ))}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-3 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <Plus className="h-3 w-3" />
-            Add tag
-          </button>
-        </PopoverTrigger>
-        <PopoverContent align="start" className="w-72 space-y-3 rounded-2xl p-3">
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        Organise this goal by area of your life, like Fitness, Health or Learning. You can add as
+        many as you like — or none at all.
+      </p>
+      {selected.length ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {selected.map((t) => (
+            <TagChip
+              key={t.id}
+              tag={t}
+              className="px-3 py-1 text-sm"
+              onRemove={() => onChange(value.filter((id) => id !== t.id))}
+            />
+          ))}
+        </div>
+      ) : null}
+
+      {!open ? (
+        <Button
+          type="button"
+          variant="secondary"
+          className="gap-1.5 rounded-full px-4"
+          onClick={() => setOpen(true)}
+        >
+          <Plus className="h-4 w-4" />
+          Add tag
+        </Button>
+      ) : (
+        <div className="space-y-2 rounded-2xl bg-muted/40 p-3">
           <Input
             autoFocus
             value={query}
@@ -122,41 +140,83 @@ export function TagPicker({ value, onChange }: { value: string[]; onChange: (ids
             onKeyDown={(e) => {
               if (e.key === "Enter" && query.trim()) {
                 e.preventDefault();
-                addNamed(query);
+                const existing = findTagByName(query);
+                if (existing) {
+                  if (!value.includes(existing.id)) onChange([...value, existing.id]);
+                  setQuery("");
+                } else addNamed(query);
+              }
+              if (e.key === "Escape") {
+                e.stopPropagation();
+                setOpen(false);
               }
             }}
           />
-          <div className="max-h-56 space-y-1 overflow-y-auto">
-            {available.map((t) => (
-              <OptionRow key={t.id} label={t.name} onClick={() => add(t.id)} />
+          <div
+            className="max-h-60 space-y-1 overflow-y-auto overscroll-contain pr-1 [-webkit-overflow-scrolling:touch]"
+            role="listbox"
+            aria-multiselectable="true"
+            aria-label="Tags"
+          >
+            {q && !exact ? (
+              <OptionRow label={`Create “${query.trim()}”`} icon="plus" onClick={() => addNamed(query)} />
+            ) : null}
+            {matching.map((t) => (
+              <OptionRow
+                key={t.id}
+                label={t.name}
+                icon={value.includes(t.id) ? "check" : "none"}
+                selected={value.includes(t.id)}
+                onClick={() => toggle(t.id)}
+              />
             ))}
             {suggestions.length ? (
               <p className="px-2 pt-2 text-xs text-muted-foreground">Suggestions</p>
             ) : null}
             {suggestions.map((n) => (
-              <OptionRow key={n} label={n} onClick={() => addNamed(n)} />
+              <OptionRow key={n} label={n} icon="none" onClick={() => addNamed(n)} />
             ))}
-            {q && !exact ? (
-              <OptionRow label={`Create “${query.trim()}”`} icon onClick={() => addNamed(query)} />
-            ) : null}
-            {!available.length && !suggestions.length && !q ? (
+            {!matching.length && !suggestions.length && !q ? (
               <p className="px-2 py-1 text-xs text-muted-foreground">Type a name to create a tag.</p>
             ) : null}
           </div>
-        </PopoverContent>
-      </Popover>
+          <div className="flex justify-end">
+            <Button type="button" size="sm" variant="ghost" onClick={() => { setOpen(false); setQuery(""); }}>
+              Done
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function OptionRow({ label, onClick, icon }: { label: string; onClick: () => void; icon?: boolean }) {
+function OptionRow({
+  label,
+  onClick,
+  icon,
+  selected,
+}: {
+  label: string;
+  onClick: () => void;
+  icon: "plus" | "check" | "none";
+  selected?: boolean;
+}) {
   return (
     <button
       type="button"
+      role="option"
+      aria-selected={selected ?? false}
       onClick={onClick}
-      className="flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-left text-sm hover:bg-muted"
+      className={cn(
+        "flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left text-sm hover:bg-card",
+        selected && "bg-card font-medium",
+      )}
     >
-      {icon ? <Plus className="h-3.5 w-3.5 text-muted-foreground" /> : null}
+      <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+        {icon === "plus" ? <Plus className="h-3.5 w-3.5 text-muted-foreground" /> : null}
+        {icon === "check" ? <Check className="h-3.5 w-3.5 text-sage" /> : null}
+      </span>
       {label}
     </button>
   );

@@ -234,8 +234,8 @@ export function EditGoalDialog({
             </div>
           </div>
 
-          <div className="space-y-3">
-            <Label>Tags</Label>
+          <div className="space-y-2">
+            <Label>Tags <span className="font-normal text-muted-foreground">— optional</span></Label>
             <TagPicker value={tagIds} onChange={setTagIds} />
           </div>
 
