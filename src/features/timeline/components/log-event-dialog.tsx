@@ -21,6 +21,7 @@ import { EventDateField, validPastDate } from "@/components/shared/event-date-fi
 import { eventAt, todayLocal } from "@/lib/event-date";
 import { FoodDialog } from "@/features/nutrition/components/food-dialog";
 import { MeasurementDialog } from "@/features/measurements/components/measurement-dialog";
+import { SleepDialog, WorkoutDialog } from "./rich-log-dialogs";
 
 /**
  * One small form for any kind of log. Whatever is entered becomes a shared
@@ -50,6 +51,8 @@ export function LogEventDialog({
   // Measurements have their own picker (which one, value, date).
   if (spec.id === "food") return <FoodDialog open={open} onOpenChange={onOpenChange} />;
   if (spec.id === "measurement") return <MeasurementDialog open={open} onOpenChange={onOpenChange} />;
+  if (spec.id === "sleep") return <SleepDialog open={open} onOpenChange={onOpenChange} />;
+  if (spec.id === "workout") return <WorkoutDialog open={open} onOpenChange={onOpenChange} />;
 
   const set = (label: string, value: string) => setValues((v) => ({ ...v, [label]: value }));
 

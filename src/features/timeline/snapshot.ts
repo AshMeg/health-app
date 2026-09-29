@@ -53,6 +53,9 @@ export function buildDailySnapshot(
 
   let water = 0;
   let steps = 0;
+  let nap = 0;
+  let distance = 0;
+  let workoutMin = 0;
   let protein = 0;
   let calories = 0;
   let carbs = 0;
@@ -76,6 +79,9 @@ export function buildDailySnapshot(
     snapshot.workout = str(m.training) ?? snapshot.workout;
 
     water += num(m.water) ?? 0;
+    nap += num(m.nap) ?? 0;
+    distance += num(m.distance) ?? 0;
+    workoutMin += num(m.workoutMinutes) ?? 0;
     steps = num(m.steps) ?? steps;
     protein += num(m.protein) ?? 0;
     calories += num(m.calories) ?? 0;
@@ -97,6 +103,9 @@ export function buildDailySnapshot(
 
   if (water) snapshot.waterL = round(water);
   if (steps) snapshot.steps = steps;
+  if (nap) snapshot.napMinutes = nap;
+  if (distance) snapshot.distanceKm = Math.round(distance * 100) / 100;
+  if (workoutMin) snapshot.workoutMinutes = workoutMin;
   if (protein) snapshot.proteinG = Math.round(protein);
   if (calories) snapshot.caloriesKcal = Math.round(calories);
   if (carbs) snapshot.carbsG = Math.round(carbs);

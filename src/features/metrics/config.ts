@@ -92,11 +92,15 @@ export const metricPages: Record<string, MetricPageConfig> = {
     categories: ["sleep"],
     quickAddIds: ["sleep"],
     connectedTo: "Recovery, Mood and Training",
-    readers: [{ label: "Sleep", read: (d) => formatSleep(d.sleepMinutes) }],
+    readers: [
+      { label: "Night sleep", read: (d) => formatSleep(d.sleepMinutes) },
+      { label: "Naps", read: (d) => formatSleep(d.napMinutes) },
+      { label: "Total", read: (d) => (d.napMinutes && d.sleepMinutes ? formatSleep(d.sleepMinutes + d.napMinutes) : undefined) },
+    ],
   },
   training: {
     id: "training",
-    trends: ["trainingSessions", "steps"],
+    trends: ["trainingSessions", "workoutMinutes", "distance", "steps"],
     title: "Training",
     question: "Am I moving as often as I intend to?",
     intro: "What you've done recently, and how steady the pattern has been.",
@@ -106,6 +110,8 @@ export const metricPages: Record<string, MetricPageConfig> = {
     connectedTo: "Recovery, Weight and Nutrition",
     readers: [
       { label: "Today's session", read: (d) => d.workout },
+      { label: "Distance", unit: "km", read: (d) => one(d.distanceKm, 1) },
+      { label: "Time", read: (d) => formatSleep(d.workoutMinutes) },
       { label: "Steps", read: (d) => (d.steps ? d.steps.toLocaleString() : undefined) },
     ],
   },

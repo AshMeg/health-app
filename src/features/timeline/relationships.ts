@@ -6,6 +6,9 @@ import type { MetricKey } from "./types";
  * and (later) AI prompts all ask this map instead.
  */
 export const metricRelationships: Record<MetricKey, MetricKey[]> = {
+  nap: ["sleep", "recovery", "mood"],
+  distance: ["training", "recovery", "sleep", "weight"],
+  workoutMinutes: ["training", "recovery", "sleep"],
   weight: [
     "calories",
     "protein",
@@ -44,6 +47,9 @@ export const metricRelationships: Record<MetricKey, MetricKey[]> = {
 };
 
 export const metricLabels: Record<MetricKey, string> = {
+  nap: "Naps",
+  distance: "Distance",
+  workoutMinutes: "Training time",
   weight: "Weight",
   bodyFat: "Body fat",
   water: "Water",
