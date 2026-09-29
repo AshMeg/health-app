@@ -1,3 +1,4 @@
+import { clearEntityTags } from "@/features/tags/store";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { syncGoalsWithEvent } from "@/features/timeline/goal-sync";
@@ -362,7 +363,10 @@ export function useGoals() {
 
 
   const removeGoal = useCallback(
-    (id: string) => persist(goals.filter((g) => g.id !== id)),
+    (id: string) => {
+      clearEntityTags("goal", id);
+      persist(goals.filter((g) => g.id !== id));
+    },
     [goals, persist],
   );
 

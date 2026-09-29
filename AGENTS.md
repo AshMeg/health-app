@@ -8,3 +8,4 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+- Tags live in `src/features/tags/store.ts` as tag records + generic entity links (localStorage `bloom.tags.v1`); never store tag names on entities — rename/delete must update everywhere.
