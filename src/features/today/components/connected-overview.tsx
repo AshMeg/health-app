@@ -189,7 +189,6 @@ export function ConnectedOverview() {
     <section className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="font-display text-xl font-medium">Your picture</h2>
           <p className="text-sm text-muted-foreground">What you've recorded, side by side. Tap a day or a row to look closer.</p>
         </div>
         <div className="flex flex-wrap items-center gap-1">
