@@ -106,6 +106,19 @@ const moodScore: Record<string, number> = {
   Low: 1,
   Sad: 1,
   Stressed: 1,
+  // Wider preset range. Custom feelings are never scored — Bloom doesn't reinterpret them.
+  Happy: 5,
+  Excited: 5,
+  Energised: 5,
+  Content: 4,
+  Grateful: 4,
+  Motivated: 4,
+  Drained: 2,
+  Irritated: 2,
+  Overwhelmed: 1,
+  Anxious: 1,
+  Frustrated: 1,
+  Lonely: 1,
 };
 
 function nextDay(date: string) {
