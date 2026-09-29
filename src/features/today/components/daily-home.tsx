@@ -2,8 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, Circle } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { GoalCard } from "@/features/goals/components/goal-card";
-import type { BloomGoal } from "@/features/goals/types";
+import { goalProgress, type BloomGoal } from "@/features/goals/types";
 import { useBloomContext } from "@/features/timeline/hooks/use-bloom-context";
 import { formatSleep } from "@/features/timeline/snapshot";
 import { eventCategoryMeta } from "@/features/timeline/types";
@@ -32,21 +31,22 @@ function useFocusGoal() {
 export function FocusGoalWidget() {
   const goal = useFocusGoal();
   const { personality } = usePersonality();
+  if (!goal) return <p className="px-1 text-sm text-muted-foreground">{say("noFocus", personality)}</p>;
+  const pct = Math.round(goalProgress(goal));
   return (
-    <section className="space-y-3">
-      {goal ? (
-        <GoalCard goal={goal} />
-      ) : (
-        <Card className="rounded-3xl border-transparent bg-card shadow-none">
-          <CardContent className="p-7 text-sm text-muted-foreground">
-            {say("noFocus", personality)}
-          </CardContent>
-        </Card>
-      )}
-      <Link to="/goals" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        View all goals <ArrowRight className="h-3.5 w-3.5" />
-      </Link>
-    </section>
+    <Link
+      to="/goals/$goalId"
+      params={{ goalId: goal.id }}
+      className="flex items-center justify-between gap-4 rounded-2xl bg-card/70 px-5 py-4 transition hover:bg-card"
+    >
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{goal.title}</p>
+        <div className="mt-2 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-muted">
+          <div className="h-full rounded-full bg-sage" style={{ width: `${pct}%` }} />
+        </div>
+      </div>
+      <span className="shrink-0 text-sm text-muted-foreground">{pct}% · View goal →</span>
+    </Link>
   );
 }
 

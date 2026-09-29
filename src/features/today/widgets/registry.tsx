@@ -10,6 +10,7 @@ import { GoalsWidget } from "../components/goal-progress-card";
 import { QuickAddBar } from "../components/quick-add-bar";
 import { UpcomingWidget } from "../components/upcoming-widget";
 import { TrendPreview } from "../components/trend-preview";
+import { ConnectedOverview } from "../components/connected-overview";
 import { FocusGoalWidget, HealthSnapshotWidget, NextStepWidget } from "../components/daily-home";
 
 /**
@@ -37,6 +38,13 @@ export const todayWidgets: WidgetDefinition[] = [
     render: () => <QuickAddBar />,
   },
   {
+    id: "picture",
+    title: "Your picture",
+    summary: "Everything you record, side by side on one shared timeline.",
+    span: "full",
+    render: () => <ConnectedOverview />,
+  },
+  {
     id: "focus-goal",
     title: "Your focus",
     summary: "The one goal that matters most today.",
@@ -48,6 +56,7 @@ export const todayWidgets: WidgetDefinition[] = [
     title: "Today so far",
     summary: "A few quiet signals — tap one for the full story.",
     span: "full",
+    defaultHidden: true,
     render: () => <HealthSnapshotWidget />,
   },
   {
