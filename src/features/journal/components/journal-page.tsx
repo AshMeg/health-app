@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pencil, Sparkles, Trash2, Plus } from "lucide-react";
+import { Pencil, Sparkles, Trash2 } from "lucide-react";
 
 import { Switch } from "@/components/ui/switch";
 import { MEMORY_ORIGIN, isMemory } from "@/features/garden/model";

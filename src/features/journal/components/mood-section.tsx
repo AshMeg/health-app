@@ -121,12 +121,10 @@ export function MoodSection() {
               </button>
             ))}
             {custom.map((v) => (
-              <span key={v} className="group relative inline-flex">
-                <button type="button" role="radio" aria-checked={selected === v} onClick={() => pick(v)} className={chip(selected === v)}>
-                  <span className="mr-1.5">💭</span>
-                  {v}
-                </button>
-              </span>
+              <button key={v} type="button" role="radio" aria-checked={selected === v} onClick={() => pick(v)} className={chip(selected === v)}>
+                <span className="mr-1.5">💭</span>
+                {v}
+              </button>
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -220,12 +218,6 @@ const RANGES = [
   { id: "1y", label: "1 year", days: 365 },
 ] as const;
 
-const addDays = (d: string, n: number) => {
-  const x = new Date(`${d}T00:00:00`);
-  x.setDate(x.getDate() + n);
-  return localDate(x.toISOString().slice(0, 10) === d ? x.toISOString() : x.toISOString());
-};
-
 export function MoodOverTime() {
   const { events } = useBloomContext();
   const today = localDate();
@@ -253,7 +245,6 @@ export function MoodOverTime() {
     }
     return out;
   }, [range.days, today]);
-  void addDays;
 
   const logged = days.filter((d) => byDay.has(d));
   const counts = new Map<string, number>();
